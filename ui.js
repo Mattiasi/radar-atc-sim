@@ -1,62 +1,54 @@
 import { state } from './state.js';
 import { desenharRadar } from './render.js';
 import { painelVentoUI } from './painelVentoUI.js';
+import { obterTodosFixosProcedimentos } from './data.js';
 
 /**
  * ============================================================================
  * CONTROLADORES DE INTERFACE E ENCAPSULAMENTO DO DOM (UI CONTROLLERS)
  * ============================================================================
  * Centraliza e encapsula o acesso e a manipulação de elementos HTML do DOM:
- * 1. PainelFluxoController: Gerencia os controles de esteira e fluxo de tráfego.
+ * 1. PainelFluxoController: Gerencia os controles dinâmicos de esteira e fluxo de tráfego.
  * 2. ScratchpadController: Gerencia o input flutuante de texto livre e comandos ATC.
  * 3. MenuNivelController: Gerencia o menu flutuante dropdown de Flight Levels.
  * ============================================================================
  */
 
 /**
- * Encapsula os inputs do painel de fluxo (checkboxes e selects).
- * Sincroniza as alterações diretamente no estado global (state.configFluxo),
- * permitindo que o motor de física (engine.js) permaneça 100% livre de chamadas ao DOM.
+ * Encapsula os inputs do painel de fluxo de tráfego (Data-Driven).
+ * Lê dinamicamente os fixos das cartas e sincroniza as esteiras ativas no state global.
  */
 export class PainelFluxoController {
     constructor() {
-        this.chkOgtal = null;
-        this.sepOgtal = null;
-        this.chkPrumo = null;
-        this.sepPrumo = null;
+        this.containerEsteiras = null;
+        this.btnAdicionarFluxo = null;
         this.sliderVelocidade = null;
         this.labelVelocidade = null;
     }
 
     inicializar() {
-        this.chkOgtal = document.getElementById('chkOgtal');
-        this.sepOgtal = document.getElementById('sepOgtal');
-        this.chkPrumo = document.getElementById('chkPrumo');
-        this.sepPrumo = document.getElementById('sepPrumo');
+        this.containerEsteiras = document.getElementById('containerEsteiras');
+        this.btnAdicionarFluxo = document.getElementById('btnAdicionarFluxo');
         this.sliderVelocidade = document.getElementById('sliderVelocidade');
         this.labelVelocidade = document.getElementById('labelVelocidade');
 
-        if (!this.chkOgtal || !this.sepOgtal || !this.chkPrumo || !this.sepPrumo) return;
+        if (!this.containerEsteiras) return;
 
-        // Sincroniza o estado inicial dos inputs HTML com o state global
-        this._sincronizarEstado();
+        // Se state.configFluxo.esteiras ainda não estiver inicializado
+        if (!state.configFluxo.esteiras || !Array.isArray(state.configFluxo.esteiras)) {
+            state.configFluxo.esteiras = [
+                { id: "esteira_1", ativo: true, fixo: "OGTAL", separacao: 15 },
+                { id: "esteira_2", ativo: true, fixo: "PRUMO", separacao: 15 }
+            ];
+        }
 
-        // Ouvintes de alteração (reativos: atualizam o state sem exigir pooling do DOM)
-        this.chkOgtal.addEventListener('change', () => {
-            state.configFluxo.ogtalAtivo = this.chkOgtal.checked;
-        });
-
-        this.sepOgtal.addEventListener('change', () => {
-            state.configFluxo.sepOgtal = parseInt(this.sepOgtal.value, 10);
-        });
-
-        this.chkPrumo.addEventListener('change', () => {
-            state.configFluxo.prumoAtivo = this.chkPrumo.checked;
-        });
-
-        this.sepPrumo.addEventListener('change', () => {
-            state.configFluxo.sepPrumo = parseInt(this.sepPrumo.value, 10);
-        });
+        if (this.btnAdicionarFluxo) {
+            this.btnAdicionarFluxo.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._adicionarNovaEsteira();
+            });
+            this.btnAdicionarFluxo.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
 
         if (this.sliderVelocidade && this.labelVelocidade) {
             const atualizarVelocidade = () => {
@@ -68,17 +60,108 @@ export class PainelFluxoController {
             this.sliderVelocidade.addEventListener('input', atualizarVelocidade);
             this.sliderVelocidade.addEventListener('change', atualizarVelocidade);
             this.sliderVelocidade.addEventListener('mousedown', (e) => e.stopPropagation());
-        }
-    }
-
-    _sincronizarEstado() {
-        state.configFluxo.ogtalAtivo = this.chkOgtal.checked;
-        state.configFluxo.sepOgtal = parseInt(this.sepOgtal.value, 10);
-        state.configFluxo.prumoAtivo = this.chkPrumo.checked;
-        state.configFluxo.sepPrumo = parseInt(this.sepPrumo.value, 10);
-        if (this.sliderVelocidade) {
             state.fatorVelocidade = parseFloat(this.sliderVelocidade.value) || 1.0;
         }
+
+        this.renderizarEsteiras();
+    }
+
+    renderizarEsteiras() {
+        if (!this.containerEsteiras) return;
+        this.containerEsteiras.innerHTML = '';
+
+        const todosFixos = obterTodosFixosProcedimentos();
+        todosFixos.sort();
+
+        const opcoesSeparacao = [5, 8, 10, 12, 15, 18, 20, 25];
+
+        state.configFluxo.esteiras.forEach((esteira) => {
+            const linha = document.createElement('div');
+            linha.className = 'linha-esteira';
+            linha.dataset.id = esteira.id;
+
+            // 1. Checkbox Ativo
+            const chkContainer = document.createElement('label');
+            chkContainer.className = 'chk-esteira-container';
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.checked = esteira.ativo;
+            chk.addEventListener('change', () => {
+                esteira.ativo = chk.checked;
+            });
+            chk.addEventListener('mousedown', (e) => e.stopPropagation());
+            chkContainer.appendChild(chk);
+
+            // 2. Select Fixo (qualquer fixo de cartas cadastradas)
+            const selFixo = document.createElement('select');
+            selFixo.className = 'sel-fixo';
+            todosFixos.forEach(nomeFixo => {
+                const opt = document.createElement('option');
+                opt.value = nomeFixo;
+                opt.textContent = nomeFixo;
+                if (nomeFixo === esteira.fixo) opt.selected = true;
+                selFixo.appendChild(opt);
+            });
+            selFixo.addEventListener('change', () => {
+                esteira.fixo = selFixo.value;
+            });
+            selFixo.addEventListener('mousedown', (e) => e.stopPropagation());
+
+            // 3. Select Separação (NM)
+            const selSep = document.createElement('select');
+            selSep.className = 'sel-sep';
+            opcoesSeparacao.forEach(milhas => {
+                const opt = document.createElement('option');
+                opt.value = milhas;
+                opt.textContent = `${milhas} NM`;
+                if (milhas === esteira.separacao) opt.selected = true;
+                selSep.appendChild(opt);
+            });
+            selSep.addEventListener('change', () => {
+                esteira.separacao = parseInt(selSep.value, 10);
+            });
+            selSep.addEventListener('mousedown', (e) => e.stopPropagation());
+
+            linha.appendChild(chkContainer);
+            linha.appendChild(selFixo);
+            linha.appendChild(selSep);
+
+            // 4. Botão Remover (se houver mais de 1 esteira)
+            if (state.configFluxo.esteiras.length > 1) {
+                const btnRemover = document.createElement('button');
+                btnRemover.className = 'btn-remover-esteira';
+                btnRemover.innerHTML = '&times;';
+                btnRemover.title = 'Remover este fluxo';
+                btnRemover.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this._removerEsteira(esteira.id);
+                });
+                btnRemover.addEventListener('mousedown', (e) => e.stopPropagation());
+                linha.appendChild(btnRemover);
+            }
+
+            this.containerEsteiras.appendChild(linha);
+        });
+    }
+
+    _adicionarNovaEsteira() {
+        const todosFixos = obterTodosFixosProcedimentos();
+        const fixosUsados = new Set(state.configFluxo.esteiras.map(e => e.fixo));
+        let fixoEscolhido = todosFixos.find(f => !fixosUsados.has(f)) || todosFixos[0] || "SP099";
+
+        state.configFluxo.esteiras.push({
+            id: 'esteira_' + Date.now(),
+            ativo: true,
+            fixo: fixoEscolhido,
+            separacao: 15
+        });
+
+        this.renderizarEsteiras();
+    }
+
+    _removerEsteira(id) {
+        state.configFluxo.esteiras = state.configFluxo.esteiras.filter(e => e.id !== id);
+        this.renderizarEsteiras();
     }
 }
 

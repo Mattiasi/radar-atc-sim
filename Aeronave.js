@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos } from './data.js';
+import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn } from './data.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 
@@ -161,6 +161,14 @@ export class Aeronave {
         this.speedbrakes = false;                // Flag: speedbrakes / spoilers acionados (aumentam taxa de frenagem)
         this.speedbrakesComando = false;         // Flag: ativado explicitamente via Scratchpad (comando SB)
 
+        // Se nivAtual ou nivAutorizado não forem fornecidos, obtém automaticamente das restrições da rota
+        if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
+            const refWp = rota[spawnWpIndex] || rota[0];
+            const niveisAuto = obterNiveisSpawn(refWp, rota);
+            if (!nivAtual) nivAtual = niveisAuto.nivAtual;
+            if (!nivAutorizado) nivAutorizado = niveisAuto.nivAutorizado;
+        }
+
         // --- 5. NAVEGAÇÃO VERTICAL (FLIGHT LEVEL / VNAV) ---
         this.nivAtual = nivAtual;                // String formatada para a etiqueta do radar (ex: "055↓")
         this.nivAutorizado = nivAutorizado;      // Clearance textual exibido no radar (ex: "040" ou "VIA")
@@ -168,16 +176,7 @@ export class Aeronave {
         this.nivAutorizadoPendente = null;       // Buffer de nível autorizado enquanto corre o delay de reação do piloto
         this.delayNivel = 0;                     // Contador de ciclos de espera para autorização de nível
         this.flAtualNum = parseInt(nivAtual) || 0; // Valor numérico de altitude em Flight Level (ex: FL 55 = 5500 pés)
-        
-        // Razão vertical inicial estimada em ft/min (negativa descendo, positiva subindo, 0 nivelado)
-        const autNum = parseInt(nivAutorizado) || 0;
-        if (this.flAtualNum > autNum && autNum > 0) {
-            this.verticalSpeed = -Math.round(this.vel * 5); // Descida nominal inicial (~3°)
-        } else if (this.flAtualNum < autNum) {
-            this.verticalSpeed = Math.round(this.vel * 5);
-        } else {
-            this.verticalSpeed = 0;
-        }
+        this.verticalSpeed = 0;                  // Inicializa nivelado; VNAV modula dinamicamente a razão de descida a partir do TOD
 
         // --- 6. GESTÃO DE ROTA AUTOMÁTICA (LNAV) E TRANSIÇÕES (FLY-BY) ---
         this.rota = rota;                        // Sequência ordenada de nomes de fixos da carta (STAR)
@@ -188,8 +187,7 @@ export class Aeronave {
         this.delayWp = 0;                        // Contador de delay para ativação de novo waypoint
         this.flyByDist = 0.6;                    // Distância calculada em NM para antecipar a curva antes do fixo
         this.desceuParaWp = {};                  // Registro de histerese: impede interrupção de descidas já iniciadas
-        this.emFlyByGersu = false;               // Trava de segurança: true durante a curva em GERSU para não furar 4700'
-        this.distGersuMin = 999;                 // Rastreia a menor distância até GERSU para detectar passagem pelo través
+        this.flyByProtegido = null;              // Trava de segurança RNAV: { fixoNome, flMinimo, distMin } durante fly-by com restrição de piso
         
         // --- 7. SISTEMA DE ETIQUETAS E CONTROLE OPERACIONAL ATC ---
         this.dest = dest;                        // Destino exibido na etiqueta (ex: "SBSP")
@@ -212,7 +210,16 @@ export class Aeronave {
         this.groundSpeed = vel;                  // Velocidade sobre o solo (Ground Speed calculada pelo radar)
         this.track = proa;                       // Trajetória real sobre o solo (Track em graus aeronáuticos)
         this.driftAngle = 0;                     // Ângulo de deriva (Drift Angle = Track - Proa)
-        this.pistaAtribuida = (dest === "SBSP") ? "17R" : null; // Cabeceira terminal atribuída para vento local
+        
+        let pistaPadrao = null;
+        if (Array.isArray(aerodromos)) {
+            const aeroData = aerodromos.find(a => a.nome === dest);
+            if (aeroData && aeroData.pistas && aeroData.pistas.length > 0) {
+                const primaryId = aeroData.pistas[0].id;
+                pistaPadrao = primaryId.includes('/') ? primaryId.split('/')[0] : primaryId;
+            }
+        }
+        this.pistaAtribuida = pistaPadrao || ((dest === "SBSP") ? "17R" : null); // Cabeceira terminal atribuída para vento local
         this.ventoAtual = { fromDeg: 0, speedKt: 0, vLat: 0, vLon: 0, origem: "GLOBAL" }; // Vento atuante
     }
 
@@ -590,14 +597,18 @@ export class Aeronave {
                             // Se era um fixo direto temporário fora da rota, transita para asas niveladas
                             this.wpOffRoute = null;
                             this.modoLNAV = false;
-                            this.emFlyByGersu = false;
+                            this.flyByProtegido = null;
                         } else {
-                            // Se atingiu o ponto de fly-by em GERSU, ativa a proteção de altitude de 4700'
-                            if (wpNome === "GERSU") {
-                                this.emFlyByGersu = true;
-                                this.distGersuMin = navInfo.distanciaNM;
+                            // Proteção Universal de Fly-By: se o fixo possuir restrição de piso ("ABOVE" ou "AT"),
+                            // mantém o piso mínimo da restrição durante a curva de fly-by até nivelar asas no próximo segmento
+                            if (restricaoAlvo && restricaoAlvo.fl !== undefined && (restricaoAlvo.tipo === "ABOVE" || restricaoAlvo.tipo === "AT")) {
+                                this.flyByProtegido = {
+                                    fixoNome: wpNome,
+                                    flMinimo: restricaoAlvo.fl,
+                                    distMin: navInfo.distanciaNM
+                                };
                             }
-                            this.wpIndex++; // Avança para o próximo waypoint da rota (ex: URUTA)
+                            this.wpIndex++; // Avança para o próximo waypoint da rota
                             
                             // Imediatamente atualiza a proa alvo em direção ao próximo fixo para iniciar a curva
                             if (this.rota && this.wpIndex < this.rota.length) {
@@ -651,7 +662,7 @@ export class Aeronave {
             this.delayProa--;
             if (this.delayProa === 0 && this.proaPendente !== null) {
                 this.modoLNAV = false; 
-                this.emFlyByGersu = false;
+                this.flyByProtegido = null;
                 this.proaDestino = this.proaPendente;
                 
                 // Normaliza ângulos no círculo trigonométrico para encontrar o arco mais curto
@@ -726,27 +737,27 @@ export class Aeronave {
         }
 
         // -------------------------------------------------------------------------
-        // MONITORAMENTO DA FINALIZAÇÃO DO FLY-BY EM GERSU:
+        // MONITORAMENTO DA FINALIZAÇÃO DO FLY-BY UNIVERSAL COM RESTRIÇÃO DE PISO:
         // Verifica se a aeronave concluiu a curva e superou o ponto de menor aproximação
-        // de GERSU (atravês). Quando concluído, desativa a flag para liberar a descida para URUTA.
+        // do fixo (através). Quando concluído, desativa a proteção para liberar a descida para o próximo fixo.
         // -------------------------------------------------------------------------
-        if (this.emFlyByGersu) {
-            let gersuCoords = state.fixos["GERSU"];
-            if (gersuCoords && this.modoLNAV) {
-                let distGersu = calcularRumoDistancia(this, gersuCoords).distanciaNM;
-                if (distGersu < this.distGersuMin) {
-                    this.distGersuMin = distGersu;
+        if (this.flyByProtegido) {
+            let protCoords = state.fixos[this.flyByProtegido.fixoNome];
+            if (protCoords && this.modoLNAV) {
+                let distProt = calcularRumoDistancia(this, protCoords).distanciaNM;
+                if (distProt < this.flyByProtegido.distMin) {
+                    this.flyByProtegido.distMin = distProt;
                 }
                 let difProa = Math.abs(this.proaDestino - this.proa);
                 if (difProa > 180) difProa = 360 - difProa;
 
-                // O fly-by termina quando a curva é concluída (asas niveladas na proa de URUTA com tolerância de 2°) 
-                // e a aeronave já ultrapassou o través de GERSU (distância mínima superada, afastando-se do fixo)
-                if (difProa <= 2 && distGersu >= this.distGersuMin) {
-                    this.emFlyByGersu = false;
+                // O fly-by termina quando a curva é concluída (asas niveladas na proa do próximo fixo com tolerância de 2°) 
+                // e a aeronave já ultrapassou o través do fixo protegido (distância mínima superada, afastando-se do fixo)
+                if (difProa <= 2 && distProt >= this.flyByProtegido.distMin) {
+                    this.flyByProtegido = null;
                 }
             } else {
-                this.emFlyByGersu = false;
+                this.flyByProtegido = null;
             }
         }
 
@@ -833,10 +844,10 @@ export class Aeronave {
         //    Se a aeronave estiver atrasada em relação ao perfil vertical, o sistema
         //    aumenta a razão até rMax (até 1800+ ft/min). Se estiver adiantada, suaviza até rMin.
         //
-        // 4. Proteção de Piso de Cruzamento em GERSU (Fly-By Restriction):
-        //    GERSU possui altitude mínima de 4700 pés (FL 047+). Durante a curva de
-        //    fly-by em direção a URUTA (FL 040), a aeronave mantém o piso de 4700'
-        //    e só inicia a descida para URUTA após nivelar asas na proa de aproximação final.
+        // 4. Proteção Universal de Piso em Fly-By (Fly-By Restriction):
+        //    Se um fixo possui restrição de altitude mínima ("AT" ou "ABOVE"), durante a curva de
+        //    fly-by em direção ao próximo fixo, a aeronave mantém o piso mínimo e só inicia
+        //    a descida subsequente após nivelar asas na nova proa e ultrapassar o través.
         // =========================================================================
         let targetFL = this.flAtualNum;
         let razaoNominal = Math.round(this.vel * 5); // Regra dos 3 graus (IAS * 5 = ft/min)
@@ -915,10 +926,10 @@ export class Aeronave {
                             flAlvoFixo = this.flAtualNum;
                         }
 
-                        // Proteção de GERSU: mantém piso mínimo de FL 047 (4700') durante a curva de fly-by
-                        if (this.emFlyByGersu) {
-                            let pisoGersu = isVia ? 47 : Math.max(47, altClearence);
-                            flAlvoFixo = Math.max(flAlvoFixo, pisoGersu);
+                        // Proteção Universal de Fly-By: mantém piso mínimo da restrição durante a curva de fly-by
+                        if (this.flyByProtegido) {
+                            let pisoFlyBy = isVia ? this.flyByProtegido.flMinimo : Math.max(this.flyByProtegido.flMinimo, altClearence);
+                            flAlvoFixo = Math.max(flAlvoFixo, pisoFlyBy);
                         }
 
                         if (this.flAtualNum > flAlvoFixo) {
@@ -938,7 +949,7 @@ export class Aeronave {
 
                             // Disparo do início da descida
                             if (jaIniciou || noTOD) {
-                                if (i === 0 && (!this.emFlyByGersu || iterWpNome !== "URUTA")) {
+                                if (i === 0 && (!this.flyByProtegido || (this.rota && iterWpNome !== this.rota[this.wpIndex]))) {
                                     this.desceuParaWp[iterWpNome] = true;
                                 }
 
@@ -956,9 +967,9 @@ export class Aeronave {
                                 if (i > 0 && restAtual && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE")) {
                                     alvoValido = Math.max(alvoValido, pisoAtual);
                                 }
-                                if (this.emFlyByGersu) {
-                                    let pisoGersu = isVia ? 47 : Math.max(47, altClearence);
-                                    alvoValido = Math.max(alvoValido, pisoGersu);
+                                if (this.flyByProtegido) {
+                                    let pisoFlyBy = isVia ? this.flyByProtegido.flMinimo : Math.max(this.flyByProtegido.flMinimo, altClearence);
+                                    alvoValido = Math.max(alvoValido, pisoFlyBy);
                                 }
 
                                 if (alvoValido < flAlvoFinal) {
@@ -1014,11 +1025,11 @@ export class Aeronave {
                     }
                 }
 
-                // Clamping final de segurança: garante 4700' durante o fly-by de GERSU
-                if (this.emFlyByGersu) {
-                    let pisoGersu = isVia ? 47 : Math.max(47, altClearence);
-                    if (targetFL < pisoGersu) {
-                        targetFL = pisoGersu;
+                // Clamping final de segurança: garante o piso durante o fly-by protegido
+                if (this.flyByProtegido) {
+                    let pisoFlyBy = isVia ? this.flyByProtegido.flMinimo : Math.max(this.flyByProtegido.flMinimo, altClearence);
+                    if (targetFL < pisoFlyBy) {
+                        targetFL = pisoFlyBy;
                     }
                 }
             }
@@ -1057,16 +1068,18 @@ export class Aeronave {
         // =========================================================================
         // ETAPA 7: GERENCIAMENTO DE POUSO E CICLO DE VIDA (GARBAGE COLLECTION)
         // -------------------------------------------------------------------------
-        // Verifica a proximidade em relação ao aeródromo de destino (SBSP):
+        // Verifica a proximidade em relação ao aeródromo de destino:
         // - A menos de 0.8 NM: Altera o squawk para "2000" (contato visual com a torre).
         // - A menos de 0.35 NM: Marca pousou = true para remoção da memória pelo main loop.
         // =========================================================================
-        let distSBSP = calcularRumoDistancia(this, state.fixos["SBSP"]).distanciaNM;
-        
-        if (distSBSP <= 0.8 && distSBSP > 0.35) {
-            this.squawk = "2000"; 
-        } else if (distSBSP <= 0.35) {
-            this.pousou = true;  
+        const destCoords = state.fixos[this.dest] || state.fixos["SBSP"];
+        if (destCoords) {
+            let distDest = calcularRumoDistancia(this, destCoords).distanciaNM;
+            if (distDest <= 0.8 && distDest > 0.35) {
+                this.squawk = "2000"; 
+            } else if (distDest <= 0.35) {
+                this.pousou = true;  
+            }
         }
     }
 
@@ -1108,7 +1121,7 @@ export class Aeronave {
                 this.curvaMaiorPendente = ladoMaior;
                 this.delayProa = Math.floor(Math.random() * 2) + 2; // Delay de reação de 2 a 3 ciclos (8 a 12s)
                 this.wpPendente = null; 
-                this.emFlyByGersu = false;
+                this.flyByProtegido = null;
             }
         }
 
@@ -1212,7 +1225,7 @@ export class Aeronave {
                 this.delayWp = Math.floor(Math.random() * 3) + 2;
                 this.proaPendente = null; 
                 this.desceuParaWp = {};
-                this.emFlyByGersu = false;
+                this.flyByProtegido = null;
             }
         } else {
             this.ultimoWpComandadoTexto = null;

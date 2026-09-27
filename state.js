@@ -41,12 +41,12 @@ export const state = {
     minutosPaliteiro: 1,       // Tempo em minutos do vetor de predição de rota (Speed Vector). Modificável pelas teclas 0-9.
     fatorVelocidade: 1.0,      // Multiplicador de aceleração do tempo da simulação (1x a 5x)
 
-    // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO) ---
+    // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO DATA-DRIVEN) ---
     configFluxo: {
-        ogtalAtivo: true,      // Fluxo OGTAL (Sul) habilitado
-        sepOgtal: 15,          // Separação em NM para a esteira OGTAL
-        prumoAtivo: true,      // Fluxo IROPU/PRUMO (Norte) habilitado
-        sepPrumo: 15           // Separação em NM para a esteira IROPU/PRUMO
+        esteiras: [
+            { id: "esteira_1", ativo: false, fixo: "OGTAL", separacao: 15 },
+            { id: "esteira_2", ativo: false, fixo: "PRUMO", separacao: 15 }
+        ]
     },
 
     // --- ENTIDADES DO SIMULADOR ---

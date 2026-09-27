@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta, deltaParaGeo } from './utils.js';
-import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO } from './data.js';
+import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo } from './data.js';
 import { Aeronave } from './Aeronave.js';
 
 /**
@@ -135,138 +135,113 @@ export function gerarDadosAeronave() {
  * O cenário define se nasce um avião no Norte (0), no Oeste (1), ou em ambos (2).
  */
 export function carregarTrafegoTeste() {
-    const cenario = Math.floor(Math.random() * 3); 
+    if (!state.configFluxo || !Array.isArray(state.configFluxo.esteiras)) return;
 
-    // Spawn no setor Sul/OGTAL
-    if (cenario === 0 || cenario === 2) {
-        let spawnNorte = calcularPontoNaMilhagem(ROTA_OGTAL, "OGTAL", 2);
-        if (spawnNorte) {
-            let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230; 
-            let dados = gerarDadosAeronave();
-            let aero1 = new Aeronave(
-                dados.callsign, dados.tipo, 
-                spawnNorte.lat, spawnNorte.lon, spawnNorte.rumo, vel, 
-                "120", "090", "SBSP", "", ROTA_OGTAL, spawnNorte.wpIndex
-            );
-            aero1.rotaOriginal = "OGTAL";
-            state.aeronaves.push(aero1);
-        }
-    }
+    state.configFluxo.esteiras.forEach(esteira => {
+        if (!esteira.ativo) return;
+        const fixoAlvo = esteira.fixo;
+        if (!state.fixos[fixoAlvo]) return;
 
-    // Spawn no setor Norte/PRUMO (IROPU)
-    if (cenario === 1 || cenario === 2) {
-        let spawnOeste = calcularPontoNaMilhagem(ROTA_PRUMO, "IROPU", 2);
-        if (spawnOeste) {
-            let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230; 
-            let dados = gerarDadosAeronave();
-            let aero2 = new Aeronave(
-                dados.callsign, dados.tipo, 
-                spawnOeste.lat, spawnOeste.lon, spawnOeste.rumo, vel, 
-                "120", "090", "SBSP", "", ROTA_PRUMO, spawnOeste.wpIndex
-            );
-            aero2.rotaOriginal = "PRUMO";
-            state.aeronaves.push(aero2);
+        const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
+        if (rotaCompleta && rotaCompleta.length > 0) {
+            let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 2);
+            if (spawnPt) {
+                let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230; 
+                let dados = gerarDadosAeronave();
+                let aero = new Aeronave(
+                    dados.callsign, dados.tipo, 
+                    spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel, 
+                    "120", "090", "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                );
+                aero.esteiraId = esteira.id;
+                aero.fixoOrigem = fixoAlvo;
+                aero.rotaOriginal = fixoAlvo;
+                state.aeronaves.push(aero);
+            }
         }
-    }
+    });
 }
 
 /**
- * O coração da geração contínua de tráfego (Spawning System).
- * Lê os inputs do "Painel de Fluxo" (separação em NM) e cria um novo avião
- * sempre que o avião da frente cruza um limite específico, simulando uma fila de espera/esteira contínua.
+ * O coração da geração contínua de tráfego (Spawning System Data-Driven).
+ * Lê as esteiras ativas configuradas no Painel de Fluxo e cria um novo avião
+ * sempre que o avião da frente cruza o fixo de referência, simulando uma fila de espera/esteira contínua
+ * perfeitamente alinhada na trajetória da carta e com a separação configurada.
  */
 export function gerenciarEsteiraDeTrafego() {
-    // 1. Lê o estado atual da esteira a partir do estado global (sem tocar no DOM)
-    const { ogtalAtivo, prumoAtivo, sepOgtal, sepPrumo } = state.configFluxo;
+    if (!state.configFluxo || !Array.isArray(state.configFluxo.esteiras)) return;
 
-    // Rastreadores para garantir que o setor não fique vazio
-    let vivosOgtal = false;
-    let vivosPrumo = false;
+    state.configFluxo.esteiras.forEach(esteira => {
+        if (!esteira.ativo) return;
+        const fixoAlvo = esteira.fixo;
+        if (!state.fixos[fixoAlvo]) return;
 
-    // 2. Loop por todas as aeronaves para verificar "Triggers" (gatilhos de spawn)
-    state.aeronaves.forEach(aero => {
-        // Se a aeronave pertence a uma rota contínua e ainda não "pariu" o avião de trás
-        if (aero.rotaOriginal && !aero.gerouSucessor) {
-            if (aero.rotaOriginal === "OGTAL") vivosOgtal = true;
-            if (aero.rotaOriginal === "PRUMO") vivosPrumo = true;
+        let vivosNestaEsteira = false;
 
-            // Define qual é o fixo gatilho desta rota
-            let triggerFix = aero.rotaOriginal === "OGTAL" ? "OGTAL" : "IROPU";
-            
-            // Calcula a distância do avião atual até o fixo gatilho
-            let distTrigger = calcularRumoDistancia(aero, state.fixos[triggerFix]).distanciaNM;
-            
-            // Inicializa a distância no primeiro frame
-            if (aero.distTriggerAnt === undefined) aero.distTriggerAnt = distTrigger;
-            
-            // Lógica de passagem: O avião passou o fixo? 
-            // Ou ficou a menos de 1NM, ou a distância começou a aumentar (passou reto)
-            let passou = false;
-            if (distTrigger <= 1.0) passou = true; 
-            else if (distTrigger > aero.distTriggerAnt && aero.distTriggerAnt < 10) passou = true; 
+        // 1. Loop por todas as aeronaves para verificar gatilho de spawn
+        state.aeronaves.forEach(aero => {
+            const pertenceAEsteira = ((aero.esteiraId === esteira.id && aero.fixoOrigem === fixoAlvo) || (!aero.esteiraId && aero.fixoOrigem === fixoAlvo));
 
-            aero.distTriggerAnt = distTrigger;
+            if (pertenceAEsteira && !aero.pousou) {
+                vivosNestaEsteira = true;
 
-            // Se o avião atual bloqueou o fixo gatilho, ele aciona a criação do próximo avião
-            if (passou) {
-                aero.gerouSucessor = true; 
-                
-                let ativo = aero.rotaOriginal === "OGTAL" ? ogtalAtivo : prumoAtivo;
-                
-                if (ativo) {
-                    let separacaoBase = aero.rotaOriginal === "OGTAL" ? sepOgtal : sepPrumo;
-                    let rotaArray = aero.rotaOriginal === "OGTAL" ? ROTA_OGTAL : ROTA_PRUMO;
-                    
-                    // Adiciona uma pequena aleatoriedade humana (0 a 2NM extra) na separação
-                    let margem = Math.random() * 2.0;
-                    
-                    // Calcula a milhagem exata lá para trás onde o novo avião deve nascer
-                    let separacaoReal = separacaoBase + distTrigger + margem;
-                    let spawnPt = calcularPontoNaMilhagem(rotaArray, triggerFix, separacaoReal);
-                    
-                    if (spawnPt) {
-                        let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230;
-                        let dados = gerarDadosAeronave();
-                        
-                        let novaAero = new Aeronave(
-                            dados.callsign, dados.tipo, 
-                            spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel, 
-                            "120", "090", "SBSP", "", rotaArray, spawnPt.wpIndex
-                        );
-                        
-                        // Passa a "herança" da rota para a nova aeronave manter o ciclo vivo
-                        novaAero.rotaOriginal = aero.rotaOriginal; 
-                        state.aeronaves.push(novaAero);
-                        
-                        if (aero.rotaOriginal === "OGTAL") vivosOgtal = true;
-                        if (aero.rotaOriginal === "PRUMO") vivosPrumo = true;
+                if (!aero.gerouSucessor) {
+                    let distTrigger = calcularRumoDistancia(aero, state.fixos[fixoAlvo]).distanciaNM;
+                    if (aero.distTriggerAnt === undefined) aero.distTriggerAnt = distTrigger;
+
+                    let passou = false;
+                    if (distTrigger <= 1.0) passou = true;
+                    else if (distTrigger > aero.distTriggerAnt && aero.distTriggerAnt < 10) passou = true;
+
+                    aero.distTriggerAnt = distTrigger;
+
+                    if (passou) {
+                        aero.gerouSucessor = true;
+
+                        const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, aero.dest || "SBSP");
+                        if (rotaCompleta && rotaCompleta.length > 0) {
+                            let margem = Math.random() * 2.0;
+                            let separacaoReal = esteira.separacao + distTrigger + margem;
+                            let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, separacaoReal);
+
+                            if (spawnPt) {
+                                let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230;
+                                let dados = gerarDadosAeronave();
+                                let novaAero = new Aeronave(
+                                    dados.callsign, dados.tipo,
+                                    spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel,
+                                    "120", "090", aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                                );
+                                novaAero.esteiraId = esteira.id;
+                                novaAero.fixoOrigem = fixoAlvo;
+                                novaAero.rotaOriginal = fixoAlvo;
+                                state.aeronaves.push(novaAero);
+                            }
+                        }
                     }
+                }
+            }
+        });
+
+        // 2. Prevenção de Deadlock: se o operador ligou o fluxo, mas o setor está vazio, injeta artificialmente um avião novo
+        if (!vivosNestaEsteira) {
+            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
+            if (rotaCompleta && rotaCompleta.length > 0) {
+                let margem = Math.random() * 2.0;
+                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, esteira.separacao + margem);
+                if (spawnPt) {
+                    let dados = gerarDadosAeronave();
+                    let novaAero = new Aeronave(
+                        dados.callsign, dados.tipo,
+                        spawnPt.lat, spawnPt.lon, spawnPt.rumo, 240,
+                        "120", "090", "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                    );
+                    novaAero.esteiraId = esteira.id;
+                    novaAero.fixoOrigem = fixoAlvo;
+                    novaAero.rotaOriginal = fixoAlvo;
+                    state.aeronaves.push(novaAero);
                 }
             }
         }
     });
-
-    // 3. Fallbacks de Emergência (Deadlock Prevention)
-    // Se o operador ligou o fluxo, mas o céu está vazio (ou o último avião da fila foi deletado/pousou),
-    // o código injeta artificialmente um avião novo para reiniciar a esteira.
-    if (ogtalAtivo && !vivosOgtal) {
-        let margem = Math.random() * 2.0;
-        let spawnPt = calcularPontoNaMilhagem(ROTA_OGTAL, "OGTAL", sepOgtal + margem);
-        if(spawnPt) {
-             let dados = gerarDadosAeronave();
-             let novaAero = new Aeronave(dados.callsign, dados.tipo, spawnPt.lat, spawnPt.lon, spawnPt.rumo, 240, "120", "090", "SBSP", "", ROTA_OGTAL, spawnPt.wpIndex);
-             novaAero.rotaOriginal = "OGTAL";
-             state.aeronaves.push(novaAero);
-        }
-    }
-    if (prumoAtivo && !vivosPrumo) {
-        let margem = Math.random() * 2.0;
-        let spawnPt = calcularPontoNaMilhagem(ROTA_PRUMO, "IROPU", sepPrumo + margem);
-        if(spawnPt) {
-             let dados = gerarDadosAeronave();
-             let novaAero = new Aeronave(dados.callsign, dados.tipo, spawnPt.lat, spawnPt.lon, spawnPt.rumo, 240, "120", "090", "SBSP", "", ROTA_PRUMO, spawnPt.wpIndex);
-             novaAero.rotaOriginal = "PRUMO";
-             state.aeronaves.push(novaAero);
-        }
-    }
 }

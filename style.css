@@ -67,43 +67,130 @@ canvas {
     box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
 }
 
-#painelFluxo h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: #00ffff;
-    text-align: center;
+.cabecalho-painel-fluxo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 10px;
 }
 
-/* Estrutura de cada linha de opção dentro do painel (ex: OGTAL 15 NM) */
+.cabecalho-painel-fluxo h3 {
+    margin: 0;
+    font-size: 13px;
+    color: #00ffff;
+    letter-spacing: 0.5px;
+}
+
+.btn-adicionar-fluxo {
+    background-color: #003333;
+    color: #00ffff;
+    border: 1px solid #00ffff;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-adicionar-fluxo:hover {
+    background-color: #006666;
+    color: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
+}
+
+/* Estrutura de cada esteira dinâmica */
+.linha-esteira {
+    margin-bottom: 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(100, 100, 100, 0.4);
+}
+
+.linha-esteira .chk-esteira-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.linha-esteira select.sel-fixo {
+    background-color: #111;
+    color: #ff9900;
+    border: 1px solid #666;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    max-width: 85px;
+}
+
+.linha-esteira select.sel-sep {
+    background-color: #111;
+    color: #00ffff;
+    border: 1px solid #666;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    max-width: 75px;
+}
+
+.btn-remover-esteira {
+    background: transparent;
+    color: #ff4444;
+    border: 1px solid #662222;
+    border-radius: 2px;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 1px 5px;
+    line-height: 1;
+}
+
+.btn-remover-esteira:hover {
+    background-color: #ff2222;
+    color: #fff;
+}
+
+/* Estrutura de cada linha genérica de opção dentro do painel */
 .linha-fluxo {
     margin-bottom: 8px;
     font-size: 13px;
-    display: flex;             /* Usa Flexbox para colocar o Checkbox e a Caixa de Seleção lado a lado na mesma linha horizontal */
-    align-items: center;       /* Centraliza os elementos verticalmente no eixo da linha */
-    justify-content: space-between; /* Empurra o texto para a esquerda e o "select" para a direita, distribuindo o espaço */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-/* A caixa de seleção onde escolhe as milhas (10NM, 15NM, 20NM) */
 .linha-fluxo select {
     background-color: #111;
     color: #00ffff;
     border: 1px solid #666;
     font-family: monospace;
     font-weight: bold;
-    margin-left: 10px;         /* Garante que não cola no texto da label */
+    margin-left: 10px;
     padding: 2px;
 }
 
-/* Área de texto clicável associada ao checkbox */
 .linha-fluxo label {
     cursor: pointer;
     display: flex;
     align-items: center;
 }
 
-/* A caixinha de marcar (checkbox) */
-.linha-fluxo input[type="checkbox"] {
-    margin-right: 8px;         /* Afasta o quadradinho do texto "OGTAL" */
+.linha-fluxo input[type="checkbox"],
+.linha-esteira input[type="checkbox"] {
+    margin-right: 4px;
     cursor: pointer;
 }
 

@@ -127,15 +127,163 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
         visitados.add(atual);
     }
 
-    // Se a rota termina em SP017 e o destino é SBSP, adiciona SBSP no final para permitir o pouso
+    // Conexão Terminal Genérica: Se a rota atingiu o último fixo de um procedimento
+    // de aproximação (sem conexão seguinte no grafo), conecta diretamente ao aeródromo de destino
     if (dest && !rotaGerada.includes(dest)) {
         const ult = rotaGerada[rotaGerada.length - 1];
-        if (ult === "SP017" && dest === "SBSP") {
+        if (!conexoes[ult]) {
             rotaGerada.push(dest);
         }
     }
 
     return rotaGerada;
+}
+
+/**
+ * Retorna uma lista consolidada e única de todos os nomes de fixos cadastrados em cartas de navegação (STAR e AIC).
+ * Utilizado para popular dinamicamente os seletores de fixo do Painel de Fluxo e do simulador.
+ * 
+ * @returns {Array<string>} Lista de nomes de fixos disponíveis
+ */
+export function obterTodosFixosProcedimentos() {
+    const fixosSet = new Set();
+    if (cartasNavegacao && typeof cartasNavegacao === 'object') {
+        Object.values(cartasNavegacao).forEach(categoria => {
+            Object.values(categoria).forEach(carta => {
+                if (carta.fixos && Array.isArray(carta.fixos)) {
+                    carta.fixos.forEach(f => {
+                        if (f && f.nome) fixosSet.add(f.nome);
+                    });
+                }
+            });
+        });
+    }
+    return Array.from(fixosSet);
+}
+
+/**
+ * Reconstrói a trajetória completa (precedente e posterior) que cruza qualquer fixo escolhido pelo usuário.
+ * Permite ao gerador de fluxo recuar dinamicamente no traçado da carta mesmo quando o fixo fica no meio dela.
+ * 
+ * @param {string} fixoAlvo - Fixo escolhido como referência para o fluxo
+ * @param {string} [dest="SBSP"] - Aeródromo de destino
+ * @returns {{ rotaCompleta: Array<string>, targetIndex: number }} Trajetória completa e índice do fixo na rota
+ */
+export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP") {
+    if (!fixoAlvo) return { rotaCompleta: [], targetIndex: -1 };
+
+    // 1. Rota posterior partindo do fixo até a pista de pouso
+    const posteriores = montarRotaAPartirDeFixo(fixoAlvo, dest);
+
+    // 2. Grafo inverso de conexões a partir das cartas de navegação
+    const conexoesInversas = {};
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao !== null) {
+        Object.values(cartasNavegacao).forEach(categoria => {
+            Object.values(categoria).forEach(carta => {
+                if (carta.linhas) {
+                    carta.linhas.forEach(linha => {
+                        for (let i = 1; i < linha.length; i++) {
+                            if (!conexoesInversas[linha[i]]) {
+                                conexoesInversas[linha[i]] = linha[i - 1];
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    // 3. Caminha regressivamente a partir do fixoAlvo para encontrar fixos anteriores da mesma carta
+    const precedentes = [];
+    let atual = fixoAlvo;
+    const visitados = new Set([fixoAlvo]);
+
+    while (conexoesInversas[atual] && !visitados.has(conexoesInversas[atual])) {
+        atual = conexoesInversas[atual];
+        precedentes.unshift(atual); // Insere no início para manter a ordem cronológica
+        visitados.add(atual);
+    }
+
+    // Remove duplicação do fixoAlvo entre precedentes e posteriores
+    const rotaCompleta = [...precedentes, ...posteriores];
+    const targetIndex = precedentes.length;
+
+    return { rotaCompleta, targetIndex };
+}
+
+/**
+ * Determina o nível de voo inicial de nascimento (flSpawn) e o nível autorizado de descida (flAutorizado)
+ * para uma aeronave que nasce num fixo de procedimento ou ao longo de sua rota.
+ * Se o fixo possuir restrição de altitude, a aeronave nasce no nível dessa restrição
+ * e recebe autorização para descer até a próxima restrição de nível inferior da carta.
+ * 
+ * Exemplo: Em OGTAL (restrição FL 120), nasce no FL 120 e autorizado FL 090 (restrição de SP099).
+ * 
+ * @param {string} fixoAlvo - Nome do fixo de referência do fluxo (ex: "OGTAL", "PRUMO", "KOMGU")
+ * @param {Array<string>} [rotaCompleta=[]] - Lista sequencial de fixos da rota
+ * @returns {{ nivAtual: string, nivAutorizado: string }} Níveis formatados em 3 dígitos (ex: "120", "090")
+ */
+export function obterNiveisSpawn(fixoAlvo, rotaCompleta = []) {
+    let flSpawn = null;
+
+    // 1. Verifica se o fixo alvo possui restrição direta
+    if (fixoAlvo && restricoesFixos[fixoAlvo] && restricoesFixos[fixoAlvo].fl !== undefined) {
+        flSpawn = restricoesFixos[fixoAlvo].fl;
+    }
+
+    const idxAlvo = Array.isArray(rotaCompleta) ? rotaCompleta.indexOf(fixoAlvo) : -1;
+
+    // 2. Se o fixo alvo não tiver restrição, busca na rota anterior ou posterior
+    if (flSpawn === null && idxAlvo >= 0) {
+        // Procura para trás na rota
+        for (let i = idxAlvo - 1; i >= 0; i--) {
+            const rest = restricoesFixos[rotaCompleta[i]];
+            if (rest && rest.fl !== undefined) {
+                flSpawn = rest.fl;
+                break;
+            }
+        }
+        // Se ainda não achou, procura para frente
+        if (flSpawn === null) {
+            for (let i = idxAlvo; i < rotaCompleta.length; i++) {
+                const rest = restricoesFixos[rotaCompleta[i]];
+                if (rest && rest.fl !== undefined) {
+                    flSpawn = rest.fl;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Fallback padrão se não houver nenhuma restrição na carta
+    if (flSpawn === null) {
+        flSpawn = 120;
+    }
+
+    // 3. Determina o próximo nível autorizado para descida ao longo da rota (primeira restrição inferior a flSpawn)
+    let flAutorizado = null;
+    if (Array.isArray(rotaCompleta) && rotaCompleta.length > 0) {
+        const startIdx = idxAlvo >= 0 ? idxAlvo + 1 : 0;
+        for (let i = startIdx; i < rotaCompleta.length; i++) {
+            const rest = restricoesFixos[rotaCompleta[i]];
+            if (rest && rest.fl !== undefined && rest.fl < flSpawn) {
+                flAutorizado = rest.fl;
+                break;
+            }
+        }
+    }
+
+    // Se não encontrou nenhuma restrição inferior subsequente, mantém o nível de spawn
+    if (flAutorizado === null) {
+        flAutorizado = flSpawn;
+    }
+
+    const formatarFL = (fl) => String(Math.round(fl)).padStart(3, '0');
+
+    return {
+        nivAtual: formatarFL(flSpawn),
+        nivAutorizado: formatarFL(flAutorizado)
+    };
 }
 
 /**

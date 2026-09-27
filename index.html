@@ -7,23 +7,11 @@
 </head>
 <body>
     <div id="painelFluxo">
-        <h3>CONTROLE DE FLUXO</h3>
-        <div class="linha-fluxo">
-            <label><input type="checkbox" id="chkOgtal" checked> OGTAL (SUL)</label>
-            <select id="sepOgtal">
-                <option value="10">10 NM</option>
-                <option value="15" selected>15 NM</option>
-                <option value="20">20 NM</option>
-            </select>
+        <div class="cabecalho-painel-fluxo">
+            <h3>CONTROLE DE FLUXO</h3>
+            <button id="btnAdicionarFluxo" class="btn-adicionar-fluxo" title="Adicionar nova esteira de tráfego">+ FLUXO</button>
         </div>
-        <div class="linha-fluxo">
-            <label><input type="checkbox" id="chkPrumo" checked> IROPU (NORTE)</label>
-            <select id="sepPrumo">
-                <option value="10">10 NM</option>
-                <option value="15" selected>15 NM</option>
-                <option value="20">20 NM</option>
-            </select>
-        </div>
+        <div id="containerEsteiras"></div>
         <div class="divisor-painel"></div>
         <div class="secao-velocidade">
             <div class="linha-fluxo">
