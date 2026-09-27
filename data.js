@@ -13,9 +13,9 @@ export const cartasNavegacao = {
             cor: '#ff9900',
             fixos: [
                 { nome: "OGTAL", lat: dmsParaDecimal(23, 51, 23.29, 'S'), lon: dmsParaDecimal(46, 37, 33.47, 'W'), restricao: { fl: 120, tipo: "BELOW" } },
-                { nome: "SP099", lat: dmsParaDecimal(23, 46, 36.15, 'S'), lon: dmsParaDecimal(46, 40, 52.60, 'W'), restricao: { fl:  90, tipo: "AT", vel: 250, tipoVel: "BELOW" } },
-                { nome: "SP101", lat: dmsParaDecimal(23, 43, 13.30, 'S'), lon: dmsParaDecimal(46, 43, 13.76, 'W'), restricao: { fl:  90, tipo: "AT", vel: 230, tipoVel: "AT" } },
-                { nome: "SP032", lat: dmsParaDecimal(23, 38, 18.92, 'S'), lon: dmsParaDecimal(46, 46, 37.85, 'W'), restricao: { fl:  70, tipo: "AT", vel: 210, tipoVel: "AT" } }
+                { nome: "SP099", lat: dmsParaDecimal(23, 46, 36.15, 'S'), lon: dmsParaDecimal(46, 40, 52.60, 'W'), restricao: { fl:  90, tipo: "AT" } },
+                { nome: "SP101", lat: dmsParaDecimal(23, 43, 13.30, 'S'), lon: dmsParaDecimal(46, 43, 13.76, 'W'), restricao: { fl:  90, tipo: "AT" } },
+                { nome: "SP032", lat: dmsParaDecimal(23, 38, 18.92, 'S'), lon: dmsParaDecimal(46, 46, 37.85, 'W'), restricao: { fl:  70, tipo: "AT" } }
             ],
             // Linhas desenhadas na cor desta STAR (inclui a conexão SP032 -> KOMGU na cor da STAR)
             linhas: [
@@ -26,8 +26,8 @@ export const cartasNavegacao = {
             nome: "ORESU 1A",
             cor: '#ff9900',
             fixos: [
-                { nome: "PRUMO", lat: dmsParaDecimal(23, 15, 10.10, 'S'), lon: dmsParaDecimal(47,  6, 19.99, 'W'), restricao: { fl: 120, tipo: "ABOVE", vel: 250, tipoVel: "BELOW" } },
-                { nome: "IROPU", lat: dmsParaDecimal(23, 25, 31.05, 'S'), lon: dmsParaDecimal(47,  4,  3.91, 'W'), restricao: { fl:  90, tipo: "ABOVE", vel: 230, tipoVel: "AT" } }
+                { nome: "PRUMO", lat: dmsParaDecimal(23, 15, 10.10, 'S'), lon: dmsParaDecimal(47,  6, 19.99, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
+                { nome: "IROPU", lat: dmsParaDecimal(23, 25, 31.05, 'S'), lon: dmsParaDecimal(47,  4,  3.91, 'W'), restricao: { fl:  90, tipo: "ABOVE" } }
             ],
             // Linhas desenhadas na cor desta STAR (inclui a conexão IROPU -> LUVDI na cor da STAR)
             linhas: [
@@ -40,12 +40,12 @@ export const cartasNavegacao = {
             nome: "RNP Y RWY 17R",
             cor: '#00ff00',
             fixos: [
-                { nome: "LUVDI", lat: dmsParaDecimal(23, 29, 35.90, 'S'), lon: dmsParaDecimal(46, 48, 21.77, 'W'), restricao: { fl:  55, tipo: "ABOVE", vel: 200, tipoVel: "AT" } },
-                { nome: "KOMGU", lat: dmsParaDecimal(23, 33, 54.89, 'S'), lon: dmsParaDecimal(46, 49, 40.64, 'W'), restricao: { fl:  55, tipo: "AT", vel: 200, tipoVel: "AT" } },
-                { nome: "GERSU", lat: dmsParaDecimal(23, 30, 41.00, 'S'), lon: dmsParaDecimal(46, 44, 10.10, 'W'), restricao: { fl:  47, tipo: "ABOVE", vel: 180, tipoVel: "AT" } },
-                { nome: "URUTA", lat: dmsParaDecimal(23, 33, 28.57, 'S'), lon: dmsParaDecimal(46, 42, 14.37, 'W'), restricao: { fl:  40, tipo: "AT", vel: 160, tipoVel: "BELOW" } },
-                { nome: "SP139", lat: dmsParaDecimal(23, 34, 59.83, 'S'), lon: dmsParaDecimal(46, 41, 11.34, 'W'), restricao: { fl:  36, tipo: "AT", vel: 150, tipoVel: "BELOW" } },
-                { nome: "SP017", lat: dmsParaDecimal(23, 36, 15.89, 'S'), lon: dmsParaDecimal(46, 40, 18.81, 'W'), restricao: { fl:  32, tipo: "AT", vel: 135, tipoVel: "BELOW" } }
+                { nome: "LUVDI", lat: dmsParaDecimal(23, 29, 35.90, 'S'), lon: dmsParaDecimal(46, 48, 21.77, 'W'), restricao: { fl:  55, tipo: "ABOVE" } },
+                { nome: "KOMGU", lat: dmsParaDecimal(23, 33, 54.89, 'S'), lon: dmsParaDecimal(46, 49, 40.64, 'W'), restricao: { fl:  55, tipo: "AT" } },
+                { nome: "GERSU", lat: dmsParaDecimal(23, 30, 41.00, 'S'), lon: dmsParaDecimal(46, 44, 10.10, 'W'), restricao: { fl:  47, tipo: "ABOVE" } },
+                { nome: "URUTA", lat: dmsParaDecimal(23, 33, 28.57, 'S'), lon: dmsParaDecimal(46, 42, 14.37, 'W'), restricao: { fl:  40, tipo: "AT" } },
+                { nome: "SP139", lat: dmsParaDecimal(23, 34, 59.83, 'S'), lon: dmsParaDecimal(46, 41, 11.34, 'W'), restricao: { fl:  36, tipo: "AT" } },
+                { nome: "SP017", lat: dmsParaDecimal(23, 36, 15.89, 'S'), lon: dmsParaDecimal(46, 40, 18.81, 'W'), restricao: { fl:  32, tipo: "AT" } }
             ],
             // Duas pernas confluindo em GERSU (LUVDI e KOMGU NÃO se conectam diretamente entre si)
             linhas: [
@@ -63,11 +63,11 @@ export const cartasNavegacao = {
 /**
  * Agregação dinâmica para compatibilidade total com o motor do simulador:
  * - fixosNavegacao: lista com todos os fixos, suas coordenadas e cores das cartas
- * - restricoesFixos: dicionário de restrições de nível de voo e velocidade
+ * - restricoesFixos: dicionário de restrições de nível de voo e altitude
  */
 export const fixosNavegacao = [];
 export const restricoesFixos = {
-    "SBSP": { fl: 26, tipo: "AT", vel: 130, tipoVel: "AT" }
+    "SBSP": { fl: 26, tipo: "AT" }
 };
 
 Object.values(cartasNavegacao).forEach(categoria => {
@@ -313,23 +313,262 @@ export const estruturaEspacoAereo = {
 };
 
 
-export const perfisAeronaves = {
-    "A320":   { taxaAcel: 1.8, taxaDesacel: 1.0 },
-    "A20N":   { taxaAcel: 2.0, taxaDesacel: 1.0 }, 
-    "B738":   { taxaAcel: 1.8, taxaDesacel: 1.0 },
-    "E195":   { taxaAcel: 2.0, taxaDesacel: 1.2 },
-    "E295":   { taxaAcel: 2.2, taxaDesacel: 1.4 },
-    "BE40":   { taxaAcel: 2.0, taxaDesacel: 1.3 }, 
-    "C25A":   { taxaAcel: 1.9, taxaDesacel: 1.1 }, 
-    "E50P":   { taxaAcel: 1.8, taxaDesacel: 1.0 }, 
-    "E55P":   { taxaAcel: 1.8, taxaDesacel: 1.2 }, 
-    "B350":   { taxaAcel: 1.5, taxaDesacel: 2.8 },
-    "BE20":   { taxaAcel: 1.4, taxaDesacel: 2.8 },
-    "BE9L":   { taxaAcel: 1.2, taxaDesacel: 2.6 },
-    "C208":   { taxaAcel: 1.0, taxaDesacel: 2.3 },
-    "C172-L": { taxaAcel: 0.8, taxaDesacel: 2.3 },
-    "DEFAULT":{ taxaAcel: 2.0, taxaDesacel: 1.5 }
+/**
+ * Perfil de Referência de Velocidade por Distância à Cabeceira (Distance-To-Go / DME).
+ * Define faixas de velocidade de aproximação realistas, dinâmicas e contínuas (Seção 3 da Especificação ATC).
+ */
+export const APPROACH_SPEED_PROFILE = [
+    { minDtg: 25.0, maxDtg: 999.0, minSpeed: 250, maxSpeed: 280, desc: "> 25 NM: Transição TMA / Aproximação Inicial" },
+    { minDtg: 15.0, maxDtg: 25.0,  minSpeed: 210, maxSpeed: 250, desc: "25-15 NM: Desaceleração Intermediária" },
+    { minDtg: 10.0, maxDtg: 15.0,  minSpeed: 180, maxSpeed: 210, desc: "15-10 NM: Aproximação Intermediária / Sequenciamento" },
+    { minDtg: 4.0,  maxDtg: 10.0,  minSpeed: 160, maxSpeed: 180, desc: "10-4 NM: Final Approach / Interceptação Localizer" },
+    { minDtg: 0.0,  maxDtg: 4.0,   minSpeed: 130, maxSpeed: 140, desc: "< 4 NM: Velocidade de Aproximação Final (Vapp)" }
+];
+
+/**
+ * Performance Individual das Aeronaves (Seção 4 da Especificação ATC).
+ * Configuração paramétrica de envelope e cinemática individual para cada tipo ICAO:
+ * - maxSpeedTMA: velocidade máxima de operação na TMA (> 25 NM)
+ * - initialAppSpeed: velocidade típica entre 25 e 15 NM
+ * - intermediateAppSpeed: velocidade entre 15 e 10 NM
+ * - finalAppSpeed: velocidade entre 10 e 4 NM
+ * - approachSpeed: Vapp (velocidade final de toque na pista < 4 NM)
+ * - minApproachSpeed: Vls / velocidade mínima segura de aproximação
+ * - taxaAcel / accelerationRate: taxa nominal de aceleração (kt/s)
+ * - taxaDesacel / decelerationRate: taxa nominal de desaceleração em voo nivelado IDLE (kt/s)
+ */
+export const AIRCRAFT_PERFORMANCE = {
+    // Jatos Comerciais Médios / Narrowbody
+    "A320": {
+        maxSpeedTMA: 270,
+        initialAppSpeed: 250,
+        intermediateAppSpeed: 205,
+        finalAppSpeed: 165,
+        approachSpeed: 136,
+        minApproachSpeed: 128,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.0,
+        decelerationRate: 1.0,
+        accelerationRate: 1.8
+    },
+    "A20N": {
+        maxSpeedTMA: 270,
+        initialAppSpeed: 250,
+        intermediateAppSpeed: 205,
+        finalAppSpeed: 165,
+        approachSpeed: 136,
+        minApproachSpeed: 128,
+        taxaAcel: 2.0,
+        taxaDesacel: 1.0,
+        decelerationRate: 1.0,
+        accelerationRate: 2.0
+    },
+    "B738": {
+        maxSpeedTMA: 280,
+        initialAppSpeed: 250,
+        intermediateAppSpeed: 210,
+        finalAppSpeed: 170,
+        approachSpeed: 142,
+        minApproachSpeed: 132,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.0,
+        decelerationRate: 1.0,
+        accelerationRate: 1.8
+    },
+    "B737": {
+        maxSpeedTMA: 280,
+        initialAppSpeed: 250,
+        intermediateAppSpeed: 210,
+        finalAppSpeed: 170,
+        approachSpeed: 140,
+        minApproachSpeed: 130,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.0,
+        decelerationRate: 1.0,
+        accelerationRate: 1.8
+    },
+    "E190": {
+        maxSpeedTMA: 260,
+        initialAppSpeed: 240,
+        intermediateAppSpeed: 200,
+        finalAppSpeed: 160,
+        approachSpeed: 132,
+        minApproachSpeed: 122,
+        taxaAcel: 2.0,
+        taxaDesacel: 1.2,
+        decelerationRate: 1.2,
+        accelerationRate: 2.0
+    },
+    "E195": {
+        maxSpeedTMA: 260,
+        initialAppSpeed: 240,
+        intermediateAppSpeed: 200,
+        finalAppSpeed: 160,
+        approachSpeed: 134,
+        minApproachSpeed: 124,
+        taxaAcel: 2.0,
+        taxaDesacel: 1.2,
+        decelerationRate: 1.2,
+        accelerationRate: 2.0
+    },
+    "E295": {
+        maxSpeedTMA: 265,
+        initialAppSpeed: 245,
+        intermediateAppSpeed: 200,
+        finalAppSpeed: 160,
+        approachSpeed: 134,
+        minApproachSpeed: 124,
+        taxaAcel: 2.2,
+        taxaDesacel: 1.4,
+        decelerationRate: 1.4,
+        accelerationRate: 2.2
+    },
+
+    // Turboélices Regionais
+    "ATR72": {
+        maxSpeedTMA: 230,
+        initialAppSpeed: 210,
+        intermediateAppSpeed: 180,
+        finalAppSpeed: 150,
+        approachSpeed: 118,
+        minApproachSpeed: 110,
+        taxaAcel: 1.4,
+        taxaDesacel: 1.8,
+        decelerationRate: 1.8,
+        accelerationRate: 1.4
+    },
+
+    // Jatos Executivos (GA Jets)
+    "BE40": {
+        maxSpeedTMA: 260,
+        initialAppSpeed: 240,
+        intermediateAppSpeed: 200,
+        finalAppSpeed: 160,
+        approachSpeed: 125,
+        minApproachSpeed: 115,
+        taxaAcel: 2.0,
+        taxaDesacel: 1.3,
+        decelerationRate: 1.3,
+        accelerationRate: 2.0
+    },
+    "C25A": {
+        maxSpeedTMA: 250,
+        initialAppSpeed: 230,
+        intermediateAppSpeed: 195,
+        finalAppSpeed: 155,
+        approachSpeed: 120,
+        minApproachSpeed: 112,
+        taxaAcel: 1.9,
+        taxaDesacel: 1.1,
+        decelerationRate: 1.1,
+        accelerationRate: 1.9
+    },
+    "E50P": {
+        maxSpeedTMA: 250,
+        initialAppSpeed: 230,
+        intermediateAppSpeed: 195,
+        finalAppSpeed: 155,
+        approachSpeed: 122,
+        minApproachSpeed: 114,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.0,
+        decelerationRate: 1.0,
+        accelerationRate: 1.8
+    },
+    "E55P": {
+        maxSpeedTMA: 255,
+        initialAppSpeed: 235,
+        intermediateAppSpeed: 195,
+        finalAppSpeed: 155,
+        approachSpeed: 122,
+        minApproachSpeed: 114,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.2,
+        decelerationRate: 1.2,
+        accelerationRate: 1.8
+    },
+
+    // Turboélices Executivos / Utilitários
+    "B350": {
+        maxSpeedTMA: 230,
+        initialAppSpeed: 200,
+        intermediateAppSpeed: 175,
+        finalAppSpeed: 145,
+        approachSpeed: 118,
+        minApproachSpeed: 108,
+        taxaAcel: 1.5,
+        taxaDesacel: 2.5,
+        decelerationRate: 2.5,
+        accelerationRate: 1.5
+    },
+    "BE20": {
+        maxSpeedTMA: 220,
+        initialAppSpeed: 195,
+        intermediateAppSpeed: 170,
+        finalAppSpeed: 145,
+        approachSpeed: 115,
+        minApproachSpeed: 105,
+        taxaAcel: 1.4,
+        taxaDesacel: 2.5,
+        decelerationRate: 2.5,
+        accelerationRate: 1.4
+    },
+    "BE9L": {
+        maxSpeedTMA: 210,
+        initialAppSpeed: 190,
+        intermediateAppSpeed: 165,
+        finalAppSpeed: 140,
+        approachSpeed: 112,
+        minApproachSpeed: 102,
+        taxaAcel: 1.2,
+        taxaDesacel: 2.4,
+        decelerationRate: 2.4,
+        accelerationRate: 1.2
+    },
+    "C208": {
+        maxSpeedTMA: 165,
+        initialAppSpeed: 150,
+        intermediateAppSpeed: 140,
+        finalAppSpeed: 120,
+        approachSpeed: 95,
+        minApproachSpeed: 85,
+        taxaAcel: 1.0,
+        taxaDesacel: 2.2,
+        decelerationRate: 2.2,
+        accelerationRate: 1.0
+    },
+
+    // Monomotores / Aviação Leve
+    "C172-L": {
+        maxSpeedTMA: 120,
+        initialAppSpeed: 110,
+        intermediateAppSpeed: 100,
+        finalAppSpeed: 85,
+        approachSpeed: 70,
+        minApproachSpeed: 60,
+        taxaAcel: 0.8,
+        taxaDesacel: 2.0,
+        decelerationRate: 2.0,
+        accelerationRate: 0.8
+    },
+
+    // Perfil Padrão Genérico
+    "DEFAULT": {
+        maxSpeedTMA: 260,
+        initialAppSpeed: 240,
+        intermediateAppSpeed: 200,
+        finalAppSpeed: 160,
+        approachSpeed: 135,
+        minApproachSpeed: 125,
+        taxaAcel: 1.8,
+        taxaDesacel: 1.2,
+        decelerationRate: 1.2,
+        accelerationRate: 1.8
+    }
 };
+
+// Alias de retrocompatibilidade
+export const perfisAeronaves = AIRCRAFT_PERFORMANCE;
 
 export const ROTA_PRUMO = montarRotaAPartirDeFixo("PRUMO", "SBSP");
 export const ROTA_OGTAL = montarRotaAPartirDeFixo("OGTAL", "SBSP");

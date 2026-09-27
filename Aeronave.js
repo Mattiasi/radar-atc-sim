@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { perfisAeronaves, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao } from './data.js';
+import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos } from './data.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 
@@ -10,7 +10,7 @@ import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
  * Funciona como uma Máquina de Estados Finitos (FSM) com cinemática contínua:
  * - LNAV (Lateral Navigation): Segue sequências de waypoints (STAR) com antecipação de curvas (Fly-By).
  * - VNAV (Vertical Navigation): Calcula Top of Descent (TOD), perfis de descida de 3° e respeita restrições de cartas.
- * - Controle de Velocidade: Lookahead preditivo para desaceleração suave antes de fixos restritivos.
+ * - Controle Dinâmico de Velocidade: Gestão baseada em Distance-To-Go / DME, performance individual, tráfego precedente e instruções ATC.
  * - Simulação Humana (Delay Buffer): Comandos do controlador ATC entram numa fila de retardo aleatório (2 a 4 segundos)
  *   para simular o tempo de reação do piloto antes de iniciar curvas, mudanças de velocidade ou altitude.
  */
@@ -33,10 +33,10 @@ import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
  * @param {number} dt - Delta time em segundos decorrido desde o último ciclo
  */
 export function calcularTaxaDesacel(ac) {
-    const perf = (ac.tipo && perfisAeronaves[ac.tipo]) 
-        ? perfisAeronaves[ac.tipo] 
-        : (perfisAeronaves["DEFAULT"] || { taxaDesacel: 1.2 });
-    const baseDesacel = (ac.taxaDesacel !== undefined) ? ac.taxaDesacel : perf.taxaDesacel;
+    const perf = (ac.tipo && (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo])) 
+        ? (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo]) 
+        : (AIRCRAFT_PERFORMANCE["DEFAULT"] || { taxaDesacel: 1.2 });
+    const baseDesacel = (ac.taxaDesacel !== undefined) ? ac.taxaDesacel : (perf.taxaDesacel || perf.decelerationRate || 1.2);
     const estaDescendo = ac.verticalSpeed && ac.verticalSpeed < -200; // ft/min
 
     if (estaDescendo) {
@@ -49,10 +49,10 @@ export function calcularTaxaDesacel(ac) {
 }
 
 export function calcularTaxaAcel(ac) {
-    const perf = (ac.tipo && perfisAeronaves[ac.tipo]) 
-        ? perfisAeronaves[ac.tipo] 
-        : (perfisAeronaves["DEFAULT"] || { taxaAcel: 2.0 });
-    const baseAcel = (ac.taxaAcel !== undefined) ? ac.taxaAcel : perf.taxaAcel;
+    const perf = (ac.tipo && (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo])) 
+        ? (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo]) 
+        : (AIRCRAFT_PERFORMANCE["DEFAULT"] || { taxaAcel: 2.0 });
+    const baseAcel = (ac.taxaAcel !== undefined) ? ac.taxaAcel : (perf.taxaAcel || perf.accelerationRate || 2.0);
 
     if (ac.verticalSpeed && ac.verticalSpeed < -200) {
         return baseAcel * 1.15; // Gravidade auxiliando aceleração na descida
@@ -129,10 +129,19 @@ export class Aeronave {
         }
         
         // --- 2. PERFIL DE PERFORMANCE CINEMÁTICA ---
-        // Coeficientes de aceleração e desaceleração (em nós por segundo ao quadrado)
-        const perf = perfisAeronaves[this.tipo] || perfisAeronaves["DEFAULT"];
-        this.taxaAcel = perf.taxaAcel;       // Aceleração máxima (kt/s²)
-        this.taxaDesacel = perf.taxaDesacel; // Desaceleração máxima (kt/s²)
+        // Coeficientes de aceleração, desaceleração e envelope de aproximação individual
+        const perf = AIRCRAFT_PERFORMANCE[this.tipo] || AIRCRAFT_PERFORMANCE["DEFAULT"] || perfisAeronaves[this.tipo] || perfisAeronaves["DEFAULT"];
+        this.perf = perf;
+        this.taxaAcel = perf.taxaAcel || perf.accelerationRate || 1.8;       // Aceleração máxima (kt/s²)
+        this.taxaDesacel = perf.taxaDesacel || perf.decelerationRate || 1.2; // Desaceleração máxima (kt/s²)
+        this.maxSpeedTMA = perf.maxSpeedTMA || 260;                          // Teto na TMA (> 25 NM)
+        this.minApproachSpeed = perf.minApproachSpeed || 125;                // Vls / velocidade mínima segura
+        this.approachSpeed = perf.approachSpeed || 135;                      // Vapp / velocidade de toque
+        this.initialAppSpeed = perf.initialAppSpeed || 240;                  // Velocidade entre 25-15 NM
+        this.intermediateAppSpeed = perf.intermediateAppSpeed || 200;        // Velocidade entre 15-10 NM
+        this.finalAppSpeed = perf.finalAppSpeed || 160;                      // Velocidade entre 10-4 NM
+        this.dtg = 99;                                                       // Distance-To-Go atualizado dinamicamente em NM
+        this.sugestaoVel = null;                                             // Sugestão de velocidade para apoio ao controlador
         
         // --- 3. NAVEGAÇÃO LATERAL (PROA / HEADING) ---
         this.proa = proa;                        // Proa magnética atual da aeronave (0-359°)
@@ -223,6 +232,293 @@ export class Aeronave {
     set targetSpeed(val) {
         this.velComando = val;
         this.velDestino = val;
+    }
+
+    /**
+     * Calcula dinamicamente a distância restante estimada até a cabeceira da pista (Distance-To-Go / DME).
+     * Funciona com precisão geométrica e preditiva tanto na rota publicada (STAR)
+     * quanto durante vetoração radar (downwind, base, interceptação de final ou direta).
+     * Atende rigorosamente às Seções 2, 8 e 9 da Especificação ATC.
+     * 
+     * @returns {number} Distância restante estimada até o toque em Milhas Náuticas (NM).
+     */
+    calcularDistanceToGo() {
+        const destNome = this.dest || "SBSP";
+        const ptThreshold = state.fixos[destNome] || state.fixos["SBSP"];
+        if (!ptThreshold) return 20.0;
+
+        // Distância euclidiana em linha reta até o limiar
+        const infoDireta = calcularRumoDistancia(this, ptThreshold);
+        const distDireta = infoDireta.distanciaNM;
+
+        // Rumo magnético da pista de pouso (ex: 170° para SBSP 17R)
+        let rumoPista = 170;
+        if (Array.isArray(aerodromos)) {
+            const aeroData = aerodromos.find(a => a.nome === destNome);
+            if (aeroData && aeroData.rumoPista !== undefined) {
+                rumoPista = aeroData.rumoPista;
+            }
+        }
+
+        // =====================================================================
+        // CASO 1: NAVEGAÇÃO LATERAL EM ROTA PUBLICADA (LNAV ATIVO)
+        // =====================================================================
+        if (this.modoLNAV && this.rota && this.wpIndex < this.rota.length) {
+            let wpAtivoNome = (this.wpOffRoute !== null) ? this.wpOffRoute : this.rota[this.wpIndex];
+            let distRota = 0;
+            let wpAtivoCoords = state.fixos[wpAtivoNome];
+
+            if (wpAtivoCoords) {
+                distRota += calcularRumoDistancia(this, wpAtivoCoords).distanciaNM;
+
+                // Soma as pernas subsequentes da STAR
+                const idxInicio = (this.wpOffRoute !== null) ? this.wpIndex : this.wpIndex;
+                for (let i = idxInicio; i < this.rota.length - 1; i++) {
+                    let p1 = state.fixos[this.rota[i]];
+                    let p2 = state.fixos[this.rota[i + 1]];
+                    if (p1 && p2) {
+                        distRota += calcularRumoDistancia(p1, p2).distanciaNM;
+                    }
+                }
+
+                // Se a STAR não terminar exatamente na cabeceira, soma do último fixo até ela
+                const ultimoFixo = this.rota[this.rota.length - 1];
+                if (ultimoFixo !== destNome) {
+                    const ultCoords = state.fixos[ultimoFixo];
+                    if (ultCoords) {
+                        distRota += calcularRumoDistancia(ultCoords, ptThreshold).distanciaNM;
+                    }
+                }
+
+                return Math.max(distDireta, distRota);
+            }
+        }
+
+        // =====================================================================
+        // CASO 2: VETORAÇÃO RADAR / FORA DA ROTA PUBLICADA (OFF-ROUTE)
+        // =====================================================================
+        // Geometria analítica no plano cartesiano magnético do radar:
+        // O eixo de aproximação estende-se para trás da cabeceira no rumo recíproco (rumoPista + 180°)
+        const angReciprocoRad = ((rumoPista + 180) % 360) * (Math.PI / 180);
+        const uAppX = Math.sin(angReciprocoRad);
+        const uAppY = Math.cos(angReciprocoRad);
+
+        // Vetor do limiar da pista até a posição atual da aeronave em Milhas Náuticas
+        const dLat = (this.deltaLat - ptThreshold.deltaLat) * 60;
+        const dLon = (this.deltaLon - ptThreshold.deltaLon) * correcaoLon * 60;
+
+        // dAlong: distância longitudinal ao longo do prolongamento do eixo (+ para o setor de aproximação)
+        const dAlong = dLon * uAppX + dLat * uAppY;
+        // dCross: afastamento lateral ortogonal em relação ao eixo da pista
+        const dCross = Math.abs(dLon * (-uAppY) + dLat * uAppX);
+
+        // Componente da proa da aeronave ao longo do eixo de aproximação para a pista:
+        // vAlong > 0 indica voo em direção à final/pouso; vAlong < 0 indica afastamento (ex: downwind, abertura de base)
+        const angProaRad = (this.proa - rumoPista) * (Math.PI / 180);
+        const vAlong = Math.cos(angProaRad);
+
+        let dtgEstimado = distDireta;
+
+        if (dAlong > 0 && vAlong > 0.3) {
+            // Aeronave interceptando ou alinhada com a reta final
+            dtgEstimado = dAlong + 1.25 * dCross;
+        } else {
+            // Aeronave em perna do vento (downwind), proa de afastamento ou vetoração indireta:
+            // A trajetória restante prevista exige voar até o ponto de curva base (mínimo 10-12 NM na final),
+            // percorrer o braço da base lateral e depois a final até o toque (Seção 9).
+            const dBaseAlong = Math.max(dAlong, 11.0);
+            const distAteBase = Math.abs(dBaseAlong - dAlong);
+            const distPernaBase = dCross * 1.25;
+            const distFinal = dBaseAlong;
+            const allowanceCurvas = 2.5; // NM para manobra e transição de arcos de curva
+
+            dtgEstimado = distAteBase + distPernaBase + distFinal + allowanceCurvas;
+        }
+
+        return Math.max(distDireta, dtgEstimado);
+    }
+
+    /**
+     * Calcula dinamicamente a velocidade-alvo da aeronave considerando:
+     * - Distance-To-Go / DME calculado em tempo real
+     * - Performance individual da aeronave (AIRCRAFT_PERFORMANCE)
+     * - Desaceleração gradual e antecipação cinemática (Lookahead)
+     * - Tráfego precedente e taxa de fechamento sobre o solo (Ground Speed)
+     * - Prioridade de instruções ATC manuais e retomada automática
+     * - Acionamento automático de Spoilers/Speedbrakes sob descida e frenagem
+     * 
+     * Atende às Seções 1 a 23 da Especificação ATC.
+     * @returns {number} Velocidade-alvo em nós (KIAS).
+     */
+    calcularVelocidadeAlvoDinamica() {
+        const perf = this.perf || AIRCRAFT_PERFORMANCE[this.tipo] || AIRCRAFT_PERFORMANCE["DEFAULT"];
+        const dtg = this.calcularDistanceToGo();
+        this.dtg = dtg;
+
+        const maxSpd = perf.maxSpeedTMA || 260;
+        const minSpd = perf.minApproachSpeed || 125;
+        const vApp = perf.approachSpeed || 135;
+
+        // ---------------------------------------------------------------------
+        // 1. PRIORIDADE MÁXIMA: INSTRUÇÃO EXPLÍCITA DO CONTROLADOR (ATC)
+        // ---------------------------------------------------------------------
+        // Se o ATC fixou uma velocidade manual (ex: "21K"), ela tem prioridade total (Seção 13).
+        // Exceção de segurança operacional: ao entrar na curta final (< 4 NM), o piloto
+        // virtual deve configurar e reduzir suavemente para Vapp para pousar (Seções 14 e 19).
+        if (this.velManual) {
+            if (dtg >= 4.0) {
+                const velClamp = Math.max(minSpd, Math.min(maxSpd, this.velComando));
+                this.sugestaoVel = velClamp;
+                return velClamp;
+            } else {
+                // Curta final (< 4 NM): transição suave para Vapp mesmo com velocidade manual anterior
+                const fatorFinal = Math.max(0, Math.min(1, (dtg - 1.0) / 3.0));
+                const velTeto = Math.min(this.velComando, perf.finalAppSpeed || 170);
+                const velTrans = vApp + fatorFinal * (velTeto - vApp);
+                const velClamp = Math.max(minSpd, Math.min(maxSpd, Math.round(velTrans)));
+                this.sugestaoVel = velClamp;
+                return velClamp;
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // 2. PERFIL DE VELOCIDADE AUTOMÁTICO BASEADO EM DISTANCE-TO-GO
+        // ---------------------------------------------------------------------
+        // Perfil contínuo interpolado proporcionalmente à performance da aeronave (Seções 3, 5 e 6).
+        // Evita degraus bruscos: desaceleração progressiva a cada milha percorrida.
+        let vBase = maxSpd;
+
+        const v25 = perf.initialAppSpeed || 250;
+        const v15 = perf.intermediateAppSpeed || 205;
+        const v10 = perf.finalAppSpeed || 165;
+        const v4 = Math.min(v10, Math.max(vApp + 25, 160));
+
+        if (dtg > 35.0) {
+            vBase = maxSpd;
+        } else if (dtg > 25.0) {
+            // Entre 35 NM e 25 NM: transição de maxSpeedTMA para initialAppSpeed
+            const t = (dtg - 25.0) / 10.0;
+            vBase = v25 + t * (maxSpd - v25);
+        } else if (dtg > 15.0) {
+            // Entre 25 NM e 15 NM: desaceleração de initialAppSpeed para intermediateAppSpeed (~210 kt)
+            const t = (dtg - 15.0) / 10.0;
+            vBase = v15 + t * (v25 - v15);
+        } else if (dtg > 10.0) {
+            // Entre 15 NM e 10 NM: desaceleração de ~210 kt para finalAppSpeed (~180-165 kt)
+            const t = (dtg - 10.0) / 5.0;
+            vBase = v10 + t * (v15 - v10);
+        } else if (dtg > 4.0) {
+            // Entre 10 NM e 4 NM: final approach de ~180-165 kt para ~160 kt
+            const t = (dtg - 4.0) / 6.0;
+            vBase = v4 + t * (v10 - v4);
+        } else if (dtg > 1.0) {
+            // Entre 4 NM e 1 NM: desaceleração final para Vapp
+            const t = (dtg - 1.0) / 3.0;
+            vBase = vApp + t * (v4 - vApp);
+        } else {
+            vBase = vApp;
+        }
+
+        // ---------------------------------------------------------------------
+        // 3. ANTECIPAÇÃO CINEMÁTICA DE DESACELERAÇÃO (LOOKAHEAD PREDITIVO)
+        // ---------------------------------------------------------------------
+        // Se a aeronave estiver mais rápida que o perfil à frente, calcula a distância
+        // de frenagem necessária (Seções 6 e 7) para antecipar a redução suavemente.
+        const taxaEstimada = calcularTaxaDesacel(this);
+        const brackets = [
+            { d: 25.0, v: v25 },
+            { d: 15.0, v: v15 },
+            { d: 10.0, v: v10 },
+            { d: 4.0,  v: v4 },
+            { d: 1.0,  v: vApp }
+        ];
+
+        for (const b of brackets) {
+            if (dtg > b.d && this.vel > b.v) {
+                const tempoFrenagem = (this.vel - b.v) / Math.max(0.5, taxaEstimada);
+                const velMedia = (this.vel + b.v) / 2;
+                const distFrenagem = (velMedia / 3600) * tempoFrenagem + 1.0; // +1 NM margem
+
+                if ((dtg - b.d) <= distFrenagem) {
+                    vBase = Math.min(vBase, b.v);
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // 4. INTERAÇÃO COM O TRÁFEGO PRECEDENTE E SEQUENCIAMENTO DINÂMICO
+        // ---------------------------------------------------------------------
+        // Monitora aeronave precedente na mesma pista e calcula taxa de fechamento
+        // sobre o solo (Ground Speed, considerando vento) (Seções 10, 11, 12 e 15).
+        let correcaoTrafego = 0;
+        let menorDeltaDTG = 999;
+        let trafegoPrecedente = null;
+
+        if (state.aeronaves && Array.isArray(state.aeronaves)) {
+            for (const ac of state.aeronaves) {
+                if (ac === this || ac.pousou) continue;
+                if ((ac.dest || "SBSP") !== (this.dest || "SBSP")) continue;
+
+                const dtgOutra = (ac.dtg !== undefined) ? ac.dtg : (typeof ac.calcularDistanceToGo === 'function' ? ac.calcularDistanceToGo() : 999);
+                const deltaDTG = dtg - dtgOutra;
+
+                // Deve estar à frente no sequenciamento (deltaDTG > 0) e a menos de 18 NM
+                if (deltaDTG > 0.5 && deltaDTG < 18.0 && deltaDTG < menorDeltaDTG) {
+                    menorDeltaDTG = deltaDTG;
+                    trafegoPrecedente = ac;
+                }
+            }
+        }
+
+        if (trafegoPrecedente) {
+            // Taxa de fechamento sobre o solo (Ground Speed)
+            const gsMinha = this.groundSpeed || this.vel;
+            const gsOutra = trafegoPrecedente.groundSpeed || trafegoPrecedente.vel;
+            const taxaFechamento = gsMinha - gsOutra; // kt
+
+            if (taxaFechamento > 0) {
+                if (menorDeltaDTG < 5.0) {
+                    // Separação crítica: redução assertiva
+                    correcaoTrafego = -Math.min(30, Math.max(15, taxaFechamento + 10));
+                } else if (menorDeltaDTG < 7.5 && taxaFechamento > 5) {
+                    // Fechamento moderado na faixa de aproximação
+                    correcaoTrafego = -Math.min(25, Math.max(10, taxaFechamento * 0.8));
+                } else if (menorDeltaDTG < 10.0 && taxaFechamento > 15) {
+                    // Prevenção antecipada
+                    correcaoTrafego = -Math.min(15, taxaFechamento * 0.5);
+                } else if (menorDeltaDTG < 14.0 && taxaFechamento > 25) {
+                    correcaoTrafego = -10;
+                }
+            }
+
+            // Não ultrapassar a velocidade do tráfego precedente se estiver a menos de 6 NM
+            if (menorDeltaDTG < 6.0) {
+                vBase = Math.min(vBase, trafegoPrecedente.vel + 5);
+            }
+        }
+
+        // Aplica correção por tráfego respeitando o piso operacional de segurança
+        let vAlvo = vBase + correcaoTrafego;
+        vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(vAlvo)));
+
+        // ---------------------------------------------------------------------
+        // 5. ATUAÇÃO AUTOMÁTICA DE SPOILERS / SPEEDBRAKES (SEÇÃO 18)
+        // ---------------------------------------------------------------------
+        // Se a aeronave estiver em descida pronunciada e precisar desacelerar > 20 kt,
+        // ou taxa exigida for alta, o piloto virtual abre spoilers automaticamente.
+        if (!this.speedbrakesComando) {
+            const estaDescendoForte = (this.verticalSpeed && this.verticalSpeed < -400);
+            const precisaFrearMuito = (this.vel - vAlvo > 20);
+
+            if (estaDescendoForte && precisaFrearMuito) {
+                this.speedbrakes = true;
+            } else if (this.vel - vAlvo <= 5) {
+                this.speedbrakes = false;
+            }
+        }
+
+        this.sugestaoVel = vAlvo;
+        return vAlvo;
     }
 
     /**
@@ -455,130 +751,21 @@ export class Aeronave {
         }
 
         // =========================================================================
-        // ETAPA 4: GESTÃO INTELIGENTE DE VELOCIDADE (LOOKAHEAD PREDITIVO DE ROTA)
+        // ETAPA 4: GESTÃO DINÂMICA DE VELOCIDADE (DISTANCE-TO-GO, PERFORMANCE & TRÁFEGO)
         // -------------------------------------------------------------------------
-        // Varre até 5 waypoints à frente na STAR para identificar restrições de velocidade.
-        // Utiliza a equação da cinemática clássica (D = V_media * T) para calcular o ponto ideal
-        // de desaceleração antecipada, evitando reduções bruscas e simulando o comportamento de um FMS real.
+        // Gerenciamento contínuo e realista de velocidade de aproximação (Seções 1 a 23).
+        // Baseado em DTG (Distance-to-Go / DME), envelope individual de cada aeronave,
+        // tráfego precedente, taxa de aproximação por Ground Speed e prioridade ATC.
         // =========================================================================
-        let velAlvoBase = this.velComando; 
-
-        let lnavAtivoOuPendente = this.modoLNAV || (this.wpPendente !== null);
-
-        if (lnavAtivoOuPendente && !this.velManual) {
-            let startWpNome = null;
-            let startWpIndex = this.wpIndex;
-            
-            // Avaliação Preditiva: Descobre qual será o vetor ativo logo que o delay passar
-            if (this.wpPendente !== null) {
-                if (typeof this.wpPendente === 'number') {
-                    startWpIndex = this.wpPendente;
-                    startWpNome = this.rota[startWpIndex];
-                } else {
-                    startWpNome = this.wpPendente;
-                }
-            } else if (this.modoLNAV) {
-                if (this.wpOffRoute !== null) {
-                    startWpNome = this.wpOffRoute;
-                } else if (this.rota && this.wpIndex < this.rota.length) {
-                    startWpNome = this.rota[this.wpIndex];
-                }
-            }
-
-            if (startWpNome) {
-                let iterWpNome = startWpNome;
-                let iterIndex = startWpIndex;
-                let distAcumulada = 0;
-                
-                let wpCoords = state.fixos[iterWpNome];
-                if (wpCoords) {
-                    distAcumulada = calcularRumoDistancia(this, wpCoords).distanciaNM;
-                }
-
-                let melhorVelAlvo = this.velComando;
-                let encontrouReducao = false;
-
-                // Loop preditivo de profundidade limitada (max 5 níveis na árvore de waypoints).
-                // Otimiza o comportamento de frenagem sem processamento O(N) exagerado da rota toda.
-                for (let i = 0; i < 5; i++) {
-                    if (!iterWpNome) break;
-
-                    let rest = restricoesFixos[iterWpNome];
-                    if (rest && rest.vel !== undefined) {
-                        let tipoVel = rest.tipoVel || "AT";
-                        let vAlvo = this.velComando;
-
-                        if (tipoVel === "AT") vAlvo = rest.vel;
-                        else if (tipoVel === "BELOW") vAlvo = Math.min(this.velComando, rest.vel);
-                        else if (tipoVel === "ABOVE") vAlvo = Math.max(this.velComando, rest.vel);
-
-                        if (this.vel > vAlvo) {
-                            // CÁLCULO CINEMÁTICO DE FRENAGEM COM MODELO ASSIMÉTRICO REALISTA:
-                            // Utiliza a taxa de desaceleração exata do perfil da aeronave em data.js
-                            // tempo = (V_atual - V_alvo) / taxaEstimada
-                            // dist = (V_media em NM/s) * tempo em segundos
-                            let taxaEstimada = calcularTaxaDesacel(this);
-                            let tempoFrenagem = (this.vel - vAlvo) / taxaEstimada;
-                            let velMedia = (this.vel + vAlvo) / 2;
-                            let distFrenagem = (velMedia / 3600) * tempoFrenagem;
-                            
-                            // Adiciona 1.0 NM de margem operacional de conforto
-                            if (distAcumulada <= distFrenagem + 1.0) {
-                                melhorVelAlvo = Math.min(melhorVelAlvo, vAlvo);
-                                encontrouReducao = true;
-                            }
-                        }
-                    }
-
-                    // Quebra o lookahead imediatamente caso estejamos em off-route
-                    if (this.wpOffRoute !== null && this.wpPendente === null && i === 0) break;
-                    if (this.wpPendente !== null && typeof this.wpPendente === 'string' && i === 0) break;
-
-                    // Acumula a distância iterando para o nó seguinte da rota lógica
-                    if (this.rota && iterIndex + 1 < this.rota.length) {
-                        let nextWpNome = this.rota[iterIndex + 1];
-                        let pAtual = state.fixos[iterWpNome];
-                        let pProx = state.fixos[nextWpNome];
-                        if (pAtual && pProx) {
-                            let dLat = pProx.deltaLat - pAtual.deltaLat;
-                            let dLon = (pProx.deltaLon - pAtual.deltaLon) * correcaoLon;
-                            let distSeg = Math.sqrt(Math.pow(dLat * 60, 2) + Math.pow(dLon * 60, 2));
-                            distAcumulada += distSeg;
-                        }
-                        iterWpNome = nextWpNome;
-                        iterIndex++;
-                    } else {
-                        break;
-                    }
-                }
-
-                if (encontrouReducao) {
-                    velAlvoBase = melhorVelAlvo;
-                    this.velComando = velAlvoBase;
-                } else {
-                    let restAtual = restricoesFixos[startWpNome];
-                    if (restAtual && restAtual.vel !== undefined) {
-                        let tipoVel = restAtual.tipoVel || "AT";
-                        let vAlvoAtual = this.velComando;
-                        if (tipoVel === "AT") vAlvoAtual = restAtual.vel;
-                        else if (tipoVel === "BELOW") vAlvoAtual = Math.min(this.velComando, restAtual.vel);
-                        else if (tipoVel === "ABOVE") vAlvoAtual = Math.max(this.velComando, restAtual.vel);
-
-                        if (this.vel <= vAlvoAtual) {
-                            velAlvoBase = vAlvoAtual;
-                            this.velComando = velAlvoBase;
-                        }
-                    }
-                }
-            }
-        }
+        const velAlvoBase = this.calcularVelocidadeAlvoDinamica();
+        this.velComando = velAlvoBase;
 
         // SIMULAÇÃO DE RUÍDO ATMOSFÉRICO E VARREDURA DO RADAR:
-        // Variações leves de vento (rajadas de ±5 nós) em torno da velocidade comandada para evitar velocidade perfeitamente estática.
+        // Variações leves de vento (rajadas de ±4 nós) em torno da velocidade comandada para evitar velocidade perfeitamente estática.
         if (Math.random() < 0.25) {
-            let variacaoVento = Math.floor(Math.random() * 11) - 5; 
+            let variacaoVento = Math.floor(Math.random() * 9) - 4; 
             this.velDestino = velAlvoBase + variacaoVento;
-        } else if (Math.abs(this.velDestino - velAlvoBase) > 6) {
+        } else if (Math.abs(this.velDestino - velAlvoBase) > 5) {
             this.velDestino = velAlvoBase; 
         }
 
@@ -658,6 +845,7 @@ export class Aeronave {
         // Se o nível autorizado for "VIA" ou "---", a aeronave segue estritamente as restrições da carta
         const isVia = (this.nivAutorizadoFisico === "VIA" || this.nivAutorizadoFisico === "---");
         const altClearence = isVia ? 0 : parseInt(this.nivAutorizadoFisico, 10);
+        const lnavAtivoOuPendente = this.modoLNAV || (this.wpPendente !== null);
 
         if (lnavAtivoOuPendente && this.rota && this.rota.length > 0) {
             let startWpNome = null;
@@ -925,16 +1113,26 @@ export class Aeronave {
         }
 
         // ---------------------------------------------------------------------
-        // 2. REGEX DE VELOCIDADE INDICADA: xxK (ex: 21K -> 210 KIAS)
+        // 2. REGEX DE VELOCIDADE INDICADA: xxK (ex: 21K -> 210 KIAS) OU RETOMADA AUTOMÁTICA (FREE/NORM)
         // ---------------------------------------------------------------------
-        let matchVel = texto.match(/\b(\d{2})K\b/);
-        if (matchVel) {
+        const matchVel = texto.match(/\b(\d{2})K\b/);
+        const matchResume = /\b(FREE|FREEV|RSM|RSV|NORM|RESUME|VFREE|AUTO)\b/.test(texto);
+
+        if (matchResume) {
+            // Cancelamento explícito da restrição manual: retoma gerenciamento dinâmico (Seção 19)
+            this.velManual = false;
+            this.velPendente = null;
+        } else if (matchVel) {
             let novaVel = parseInt(matchVel[1], 10) * 10;
             if (novaVel >= 40 && novaVel <= 600) { 
                 this.velPendente = novaVel;
                 this.delayVel = Math.floor(Math.random() * 2) + 2; 
-                this.velManual = true; // Fixa velocidade manual (desabilita reduções automáticas da rota)
+                this.velManual = true; // Fixa velocidade manual com prioridade ATC (Seção 13)
             }
+        } else if (this.velManual && !/\b\d{2}K\b/.test(texto)) {
+            // Se o comando de velocidade manual foi apagado do scratchpad pelo operador
+            this.velManual = false;
+            this.velPendente = null;
         }
 
         // ---------------------------------------------------------------------
