@@ -25,6 +25,9 @@ export const state = {
     vetorAtivo: null,       // O objeto da linha de medição que está a ser puxada no momento (tecla O)
     vetoresFixos: [],       // Array contendo todas as linhas de medição já desenhadas e ancoradas
     vetorSelecionadoIndex: -1, // Índice (-1 = nenhum) do vetor atualmente selecionado (teclas V e X)
+    cliqueVetorAtivoX: null,   // Posição X do mousedown para vetorAtivo
+    cliqueVetorAtivoY: null,   // Posição Y do mousedown para vetorAtivo
+    arrastouVetorAtivo: false, // Flag se segurou e arrastou a tela durante vetorAtivo
 
     // --- INTERAÇÃO COM ETIQUETAS (DATA BLOCKS) ---
     aeroArrastandoLabel: null, // Instância da Aeronave cuja etiqueta está a ser reposicionada com o rato

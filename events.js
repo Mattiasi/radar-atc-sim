@@ -72,21 +72,15 @@ export function configurarEventosUsuario() {
 
             // 1.1. FERRAMENTA DE MEDIÇÃO / VETOR EM ANDAMENTO (Criado pela tecla 'O')
             if (state.vetorAtivo) {
-                if (state.vetoresFixos.length < 20) {
-                    let aero = pegarAeronaveProxima(e.clientX, e.clientY);
-                    if (aero) {
-                        state.vetorAtivo.destino = null;
-                        state.vetorAtivo.aeroDestino = aero; // Gruda no plot da aeronave!
-                    } else {
-                        state.vetorAtivo.destino = telaParaDelta(e.clientX, e.clientY);
-                        state.vetorAtivo.aeroDestino = null;
-                    }
-                    state.vetoresFixos.push(state.vetorAtivo); 
-                    state.vetorSelecionadoIndex = -1; // Mantém deselecionado após ancorar
-                }
-                state.vetorAtivo = null; 
-                desenharRadar(); 
-                return; 
+                // Não fixa imediatamente no mousedown!
+                // Permite segurar o clique e arrastar o mapa sem que o vetor fique fixo.
+                state.cliqueVetorAtivoX = e.clientX;
+                state.cliqueVetorAtivoY = e.clientY;
+                state.arrastouVetorAtivo = false;
+                state.arrastando = true;
+                state.cliqueInicialX = e.clientX - state.offsetX;
+                state.cliqueInicialY = e.clientY - state.offsetY;
+                return;
             }
             
             // 1.2. DETECÇÃO DE CLIQUE EM ETIQUETAS DE AERONAVES (HIT-TEST)
@@ -107,14 +101,14 @@ export function configurarEventosUsuario() {
                 if (e.clientX >= minX && e.clientX <= maxX && e.clientY >= ly - 25 && e.clientY <= ly + 40) {
                     clicouEtiqueta = true;
                     
-                    if (e.clientY >= ly + 14) { 
-                        // Linha 4 da etiqueta: Scratchpad / Texto Livre
+                    if (e.clientY >= ly + 12 && e.clientY <= ly + 35) { 
+                        // Linha 4 da etiqueta: Scratchpad / Texto Livre (só abre se clicar especificamente nesta linha)
                         clicouEmTextoAtivo = true;
                         if (state.aeroEditandoTexto !== aero) {
                             state.aeroArrastandoLabel = null;
                             scratchpadUI.abrir(aero);
                         }
-                    } else if (e.clientY >= ly - 14 && e.clientY <= ly + 2) {
+                    } else if (e.clientY >= ly - 14 && e.clientY <= ly + 1) {
                         // Linha 2 da etiqueta: Altitude Atual e Nível Autorizado (CFL)
                         let clicouNoNivel = false;
                         if (isRight && e.clientX >= lx + 50 && e.clientX <= lx + 90) clicouNoNivel = true;
@@ -198,10 +192,33 @@ export function configurarEventosUsuario() {
         state.mouseTelaX = e.clientX; 
         state.mouseTelaY = e.clientY;
         
-        // 1. Reposicionamento de Etiqueta (Arraste da Linha Guia)
+        // 0. Atualização do cursor do mouse: se passar sobre vetor fixo, cursor vira pointer
+        if (!state.arrastando && !state.aeroArrastandoLabel && !state.vetorAtivo) {
+            if (state.vetoresFixos.length > 0 && pegarVetorProximo(e.clientX, e.clientY) !== -1) {
+                state.canvas.style.cursor = 'pointer';
+            } else {
+                state.canvas.style.cursor = 'default';
+            }
+        }
+
+        // 1. Se estiver com vetor ativo e com clique pressionado (arraste da tela durante medição)
+        if (state.vetorAtivo && state.cliqueVetorAtivoX !== null) {
+            if (Math.hypot(e.clientX - state.cliqueVetorAtivoX, e.clientY - state.cliqueVetorAtivoY) > 5) {
+                state.arrastouVetorAtivo = true;
+            }
+            if (state.arrastando) {
+                state.offsetX = state.mouseTelaX - state.cliqueInicialX;
+                state.offsetY = state.mouseTelaY - state.cliqueInicialY;
+                aplicarLimites(true);
+            }
+            desenharRadar();
+            return;
+        }
+
+        // 2. Reposicionamento de Etiqueta (Arraste da Linha Guia)
         if (state.aeroArrastandoLabel) {
-            // Histerese de 3px para evitar movimentações acidentais em cliques curtos
-            if (Math.hypot(state.mouseTelaX - state.labelClickX, state.mouseTelaY - state.labelClickY) > 3) {
+            // Histerese de 5px para evitar movimentações acidentais em cliques curtos
+            if (Math.hypot(state.mouseTelaX - state.labelClickX, state.mouseTelaY - state.labelClickY) > 5) {
                 state.arrastouLabel = true;
             }
             
@@ -214,7 +231,7 @@ export function configurarEventosUsuario() {
             return;
         }
         
-        // 2. Arraste do Fundo do Radar (Pan)
+        // 3. Arraste do Fundo do Radar (Pan)
         if (state.arrastando) { 
             state.offsetX = state.mouseTelaX - state.cliqueInicialX; 
             state.offsetY = state.mouseTelaY - state.cliqueInicialY; 
@@ -224,7 +241,34 @@ export function configurarEventosUsuario() {
 
     state.canvas.addEventListener('mouseup', (e) => {
         if (e.button === 0) {
-            // Se clicou na etiqueta e soltou sem arrastar:
+            // 1. Finalização ou arraste durante Vetor Ativo de medição
+            if (state.vetorAtivo && state.cliqueVetorAtivoX !== null) {
+                if (!state.arrastouVetorAtivo) {
+                    // Clicou sem arrastar -> O VETOR PRENDA!
+                    if (state.vetoresFixos.length < 20) {
+                        let aero = pegarAeronaveProxima(e.clientX, e.clientY);
+                        if (aero) {
+                            state.vetorAtivo.destino = null;
+                            state.vetorAtivo.aeroDestino = aero; // Gruda no plot da aeronave!
+                        } else {
+                            state.vetorAtivo.destino = telaParaDelta(e.clientX, e.clientY);
+                            state.vetorAtivo.aeroDestino = null;
+                        }
+                        state.vetoresFixos.push(state.vetorAtivo); 
+                        state.vetorSelecionadoIndex = -1;
+                    }
+                    state.vetorAtivo = null;
+                }
+                // Se segurou o clique e arrastou, o vetor NÃO fica fixo! Apenas encerra o arraste da tela.
+                state.cliqueVetorAtivoX = null;
+                state.cliqueVetorAtivoY = null;
+                state.arrastouVetorAtivo = false;
+                state.arrastando = false;
+                desenharRadar();
+                return;
+            }
+
+            // 2. Se clicou na etiqueta e soltou sem arrastar:
             if (state.aeroArrastandoLabel && !state.arrastouLabel) {
                 const aero = state.aeroArrastandoLabel;
                 // Se a etiqueta foi afastada (labelDist > 40), ao clicar gruda no plot!
@@ -232,9 +276,8 @@ export function configurarEventosUsuario() {
                     aero.labelDist = 40;
                     aero.labelAngle = Math.PI / 4;
                     desenharRadar();
-                } else {
-                    scratchpadUI.abrir(aero);
                 }
+                // Não abre scratchpad aqui; deve-se clicar especificamente na 4ª linha da etiqueta.
             }
             state.arrastando = false; 
             state.aeroArrastandoLabel = null;
@@ -245,6 +288,9 @@ export function configurarEventosUsuario() {
     state.canvas.addEventListener('mouseleave', () => { 
         state.arrastando = false; 
         state.aeroArrastandoLabel = null; 
+        state.cliqueVetorAtivoX = null;
+        state.arrastouVetorAtivo = false;
+        state.canvas.style.cursor = 'default';
     });
 
     // Desabilita o menu de contexto nativo do navegador no botão direito
@@ -297,7 +343,11 @@ export function configurarEventosUsuario() {
                     destino: null, 
                     aeroDestino: null 
                 };
+                state.cliqueVetorAtivoX = null;
+                state.cliqueVetorAtivoY = null;
+                state.arrastouVetorAtivo = false;
                 state.vetorSelecionadoIndex = -1; // Deseleciona anterior ao iniciar um novo
+                state.canvas.style.cursor = 'default';
                 desenharRadar();
             }
         }
@@ -320,6 +370,9 @@ export function configurarEventosUsuario() {
                     state.vetorSelecionadoIndex = -1; // Mantém deselecionado
                 }
                 state.vetorAtivo = null; 
+                state.cliqueVetorAtivoX = null;
+                state.cliqueVetorAtivoY = null;
+                state.arrastouVetorAtivo = false;
                 desenharRadar();
             } else if (state.vetorSelecionadoIndex >= 0 && state.vetorSelecionadoIndex < state.vetoresFixos.length) {
                 let aero = pegarAeronaveProxima(state.mouseTelaX, state.mouseTelaY);
@@ -353,11 +406,28 @@ export function configurarEventosUsuario() {
             desenharRadar();
         }
         
+        // TECLA ESCAPE: Cancela vetor ativo em criação
+        if (e.key === 'Escape') {
+            if (state.vetorAtivo) {
+                state.vetorAtivo = null;
+                state.cliqueVetorAtivoX = null;
+                state.cliqueVetorAtivoY = null;
+                state.arrastouVetorAtivo = false;
+                state.arrastando = false;
+                state.canvas.style.cursor = 'default';
+                desenharRadar();
+            }
+        }
+
         // TECLA 'X': Limpa e exclui todos os vetores de medição ativos de uma vez
         if (tecla === 'X') { 
             state.vetoresFixos = []; 
             state.vetorAtivo = null; 
+            state.cliqueVetorAtivoX = null;
+            state.cliqueVetorAtivoY = null;
+            state.arrastouVetorAtivo = false;
             state.vetorSelecionadoIndex = -1; 
+            state.canvas.style.cursor = 'default';
             desenharRadar(); 
         }
     });
