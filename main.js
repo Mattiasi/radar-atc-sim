@@ -28,15 +28,12 @@ state.centroY = state.canvas.height / 2;
 
 // Guarda o momento exato em que o simulador iniciou, para calcular o delta de tempo depois
 let ultimoTempoVarredura = performance.now();
+let ultimoTempoFrame = performance.now();
 
 /**
  * Executa uma passada de física do radar (equivalente a 4 segundos de voo no tempo simulado).
  */
 function executarPassoRadar() {
-    // 0. Atualiza a dinâmica temporal contínua do vento aleatório (Seção 11 da Especificação)
-    windManager.update(4);
-    painelVentoUI.atualizarSeVisivel();
-
     state.aeronaves.forEach(a => {
         // 1. Guarda a posição atual no histórico antes de mover (para desenhar os pontinhos do rasto)
         a.historico.push({ deltaLat: a.deltaLat, deltaLon: a.deltaLon });
@@ -58,13 +55,24 @@ function executarPassoRadar() {
 /**
  * Motor de Jogo / Game Loop do Simulador.
  * Utiliza um padrão de "Fixed Timestep" para separar a lógica de física da lógica visual.
- * O intervalo entre as varreduras de radar é acelerado pelo fator de velocidade configurado (1x a 5x).
+ * O intervalo entre as varreduras de radar é acelerado pelo fator de velocidade configurado (1x a 10x).
  * 
  * @param {number} tempoAtual - Timestamp em milissegundos injetado automaticamente pelo requestAnimationFrame.
  */
 function loopPrincipal(tempoAtual) {
     const fator = state.fatorVelocidade || 1.0;
     const intervaloVarredura = 4000 / fator;
+
+    // Atualização contínua do vento aleatório em tempo real (~60 FPS) acelerada pela velocidade da simulação
+    const dtFrame = Math.min(Math.max(0, (tempoAtual - ultimoTempoFrame) / 1000), 0.1);
+    ultimoTempoFrame = tempoAtual;
+
+    if (dtFrame > 0) {
+        windManager.update(dtFrame * fator);
+        if (painelVentoUI.estaAberto()) {
+            painelVentoUI.atualizarSeVisivel();
+        }
+    }
 
     // Proteção contra acúmulo excessivo (ex: quando o utilizador troca de aba do navegador)
     if (tempoAtual - ultimoTempoVarredura > intervaloVarredura * 4) {

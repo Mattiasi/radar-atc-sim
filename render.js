@@ -524,11 +524,10 @@ export function desenharVetores() {
     const tracaLinha = (vetorObj, cor, selecionado) => {
         // Se ancorou num avião, atualiza dinamicamente a posição. Senão usa a coordenada fixa original.
         let oDelta = vetorObj.aeroOrigem ? vetorObj.aeroOrigem : vetorObj.origem;
-        // O destino pode ser dinâmico (no rato) se a linha ainda estiver a ser criada
+        // O destino é livre (no cursor do rato) se a linha ainda estiver a ser criada, sem atração magnética
         let dDelta = vetorObj.aeroDestino ? vetorObj.aeroDestino : vetorObj.destino;
         if (!dDelta) {
-            let snap = pegarPontoProximo(state.mouseTelaX, state.mouseTelaY);
-            dDelta = snap.delta;
+            dDelta = telaParaDelta(state.mouseTelaX, state.mouseTelaY);
         }
         
         if (!oDelta || !dDelta) return;

@@ -155,13 +155,13 @@ export class PainelVentoController {
                 <div class="controles-cabeceira">
                     <div class="linha-controle-vento">
                         <label>Direção (°):</label>
-                        <input type="range" id="sliderDirVento" min="0" max="359" value="${cab.fromDeg}">
-                        <input type="number" id="inputDirVento" min="0" max="359" value="${Math.round(cab.fromDeg)}">
+                        <input type="range" id="sliderDirVento" min="0" max="359" value="${cab.fromDeg}" ${cab.aleatorio ? 'disabled' : ''}>
+                        <input type="number" id="inputDirVento" min="0" max="359" value="${Math.round(cab.fromDeg)}" ${cab.aleatorio ? 'disabled' : ''}>
                     </div>
                     <div class="linha-controle-vento">
                         <label>Intensidade (kt):</label>
-                        <input type="range" id="sliderSpdVento" min="0" max="45" value="${cab.speedKt}">
-                        <input type="number" id="inputSpdVento" min="0" max="60" value="${Math.round(cab.speedKt)}">
+                        <input type="range" id="sliderSpdVento" min="0" max="45" value="${cab.speedKt}" ${cab.aleatorio ? 'disabled' : ''}>
+                        <input type="number" id="inputSpdVento" min="0" max="60" value="${Math.round(cab.speedKt)}" ${cab.aleatorio ? 'disabled' : ''}>
                     </div>
                     <div class="linha-controle-vento" style="margin-top: 8px;">
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%;">
@@ -249,7 +249,13 @@ export class PainelVentoController {
 
         if (chkAleat) {
             chkAleat.onchange = () => {
-                windManager.atualizarCabeceira(this.aeroIdAtivo, this.rwyIdAtivo, { aleatorio: chkAleat.checked });
+                const isAleat = chkAleat.checked;
+                if (sliderDir) sliderDir.disabled = isAleat;
+                if (inputDir) inputDir.disabled = isAleat;
+                if (sliderSpd) sliderSpd.disabled = isAleat;
+                if (inputSpd) inputSpd.disabled = isAleat;
+                windManager.atualizarCabeceira(this.aeroIdAtivo, this.rwyIdAtivo, { aleatorio: isAleat });
+                this._atualizarInstrumentoEDados();
             };
         }
 
@@ -436,10 +442,10 @@ export class PainelVentoController {
                         <tr data-id="${c.id}">
                             <td style="color: #aaa;">${c.nome}</td>
                             <td>
-                                <input type="number" class="inp-cam-dir" min="0" max="359" value="${Math.round(c.fromDeg)}">
+                                <input type="number" class="inp-cam-dir" min="0" max="359" value="${Math.round(c.fromDeg)}" ${c.aleatorio ? 'disabled' : ''}>
                             </td>
                             <td>
-                                <input type="number" class="inp-cam-spd" min="0" max="100" value="${Math.round(c.speedKt)}">
+                                <input type="number" class="inp-cam-spd" min="0" max="100" value="${Math.round(c.speedKt)}" ${c.aleatorio ? 'disabled' : ''}>
                             </td>
                             <td>
                                 <input type="checkbox" class="chk-cam-aleat" ${c.aleatorio ? 'checked' : ''}>
@@ -486,7 +492,14 @@ export class PainelVentoController {
 
             if (inpDir) inpDir.onchange = salvarLinha;
             if (inpSpd) inpSpd.onchange = salvarLinha;
-            if (chkAleat) chkAleat.onchange = salvarLinha;
+            if (chkAleat) {
+                chkAleat.onchange = () => {
+                    const isAleat = chkAleat.checked;
+                    if (inpDir) inpDir.disabled = isAleat;
+                    if (inpSpd) inpSpd.disabled = isAleat;
+                    salvarLinha();
+                };
+            }
             if (chkAtivo) chkAtivo.onchange = salvarLinha;
 
             if (btnDel) {
@@ -534,10 +547,30 @@ export class PainelVentoController {
                         inputDir.value = Math.round(cab.fromDeg);
                         sliderSpd.value = cab.speedKt;
                         inputSpd.value = Math.round(cab.speedKt);
+                        sliderDir.disabled = true;
+                        inputDir.disabled = true;
+                        sliderSpd.disabled = true;
+                        inputSpd.disabled = true;
                     }
                     this._atualizarInstrumentoEDados();
                 }
             }
+        } else if (this.abaAtiva === 'camadas') {
+            const linhas = document.querySelectorAll('#linhasTabelaCamadas tr');
+            linhas.forEach(tr => {
+                const id = tr.getAttribute('data-id');
+                const cam = windManager.camadas.find(c => c.id === id);
+                if (cam && cam.aleatorio) {
+                    const inpDir = tr.querySelector('.inp-cam-dir');
+                    const inpSpd = tr.querySelector('.inp-cam-spd');
+                    if (inpDir && inpSpd) {
+                        inpDir.value = Math.round(cam.fromDeg);
+                        inpSpd.value = Math.round(cam.speedKt);
+                        inpDir.disabled = true;
+                        inpSpd.disabled = true;
+                    }
+                }
+            });
         }
     }
 }

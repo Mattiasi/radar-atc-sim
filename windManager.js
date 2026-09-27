@@ -307,10 +307,10 @@ export class WindManager {
             item._targetSpeedKt = minS + Math.random() * (maxS - minS);
         }
 
-        // Taxas máximas de variação por segundo (suave e realista):
-        // ~0.25° por segundo de direção, ~0.08 nós por segundo de velocidade
-        const maxDegStep = 0.25 * dt;
-        const maxSpdStep = 0.08 * dt;
+        // Taxas máximas de variação por segundo (suave e realista para tempo real):
+        // ~1.0° por segundo de direção, ~0.4 nós por segundo de velocidade
+        const maxDegStep = 1.0 * dt;
+        const maxSpdStep = 0.4 * dt;
 
         // Variação angular com menor arco
         let difDeg = item._targetFromDeg - item.fromDeg;
@@ -397,7 +397,12 @@ export class WindManager {
             const ativando = Boolean(params.aleatorio) && !cam.aleatorio;
             cam.aleatorio = Boolean(params.aleatorio);
             if (ativando) {
-                this.sortearCamada(cam);
+                cam.minDeg = normalizeHeading(cam.fromDeg - 25);
+                cam.maxDeg = normalizeHeading(cam.fromDeg + 25);
+                cam.minSpeed = Math.max(0, cam.speedKt - 5);
+                cam.maxSpeed = cam.speedKt + 8;
+                cam._targetFromDeg = undefined;
+                cam._targetSpeedKt = undefined;
             }
         }
         if (params.flMin !== undefined) cam.flMin = parseInt(params.flMin, 10);
@@ -441,7 +446,12 @@ export class WindManager {
             const ativando = Boolean(params.aleatorio) && !cab.aleatorio;
             cab.aleatorio = Boolean(params.aleatorio);
             if (ativando) {
-                this.sortearCabeceira(cab);
+                cab.minDeg = normalizeHeading(cab.fromDeg - 25);
+                cab.maxDeg = normalizeHeading(cab.fromDeg + 25);
+                cab.minSpeed = Math.max(0, cab.speedKt - 5);
+                cab.maxSpeed = cab.speedKt + 8;
+                cab._targetFromDeg = undefined;
+                cab._targetSpeedKt = undefined;
             }
         }
         if (params.minDeg !== undefined) cab.minDeg = normalizeHeading(parseFloat(params.minDeg) || 0);

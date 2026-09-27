@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { correcaoLon } from './utils.js';
-import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarPontoProximo, pegarVetorProximo, desenharRadar } from './render.js';
+import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
 import { scratchpadUI, menuNivelUI } from './ui.js';
 
 /**
@@ -73,9 +73,14 @@ export function configurarEventosUsuario() {
             // 1.1. FERRAMENTA DE MEDIÇÃO / VETOR EM ANDAMENTO (Criado pela tecla 'O')
             if (state.vetorAtivo) {
                 if (state.vetoresFixos.length < 20) {
-                    let pDest = pegarPontoProximo(e.clientX, e.clientY);
-                    state.vetorAtivo.destino = pDest.aero ? null : pDest.delta;
-                    state.vetorAtivo.aeroDestino = pDest.aero || null;
+                    let aero = pegarAeronaveProxima(e.clientX, e.clientY);
+                    if (aero) {
+                        state.vetorAtivo.destino = null;
+                        state.vetorAtivo.aeroDestino = aero; // Gruda no plot da aeronave!
+                    } else {
+                        state.vetorAtivo.destino = telaParaDelta(e.clientX, e.clientY);
+                        state.vetorAtivo.aeroDestino = null;
+                    }
                     state.vetoresFixos.push(state.vetorAtivo); 
                     state.vetorSelecionadoIndex = -1; // Mantém deselecionado após ancorar
                 }
@@ -132,6 +137,21 @@ export function configurarEventosUsuario() {
                     state.labelClickX = e.clientX; 
                     state.labelClickY = e.clientY; 
                     break;
+                }
+            }
+
+            // Se não clicou na etiqueta, verifica clique direto no plot/blip (símbolo)
+            if (!clicouEtiqueta) {
+                for (let aero of state.aeronaves) {
+                    let pt = deltaParaTela(aero);
+                    let dist = Math.hypot(pt.x - e.clientX, pt.y - e.clientY);
+                    if (dist < 15) {
+                        // Clicou no plot do avião: gruda a etiqueta no plot
+                        aero.labelDist = 40;
+                        aero.labelAngle = Math.PI / 4;
+                        desenharRadar();
+                        return;
+                    }
                 }
             }
 
@@ -204,9 +224,17 @@ export function configurarEventosUsuario() {
 
     state.canvas.addEventListener('mouseup', (e) => {
         if (e.button === 0) {
-            // Se clicou na etiqueta e soltou sem arrastar, abre o Scratchpad para digitação
+            // Se clicou na etiqueta e soltou sem arrastar:
             if (state.aeroArrastandoLabel && !state.arrastouLabel) {
-                scratchpadUI.abrir(state.aeroArrastandoLabel);
+                const aero = state.aeroArrastandoLabel;
+                // Se a etiqueta foi afastada (labelDist > 40), ao clicar gruda no plot!
+                if (aero.labelDist > 40) {
+                    aero.labelDist = 40;
+                    aero.labelAngle = Math.PI / 4;
+                    desenharRadar();
+                } else {
+                    scratchpadUI.abrir(aero);
+                }
             }
             state.arrastando = false; 
             state.aeroArrastandoLabel = null;
@@ -258,13 +286,14 @@ export function configurarEventosUsuario() {
             return; 
         }
         
-        // TECLA 'O' (Origem): Inicia a criação de um vetor de medição (magnético exclusivamente em plot e etiqueta de aeronave)
+        // TECLA 'O' (Origem): Inicia a criação de um vetor de medição
+        // Se estiver sobre aeronave/etiqueta, gruda no plot. Senão, inicia livre nas coordenadas do cursor.
         if (tecla === 'O') {
             if (state.vetoresFixos.length < 20) {
-                let pOrig = pegarPontoProximo(state.mouseTelaX, state.mouseTelaY);
+                let aero = pegarAeronaveProxima(state.mouseTelaX, state.mouseTelaY);
                 state.vetorAtivo = { 
-                    origem: pOrig.aero ? null : pOrig.delta, 
-                    aeroOrigem: pOrig.aero || null, 
+                    origem: aero ? null : telaParaDelta(state.mouseTelaX, state.mouseTelaY), 
+                    aeroOrigem: aero || null, 
                     destino: null, 
                     aeroDestino: null 
                 };
@@ -274,24 +303,34 @@ export function configurarEventosUsuario() {
         }
         
         // TECLA 'F' (Fim):
-        // 1. Ancora o vetor ativo em criação na posição atual do cursor
-        // 2. Com vetor medida já fixo, ao selecionar e apertar 'F', o fim/destino do vetor é feito para a posição do cursor
+        // 1. Ancora o vetor ativo em criação (gruda no plot se sobre aeronave/etiqueta, senão livre)
+        // 2. Com vetor medida já fixo, ancora o destino
         if (tecla === 'F') {
             if (state.vetorAtivo) {
                 if (state.vetoresFixos.length < 20) {
-                    let pDest = pegarPontoProximo(state.mouseTelaX, state.mouseTelaY);
-                    state.vetorAtivo.destino = pDest.aero ? null : pDest.delta;
-                    state.vetorAtivo.aeroDestino = pDest.aero || null;
+                    let aero = pegarAeronaveProxima(state.mouseTelaX, state.mouseTelaY);
+                    if (aero) {
+                        state.vetorAtivo.destino = null;
+                        state.vetorAtivo.aeroDestino = aero;
+                    } else {
+                        state.vetorAtivo.destino = telaParaDelta(state.mouseTelaX, state.mouseTelaY);
+                        state.vetorAtivo.aeroDestino = null;
+                    }
                     state.vetoresFixos.push(state.vetorAtivo); 
                     state.vetorSelecionadoIndex = -1; // Mantém deselecionado
                 }
                 state.vetorAtivo = null; 
                 desenharRadar();
             } else if (state.vetorSelecionadoIndex >= 0 && state.vetorSelecionadoIndex < state.vetoresFixos.length) {
-                let pDest = pegarPontoProximo(state.mouseTelaX, state.mouseTelaY);
+                let aero = pegarAeronaveProxima(state.mouseTelaX, state.mouseTelaY);
                 let vSel = state.vetoresFixos[state.vetorSelecionadoIndex];
-                vSel.destino = pDest.aero ? null : pDest.delta;
-                vSel.aeroDestino = pDest.aero || null;
+                if (aero) {
+                    vSel.destino = null;
+                    vSel.aeroDestino = aero;
+                } else {
+                    vSel.destino = telaParaDelta(state.mouseTelaX, state.mouseTelaY);
+                    vSel.aeroDestino = null;
+                }
                 desenharRadar();
             }
         }

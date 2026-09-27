@@ -149,7 +149,7 @@ export const aerodromos = [
         rumoPista: 170,
         // Prolongamento compartilhado no centro do aeródromo (alinhado com o eixo da pista 17R)
         prolongamento: {
-            tracosAntes: 4,      // 4 tracejados ao Norte (proa 350°)
+            tracosAntes: 5,      // 4 tracejados ao Norte (proa 350°)
             tracosDepois: 6,     // 6 tracejados ao Sul (proa 170°)
             tamanhoTracoNM: 1.0, // 1 NM por tracejado
             espacoNM: 1.0,       // Afastados em 1 NM
@@ -245,7 +245,7 @@ export const aerodromos = [
                 sepY: 4,
                 prolongamento: {
                     tracosAntes: 4,      // 4 tracejados 
-                    tracosDepois: 6,     // 6 tracejados 
+                    tracosDepois: 5,     // 6 tracejados 
                     tamanhoTracoNM: 1.0, // 1 NM por tracejado
                     espacoNM: 1.0,       // Afastados em 1 NM
                     afastamentoNM: 1.0,  // Início a 1 NM da cabeceira
@@ -260,8 +260,8 @@ export const aerodromos = [
                 sepY: -4, // Eixo à esquerda do centro (Norte)
                 sepX: 24,  // Deslocamento longitudinal para frente (+X no rumo 100°)
                 prolongamento: {
-                    tracosAntes: 4,      // 4 tracejados ao Oeste (aproximação 10L)
-                    tracosDepois: 6,     // 6 tracejados ao Leste (aproximação 28R)
+                    tracosAntes: 5,      // 4 tracejados ao Oeste (aproximação 10L)
+                    tracosDepois: 4,     // 6 tracejados ao Leste (aproximação 28R)
                     tamanhoTracoNM: 1.0, // 1 NM por tracejado
                     espacoNM: 1.0,       // Afastados em 1 NM
                     afastamentoNM: 1.0,  // Início a 1 NM da cabeceira
