@@ -1,0 +1,575 @@
+/* =========================================================
+   ESTILOS GERAIS DA TELA
+   ========================================================= */
+body {
+    background-color: #808080; /* Cor de fundo cinza padrão de telas de radar ATC (Sagitario/X-Muda) */
+    margin: 0;                 /* Remove margens brancas padrão do navegador */
+    overflow: hidden;          /* Trava a tela e esconde as barras de rolagem nativas (crucial para o pan/zoom do canvas não bugar) */
+    color: white;
+    font-family: monospace;    /* Fonte monoespaçada (tipo máquina de escrever) mantém os caracteres alinhados na etiqueta do avião */
+    cursor: default;           /* Força a seta padrão, evitando que o rato vire o cursor de texto (I-beam) ao passar por cima de textos invisíveis */
+}
+
+canvas {
+    display: block;            /* Remove o pequeno espaçamento em branco que o canvas cria na parte inferior por padrão */
+}
+
+/* =========================================================
+   MENU DE CONTEXTO (DROPDOWN DE NÍVEIS DE VOO)
+   ========================================================= */
+#menuNivel {
+    position: absolute;        /* Permite que o JavaScript coloque o menu exatamente nas coordenadas do clique do rato (X, Y) */
+    background-color: #2b2b2b;
+    border: 1px solid #00ffff; /* Borda ciano para combinar com o tema do radar */
+    color: white;
+    font-family: monospace;
+    font-size: 13px;
+    max-height: 160px;         /* Limita a altura do menu. Se a lista de níveis passar disso, cria barra de rolagem */
+    overflow-y: auto;          /* Ativa a rolagem vertical automaticamente se necessário */
+    z-index: 100;              /* Força o menu a ficar por cima de TUDO no ecrã (canvas = 0, painel = 10) */
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.6); /* Cria uma leve sombra para dar efeito 3D flutuante */
+    display: none;             /* Começa escondido. O JavaScript altera para 'block' quando o utilizador clica no FL */
+    border-radius: 4px;        /* Arredonda levemente os cantos */
+}
+
+/* Cada opção individual dentro do menu de níveis */
+.menu-item {
+    padding: 6px 12px;
+    cursor: pointer;           /* Muda o rato para a "mãozinha" para indicar que é clicável */
+    text-align: center;
+}
+
+/* Efeito visual quando o rato passa por cima de uma opção de nível */
+.menu-item:hover {
+    background-color: #00ffff; /* Fica ciano */
+    color: #000;               /* O texto fica preto para dar contraste com o ciano */
+    font-weight: bold;
+}
+
+/* Estilização personalizada da barra de rolagem do menu (Apenas visível em browsers baseados em WebKit como Chrome/Edge/Safari) */
+#menuNivel::-webkit-scrollbar { width: 8px; }
+#menuNivel::-webkit-scrollbar-track { background: #2b2b2b; }
+#menuNivel::-webkit-scrollbar-thumb { background: #666; border-radius: 4px; }
+#menuNivel::-webkit-scrollbar-thumb:hover { background: #888; } /* Fica mais claro quando passa o rato na barra */
+
+/* =========================================================
+   PAINEL DE CONTROLO DE FLUXO E ESTEIRA (Canto Superior Esquerdo)
+   ========================================================= */
+#painelFluxo {
+    position: absolute;        /* Fica a flutuar por cima do canvas */
+    top: 15px;                 /* Fixado a 15px do topo da janela */
+    left: 15px;                /* Fixado a 15px da margem esquerda da janela */
+    background-color: rgba(43, 43, 43, 0.85); /* Fundo cinza escuro com 85% de opacidade (levemente transparente para ver o radar por trás) */
+    border: 1px solid #00ffff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    z-index: 10;               /* Fica acima do Canvas, mas abaixo do Menu de Níveis (100) */
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+}
+
+#painelFluxo h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #00ffff;
+    text-align: center;
+}
+
+/* Estrutura de cada linha de opção dentro do painel (ex: OGTAL 15 NM) */
+.linha-fluxo {
+    margin-bottom: 8px;
+    font-size: 13px;
+    display: flex;             /* Usa Flexbox para colocar o Checkbox e a Caixa de Seleção lado a lado na mesma linha horizontal */
+    align-items: center;       /* Centraliza os elementos verticalmente no eixo da linha */
+    justify-content: space-between; /* Empurra o texto para a esquerda e o "select" para a direita, distribuindo o espaço */
+}
+
+/* A caixa de seleção onde escolhe as milhas (10NM, 15NM, 20NM) */
+.linha-fluxo select {
+    background-color: #111;
+    color: #00ffff;
+    border: 1px solid #666;
+    font-family: monospace;
+    font-weight: bold;
+    margin-left: 10px;         /* Garante que não cola no texto da label */
+    padding: 2px;
+}
+
+/* Área de texto clicável associada ao checkbox */
+.linha-fluxo label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* A caixinha de marcar (checkbox) */
+.linha-fluxo input[type="checkbox"] {
+    margin-right: 8px;         /* Afasta o quadradinho do texto "OGTAL" */
+    cursor: pointer;
+}
+
+/* =========================================================
+   CONTROLE DE VELOCIDADE DA SIMULAÇÃO (Slider)
+   ========================================================= */
+.divisor-painel {
+    height: 1px;
+    background-color: rgba(0, 255, 255, 0.3);
+    margin: 10px 0;
+}
+
+.secao-velocidade {
+    display: flex;
+    flex-direction: column;
+}
+
+#labelVelocidade {
+    color: #00ffff;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 13px;
+    background-color: #111;
+    border: 1px solid #666;
+    padding: 2px 6px;
+    min-width: 32px;
+    text-align: center;
+}
+
+#sliderVelocidade {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #111;
+    border: 1px solid #666;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    margin: 8px 0 4px 0;
+}
+
+#sliderVelocidade::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #00ffff;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
+    transition: transform 0.1s ease;
+}
+
+#sliderVelocidade::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: #ffffff;
+}
+
+#sliderVelocidade::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #00ffff;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
+}
+
+#sliderVelocidade::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    background: #ffffff;
+}
+
+.ticks-velocidade {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+    padding: 0 2px;
+    user-select: none;
+}
+
+/* =========================================================
+   PAINEL DE CONTROLE DE VENTO ATC & INSTRUMENTO CIRCULAR
+   ========================================================= */
+.btn-topo-vento {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: rgba(43, 43, 43, 0.9);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 15;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+}
+
+.btn-topo-vento:hover {
+    background-color: #00ffff;
+    color: #000;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.btn-topo-vento.ativo {
+    background-color: #00ffff;
+    color: #000;
+    font-weight: bold;
+}
+
+.painel-vento-flutuante {
+    position: absolute;
+    top: 52px;
+    right: 15px;
+    width: 460px;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
+    background-color: rgba(28, 28, 28, 0.95);
+    border: 1px solid #00ffff;
+    border-radius: 6px;
+    padding: 12px 16px;
+    z-index: 20;
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    font-family: monospace;
+}
+
+.painel-vento-flutuante::-webkit-scrollbar { width: 6px; }
+.painel-vento-flutuante::-webkit-scrollbar-track { background: #1c1c1c; }
+.painel-vento-flutuante::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+.painel-vento-flutuante::-webkit-scrollbar-thumb:hover { background: #00ffff; }
+
+.cabecalho-vento {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.cabecalho-vento h3 {
+    margin: 0;
+    font-size: 13px;
+    color: #00ffff;
+    letter-spacing: 1px;
+}
+
+.btn-fechar-vento {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: monospace;
+    padding: 0 4px;
+}
+
+.btn-fechar-vento:hover {
+    color: #ff5555;
+}
+
+.abas-vento {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.aba-btn {
+    flex: 1;
+    background-color: #1e1e1e;
+    color: #888;
+    border: 1px solid #444;
+    padding: 6px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.aba-btn:hover {
+    color: #fff;
+    border-color: #666;
+}
+
+.aba-btn.ativa {
+    background-color: rgba(0, 255, 255, 0.15);
+    color: #00ffff;
+    border-color: #00ffff;
+}
+
+/* --- TABELA DE CAMADAS GLOBAIS --- */
+.tabela-vento {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.tabela-vento th {
+    background-color: #1a1a1a;
+    color: #00ffff;
+    padding: 6px 4px;
+    border: 1px solid #333;
+    text-align: center;
+    font-weight: bold;
+}
+
+.tabela-vento td {
+    padding: 4px;
+    border: 1px solid #333;
+    text-align: center;
+    background-color: rgba(20, 20, 20, 0.6);
+}
+
+.tabela-vento input[type="number"] {
+    background-color: #111;
+    border: 1px solid #555;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 11px;
+    width: 52px;
+    padding: 2px 4px;
+    text-align: center;
+    border-radius: 2px;
+}
+
+.tabela-vento input[type="number"]:focus {
+    border-color: #00ffff;
+    outline: none;
+}
+
+.tabela-vento input[type="number"]:disabled {
+    background-color: #141c1f;
+    border-color: #243b44;
+    color: #00ff88;
+    cursor: not-allowed;
+    opacity: 0.9;
+    font-weight: bold;
+}
+
+.tabela-vento input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.btn-del-camada {
+    background: transparent;
+    border: 1px solid #555;
+    color: #ff5555;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 1px 6px;
+    border-radius: 2px;
+}
+
+.btn-del-camada:hover {
+    background: #ff5555;
+    color: #000;
+}
+
+.form-nova-camada {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    background-color: rgba(20, 20, 20, 0.7);
+    padding: 8px;
+    border: 1px dashed #444;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 11px;
+}
+
+.form-nova-camada label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.form-nova-camada input[type="number"] {
+    background-color: #111;
+    border: 1px solid #555;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 11px;
+    width: 48px;
+    padding: 2px;
+    text-align: center;
+}
+
+.btn-add-camada {
+    background-color: #1a332a;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-left: auto;
+}
+
+.btn-add-camada:hover {
+    background-color: #00ff88;
+    color: #000;
+}
+
+/* --- SEÇÃO CABECEIRAS / AERÓDROMOS --- */
+.selecao-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.pill-btn {
+    flex: 1;
+    background-color: #1e1e1e;
+    color: #aaa;
+    border: 1px solid #444;
+    padding: 5px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.pill-btn:hover {
+    color: #fff;
+    border-color: #888;
+}
+
+.pill-btn.ativa {
+    background-color: #00ffff;
+    color: #000;
+    border-color: #00ffff;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
+}
+
+.subpills {
+    margin-bottom: 12px;
+}
+
+.subpills .pill-btn {
+    font-size: 10px;
+    padding: 4px;
+}
+
+.instrumento-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #141414;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#canvasInstrumentoVento {
+    display: block;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1a1a1a 0%, #0d0d0d 100%);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+.controles-cabeceira {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 11px;
+}
+
+.linha-controle-vento {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    gap: 8px;
+}
+
+.linha-controle-vento label {
+    min-width: 90px;
+    color: #aaa;
+}
+
+.linha-controle-vento input[type="range"] {
+    flex: 1;
+    height: 4px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+.linha-controle-vento input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #00ffff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.linha-controle-vento input[type="number"] {
+    background-color: #111;
+    border: 1px solid #555;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 11px;
+    width: 52px;
+    padding: 2px 4px;
+    text-align: center;
+    border-radius: 2px;
+}
+
+.linha-controle-vento input[type="number"]:disabled {
+    background-color: #141c1f;
+    border-color: #243b44;
+    color: #00ff88;
+    cursor: not-allowed;
+    opacity: 0.9;
+    font-weight: bold;
+}
+
+.linha-controle-vento input[type="range"]:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.badges-componentes {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.badge-info {
+    flex: 1;
+    background-color: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 10px;
+}
+
+.badge-info .badge-rotulo {
+    color: #777;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.badge-info .badge-valor {
+    color: #00ffff;
+    font-weight: bold;
+}

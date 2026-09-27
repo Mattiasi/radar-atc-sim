@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador T10</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="painelFluxo">
+        <h3>CONTROLE DE FLUXO</h3>
+        <div class="linha-fluxo">
+            <label><input type="checkbox" id="chkOgtal" checked> OGTAL (SUL)</label>
+            <select id="sepOgtal">
+                <option value="10">10 NM</option>
+                <option value="15" selected>15 NM</option>
+                <option value="20">20 NM</option>
+            </select>
+        </div>
+        <div class="linha-fluxo">
+            <label><input type="checkbox" id="chkPrumo" checked> IROPU (NORTE)</label>
+            <select id="sepPrumo">
+                <option value="10">10 NM</option>
+                <option value="15" selected>15 NM</option>
+                <option value="20">20 NM</option>
+            </select>
+        </div>
+        <div class="divisor-painel"></div>
+        <div class="secao-velocidade">
+            <div class="linha-fluxo">
+                <label for="sliderVelocidade">VELOCIDADE:</label>
+                <span id="labelVelocidade">1x</span>
+            </div>
+            <input type="range" id="sliderVelocidade" min="1" max="10" step="0.5" value="1">
+            <div class="ticks-velocidade">
+                <span>1x</span>
+                <span>2x</span>
+                <span>3x</span>
+                <span>4x</span>
+                <span>5x</span>
+                <span>6x</span>
+                <span>7x</span>
+                <span>8x</span>
+                <span>9x</span>
+                <span>10x</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÃO E PAINEL DE CONTROLE DE VENTO ATC -->
+    <button id="btnToggleVento" class="btn-topo-vento" title="Configurar Vento Global e de Cabeceiras">☁ VENTO ATC</button>
+    <div id="painelVento" class="painel-vento-flutuante" style="display: none;"></div>
+
+    <input type="text" id="inputTextoLivre" autocomplete="off" spellcheck="false" style="position: absolute; display: none; background-color: #ffffff; color: #000000; border: none; font-family: monospace; font-size: 12px; outline: none; padding: 0; z-index: 101; width: 80px; text-transform: uppercase;">
+    <canvas id="telaRadar"></canvas>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
