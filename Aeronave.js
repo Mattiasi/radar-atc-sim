@@ -1,11 +1,12 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn } from './data.js';
+import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC } from './data.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 import { PilotAgent } from './pilotEngine.js';
 import { VirtualPilot } from './VirtualPilot.js';
 import { FlightDynamicsEngine } from './FlightDynamicsEngine.js';
+import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_vertical_profile } from './ApproachProfileManager.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -226,7 +227,17 @@ export class Aeronave {
 
         // --- 9. PILOT COCKPIT INTERACTION & DYNAMICS ENGINE ---
         this.pilot = new PilotAgent(this);          // Agente de cabine virtual com gestão concorrente por canais
-        this.virtualPilot = new VirtualPilot(this); // FSM vertical, perfil de descida e modos (AUTO, ATC_RATE, EXPEDITE)
+        this.virtualPilot = new VirtualPilot(this); // Piloto virtual determinístico (VNAV, energia e modos verticais)
+        this.semRestricoes = false;           // Flag: descida sem restrições intermediárias da STAR ("SR")
+        this.velocidadeMinima = false;        // Flag: voando na velocidade mínima apropriada da fase ("MIN")
+        this.autorizadoProcedimento = false;  // Flag: autorizado procedimento IAC/aproximação ("APP")
+        this.cleared_approach = false;        // Flag canônica: autorização formal de aproximação (Cleared Approach)
+        this.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT; // Modo vertical: RESTRICTED_DESCENT, OPEN_DESCENT, APPROACH_PROFILE, GLIDEPATH
+        this.hold_altitude_until_waypoint = null; // Trava vertical: fixo onde o nível atual deve ser retido antes de liberar descida subsequente
+        this.target_altitude = this.flAtualNum * 100; // Altitude alvo em pés físicos contínuos
+        this.vertical_floor_altitude = null;  // Trava rígida de segurança em pés que impede perfuração antes do fixo
+        this.vertical_floor_fl = null;        // Trava rígida em Flight Level
+        this.active_iac = null;               // Carta IAC ativa atribuída
         this.alt = this.flAtualNum * 100;
         this.currentVS = 0;
         this.targetVS = 0;
@@ -250,6 +261,22 @@ export class Aeronave {
             clampedAtStructural: false,
             temModificacaoVertical: false
         }; // Snapshot da varredura radar (0.25 Hz)
+    }
+
+    /**
+     * Determina se a aeronave está próxima ou engajada no procedimento de aproximação (AIC / IAC).
+     * Retorna true se estiver voando para um fixo de IAC ou com DTG <= 14 NM.
+     * @returns {boolean}
+     */
+    estaProximaDoAIC() {
+        const wpAtual = (this.rota && this.rota.length > 0 && this.wpIndex < this.rota.length) 
+            ? this.rota[this.wpIndex] 
+            : null;
+        if (wpAtual && isFixoIAC(wpAtual)) return true;
+        if (this.wpOffRoute && isFixoIAC(this.wpOffRoute)) return true;
+        if (this.wpPendente && typeof this.wpPendente === 'string' && isFixoIAC(this.wpPendente)) return true;
+        if (this.dtg !== undefined && this.dtg <= 14.0) return true;
+        return false;
     }
 
     /**
@@ -396,8 +423,32 @@ export class Aeronave {
         const vApp = perf.approachSpeed || 135;
 
         // ---------------------------------------------------------------------
-        // 1. PRIORIDADE MÁXIMA: INSTRUÇÃO EXPLÍCITA DO CONTROLADOR (ATC)
+        // 1. PRIORIDADE MÁXIMA: VELOCIDADE MÍNIMA ("MIN") OU INSTRUÇÃO ATC EXPLÍCITA
         // ---------------------------------------------------------------------
+        if (this.velocidadeMinima) {
+            const vCleanMin = (perf.speeds && perf.speeds.vCleanMin) || 210;
+            const vAppMin = (perf.speeds && perf.speeds.vAppMin) || perf.minApproachSpeed || 135;
+
+            if (!this.estaProximaDoAIC()) {
+                // Distante do AIC/IAC (STAR / em rota): velocidade mínima limpa
+                this.sugestaoVel = vCleanMin;
+                return vCleanMin;
+            } else {
+                // Próxima do AIC / no procedimento: velocidade mínima de aproximação
+                if (dtg >= 4.0) {
+                    this.sugestaoVel = vAppMin;
+                    return vAppMin;
+                } else {
+                    // Curta final (< 4 NM): transição suave para Vapp
+                    const fatorFinal = Math.max(0, Math.min(1, (dtg - 1.0) / 3.0));
+                    const velTrans = vApp + fatorFinal * (vAppMin - vApp);
+                    const velClamp = Math.round(velTrans);
+                    this.sugestaoVel = velClamp;
+                    return velClamp;
+                }
+            }
+        }
+
         // Se o ATC fixou uma velocidade manual (ex: "21K"), ela tem prioridade total (Seção 13).
         // Exceção de segurança operacional: ao entrar na curta final (< 4 NM), o piloto
         // virtual deve configurar e reduzir suavemente para Vapp para pousar (Seções 14 e 19).
@@ -482,52 +533,10 @@ export class Aeronave {
         }
 
         // ---------------------------------------------------------------------
-        // 4. INTERAÇÃO COM O TRÁFEGO PRECEDENTE E SEQUENCIAMENTO DINÂMICO
+        // 4. VELOCIDADE-ALVO SEM MONITORAMENTO AUTOMÁTICO DE TRÁFEGO PRECEDENTE
         // ---------------------------------------------------------------------
-        // Monitora aeronave precedente na mesma pista e calcula taxa de fechamento
-        // sobre o solo (Ground Speed, considerando vento) (Seções 10, 11, 12 e 15).
-        let correcaoTrafego = 0;
-        let menorDeltaDTG = 999;
-        let trafegoPrecedente = null;
-
-        if (state.aeronaves && Array.isArray(state.aeronaves)) {
-            for (const ac of state.aeronaves) {
-                if (ac === this || ac.pousou) continue;
-                if ((ac.dest || "SBSP") !== (this.dest || "SBSP")) continue;
-
-                const dtgOutra = (ac.dtg !== undefined) ? ac.dtg : (typeof ac.calcularDistanceToGo === 'function' ? ac.calcularDistanceToGo() : 999);
-                const deltaDTG = dtg - dtgOutra;
-
-                // Deve estar à frente no sequenciamento (deltaDTG > 0) e a menos de 18 NM
-                if (deltaDTG > 0.5 && deltaDTG < 18.0 && deltaDTG < menorDeltaDTG) {
-                    menorDeltaDTG = deltaDTG;
-                    trafegoPrecedente = ac;
-                }
-            }
-        }
-
-        if (trafegoPrecedente) {
-            // Taxa de fechamento sobre o solo (Ground Speed)
-            const gsMinha = this.groundSpeed || this.vel;
-            const gsOutra = trafegoPrecedente.groundSpeed || trafegoPrecedente.vel;
-            const taxaFechamento = gsMinha - gsOutra; // kt
-
-            if (taxaFechamento > 0 && menorDeltaDTG < 14.0) {
-                // Modulação suave e progressiva de velocidade sem degraus discretos:
-                // Fator de proximidade: 0.0 (em 14 NM) a 1.0 (em 4 NM)
-                const fatorProx = Math.max(0, Math.min(1.0, (14.0 - menorDeltaDTG) / 10.0));
-                correcaoTrafego = -Math.min(25, Math.round(taxaFechamento * fatorProx));
-            }
-
-            // Não ultrapassar a velocidade do tráfego precedente se estiver a menos de 6 NM
-            if (menorDeltaDTG < 6.0) {
-                vBase = Math.min(vBase, trafegoPrecedente.vel + 5);
-            }
-        }
-
-        // Aplica correção por tráfego respeitando o piso operacional de segurança
-        let vAlvo = vBase + correcaoTrafego;
-        vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(vAlvo)));
+        // A responsabilidade de espaçamento e separação entre tráfegos cabe exclusivamente ao controlador ATC.
+        let vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(vBase)));
 
         // ---------------------------------------------------------------------
         // 5. ATUAÇÃO AUTOMÁTICA DE SPOILERS / SPEEDBRAKES (SEÇÃO 18)
@@ -630,6 +639,11 @@ export class Aeronave {
                                 };
                             }
                             this.wpIndex++; // Avança para o próximo waypoint da rota
+                            
+                            // Se estiver com aproximação autorizada, atualiza a progressão de degraus da IAC
+                            if (this.cleared_approach) {
+                                update_approach_vertical_profile(this, dtSec);
+                            }
                             
                             // Imediatamente atualiza a proa alvo em direção ao próximo fixo para iniciar a curva
                             if (this.rota && this.wpIndex < this.rota.length) {
@@ -855,7 +869,43 @@ export class Aeronave {
                 ? this.perf.rates.climbNormal 
                 : 2200;
             razaoEfetiva = perfRate;
+            this.descent_mode = 'CLIMB';
+        } else if (this.cleared_approach) {
+            // =========================================================================
+            // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "APP")
+            // =========================================================================
+            update_approach_vertical_profile(this, dtSec);
+            targetFL = this.targetFL;
+            razaoEfetiva = this.razaoEfetiva || razaoNominal;
+        } else if (this.semRestricoes || this.descent_mode === DESCENT_MODES.OPEN_DESCENT) {
+            // =========================================================================
+            // MODO OPEN_DESCENT (DESCIDA SEM RESTRIÇÕES / "SR" NA 4ª LINHA):
+            // Desce direto para a altitude selecionada pelo controlador, ignorando restrições intermediárias da STAR.
+            // =========================================================================
+            this.descent_mode = DESCENT_MODES.OPEN_DESCENT;
+            this.verticalMode = 'OP-D';
+
+            let tetoDescida = altClearence;
+            if (!isVia && altClearence > 0) {
+                // Piso de segurança de entrada na IAC (FL055) mantido antes do início da IAC
+                tetoDescida = Math.max(altClearence, 55);
+            } else {
+                tetoDescida = 55;
+            }
+
+            if (tetoDescida < this.flAtualNum) {
+                targetFL = tetoDescida;
+                razaoEfetiva = razaoNominal;
+            } else {
+                targetFL = this.flAtualNum;
+            }
         } else if (lnavAtivoOuPendente && this.rota && this.rota.length > 0) {
+            // =========================================================================
+            // MODO RESTRICTED_DESCENT:
+            // Desce para a altitude selecionada respeitando restrições intermediárias da rota/STAR.
+            // =========================================================================
+            this.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT;
+            this.verticalMode = 'AUTO';
             let startWpNome = null;
             let startWpIndex = this.wpIndex;
 
@@ -1036,6 +1086,17 @@ export class Aeronave {
             razaoEfetiva = razaoNominal;
         }
 
+        // TRAVA VERTICAL DE SEGURANÇA (Vertical Floor Clamp):
+        // Garante que o perfil não fure a restrição de piso do fixo ativo (ex: hold_altitude_until_waypoint)
+        if (this.vertical_floor_fl !== null && this.vertical_floor_fl !== undefined) {
+            targetFL = Math.max(targetFL, this.vertical_floor_fl);
+        }
+        if (this.vertical_floor_altitude !== null && this.vertical_floor_altitude !== undefined) {
+            this.target_altitude = Math.max(targetFL * 100, this.vertical_floor_altitude);
+        } else {
+            this.target_altitude = targetFL * 100;
+        }
+
         this.targetFL = targetFL;
         this.razaoNominal = razaoNominal;
         this.razaoEfetiva = razaoEfetiva;
@@ -1115,22 +1176,80 @@ export class Aeronave {
         }
 
         // ---------------------------------------------------------------------
-        // 2. REGEX DE VELOCIDADE INDICADA: xxK (ex: 21K -> 210 KIAS) OU RETOMADA AUTOMÁTICA (FREE/NORM)
+        // 2. REGEX DE VELOCIDADE INDICADA: xxK OU MIN OU RETOMADA AUTOMÁTICA (FREE/NORM)
         // ---------------------------------------------------------------------
+        const matchMIN = /\bMIN\b/.test(texto);
         const matchVel = texto.match(/\b(\d{2})K\b/);
         const matchResume = /\b(FREE|FREEV|RSM|RSV|NORM|RESUME|VFREE|AUTO)\b/.test(texto);
 
         if (matchResume) {
             // Cancelamento explícito da restrição manual: retoma gerenciamento dinâmico (Seção 19)
+            this.velocidadeMinima = false;
             this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
+        } else if (matchMIN) {
+            this.velocidadeMinima = true;
+            this.velManual = false;
         } else if (matchVel) {
+            this.velocidadeMinima = false;
             let novaVel = parseInt(matchVel[1], 10) * 10;
             if (novaVel >= 40 && novaVel <= 600) { 
                 this.pilot.dispatch('LONGITUDINAL', 'SPEED', { speed: novaVel });
             }
-        } else if (this.velManual && !/\b\d{2}K\b/.test(texto)) {
-            // Se o comando de velocidade manual foi apagado do scratchpad pelo operador
-            this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
+        } else {
+            if (this.velocidadeMinima && !matchMIN) {
+                this.velocidadeMinima = false;
+            }
+            if (this.velManual && !/\b\d{2}K\b/.test(texto)) {
+                this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // 2.1. REGEX DE DESCIDA SEM RESTRIÇÕES: SR
+        // ---------------------------------------------------------------------
+        const matchSR = /\bSR\b/.test(texto);
+        if (matchSR) {
+            this.semRestricoes = true;
+            if (!this.cleared_approach) {
+                this.descent_mode = DESCENT_MODES.OPEN_DESCENT;
+                this.verticalMode = 'OP-D';
+            }
+        } else if (this.semRestricoes && !matchSR) {
+            this.semRestricoes = false;
+            if (!this.cleared_approach) {
+                this.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT;
+                this.verticalMode = 'AUTO';
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // 2.2. REGEX DE AUTORIZAÇÃO DE PROCEDIMENTO (IAC / AIC): APP / APX / RNP / ILS / AUT
+        // ---------------------------------------------------------------------
+        const matchApp = /\b(APX|APP|RNP|IAC|ILS|AUT|PROC)\b/.test(texto);
+        const matchNoApp = /\b(NOAPP|NOAPX|CANCEL)\b/.test(texto);
+        if (matchApp) {
+            authorize_approach(this);
+        } else if (matchNoApp || (this.cleared_approach && !matchApp && this.nivAutorizado !== "VIA")) {
+            cancel_approach(this);
+        }
+
+        // ---------------------------------------------------------------------
+        // 2.3. REGEX DE NÍVEL / ALTITUDE DIGITADA NO SCRATCHPAD (ex: 060, 070, FL060, VIA)
+        // ---------------------------------------------------------------------
+        const matchAlt = texto.match(/\b(?:FL)?(1[0-2][0-9]|0[2-9][0-9])\b/);
+        if (matchAlt) {
+            const nvStr = matchAlt[1].padStart(3, '0');
+            this.nivAutorizado = nvStr;
+            this.nivAutorizadoFisico = nvStr;
+            if (this.pilot) {
+                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nvStr });
+            }
+        } else if (/\bVIA\b/.test(texto)) {
+            this.nivAutorizado = "VIA";
+            this.nivAutorizadoFisico = "VIA";
+            if (this.pilot) {
+                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
+            }
         }
 
         // ---------------------------------------------------------------------

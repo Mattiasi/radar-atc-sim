@@ -10,6 +10,7 @@
 export const AIRCRAFT_PERFORMANCE = {
     B738: {
         speeds: { vMin: 140, vApp: 145, vClimb: 280, vCruise: 290, vMax: 340 },
+        speeds: { vMin: 140, vApp: 145, vCleanMin: 210, vAppMin: 140, vClimb: 280, vCruise: 290, vMax: 340 },
         rates: {
             climbNormal: 2200,          // ft/min
             climbExpedite: 3200,        // ft/min operacional padrão
@@ -37,6 +38,7 @@ export const AIRCRAFT_PERFORMANCE = {
     },
     A320: {
         speeds: { vMin: 135, vApp: 140, vClimb: 270, vCruise: 280, vMax: 330 },
+        speeds: { vMin: 135, vApp: 140, vCleanMin: 210, vAppMin: 135, vClimb: 270, vCruise: 280, vMax: 330 },
         rates: {
             climbNormal: 2100,
             climbExpedite: 3000,
@@ -63,6 +65,7 @@ export const AIRCRAFT_PERFORMANCE = {
     },
     E190: {
         speeds: { vMin: 125, vApp: 132, vClimb: 260, vCruise: 270, vMax: 320 },
+        speeds: { vMin: 125, vApp: 132, vCleanMin: 200, vAppMin: 125, vClimb: 260, vCruise: 270, vMax: 320 },
         rates: {
             climbNormal: 2400,
             climbExpedite: 3400,
@@ -89,6 +92,7 @@ export const AIRCRAFT_PERFORMANCE = {
     },
     ATR72: {
         speeds: { vMin: 110, vApp: 115, vClimb: 170, vCruise: 220, vMax: 250 },
+        speeds: { vMin: 110, vApp: 115, vCleanMin: 160, vAppMin: 110, vClimb: 170, vCruise: 220, vMax: 250 },
         rates: {
             climbNormal: 1400,
             climbExpedite: 1800,

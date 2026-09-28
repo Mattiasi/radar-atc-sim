@@ -90,6 +90,29 @@ Object.values(cartasNavegacao).forEach(categoria => {
 });
 
 /**
+ * Conjunto de fixos pertencentes a cartas de aproximação por instrumentos (IAC / AIC).
+ */
+export const fixosIAC = new Set(["LUVDI", "KOMGU", "GERSU", "URUTA", "SP139", "SP017", "SBSP"]);
+
+if (cartasNavegacao && cartasNavegacao.AIC) {
+    Object.values(cartasNavegacao.AIC).forEach(carta => {
+        if (carta.fixos) {
+            carta.fixos.forEach(f => fixosIAC.add(f.nome));
+        }
+    });
+}
+
+/**
+ * Retorna true se o fixo pertencer a uma carta de aproximação por instrumentos (IAC / AIC).
+ * @param {string} nomeFixo - Nome do fixo / waypoint
+ * @returns {boolean}
+ */
+export function isFixoIAC(nomeFixo) {
+    if (!nomeFixo) return false;
+    return fixosIAC.has(nomeFixo);
+}
+
+/**
  * Constrói dinamicamente a sequência de waypoints de uma rota a partir de qualquer fixo inicial,
  * navegando através do Grafo Direcionado de cartasNavegacao (STAR -> AIC -> Destino).
  * 

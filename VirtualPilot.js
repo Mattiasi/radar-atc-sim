@@ -10,9 +10,14 @@
  */
 
 import { getAircraftPerformance } from './PerformanceDB.js';
+import { DESCENT_MODES } from './ApproachProfileManager.js';
 
 export const VERTICAL_MODES = {
     AUTO: 'AUTO',
+    RESTRICTED_DESCENT: 'AUTO',
+    OPEN_DESCENT: 'OP-D',
+    APPROACH_PROFILE: 'APP',
+    GLIDEPATH: 'G/S',
     ATC_RATE: 'ATC-R',
     EXPEDITE: 'EXPD'
 };
@@ -41,7 +46,9 @@ export class VirtualPilot {
         
         // Determina a altitude alvo autorizada em pés
         let targetAlt = alt;
-        if (aero.targetFL !== undefined && !isNaN(aero.targetFL)) {
+        if (aero.target_altitude !== undefined && !isNaN(aero.target_altitude)) {
+            targetAlt = aero.target_altitude;
+        } else if (aero.targetFL !== undefined && !isNaN(aero.targetFL)) {
             targetAlt = aero.targetFL * 100;
         } else if (aero.nivAutorizadoFisico && aero.nivAutorizadoFisico !== "VIA" && aero.nivAutorizadoFisico !== "---") {
             const flNum = parseInt(aero.nivAutorizadoFisico, 10);
@@ -55,15 +62,17 @@ export class VirtualPilot {
         const isClimbing = altDiff > 50;
         const isDescending = altDiff < -50;
 
-        // Se estiver dentro da janela de captura de altitude (±100 ft), nivele asas e retome AUTO
+        // Se estiver dentro da janela de captura de altitude (±100 ft), nivele asas
         if (Math.abs(altDiff) <= 100) {
             aero.targetVS = 0;
-            if (this.verticalMode !== VERTICAL_MODES.AUTO) {
+            if (this.verticalMode !== VERTICAL_MODES.AUTO && !aero.cleared_approach) {
                 this.verticalMode = VERTICAL_MODES.AUTO;
                 this.clampedAtStructural = false;
                 aero.temModificacaoVertical = false;
             }
-            aero.verticalMode = this.verticalMode;
+            aero.verticalMode = aero.cleared_approach
+                ? (aero.descent_mode === DESCENT_MODES.GLIDEPATH ? 'G/S' : 'APP')
+                : (aero.verticalMode || this.verticalMode);
             return;
         }
 
@@ -71,6 +80,9 @@ export class VirtualPilot {
         // MÁQUINA DE ESTADOS VERTICAL
         // =====================================================================
         switch (this.verticalMode) {
+            case 'APP':
+            case 'G/S':
+            case 'OP-D':
             case VERTICAL_MODES.AUTO: {
                 this.clampedAtStructural = false;
                 const dtg = Math.max(0.5, (aero.distanceToGoNM !== undefined) ? aero.distanceToGoNM : (aero.dtg || 20.0));
@@ -95,7 +107,16 @@ export class VirtualPilot {
 
                 // Gestão de velocidade: mantém velocidade de subida ou segue perfil DTG em descida
                 if (!aero.velManual) {
-                    if (isDescending) {
+                    if (aero.velocidadeMinima) {
+                        const vCleanMin = (perf.speeds && perf.speeds.vCleanMin) || 210;
+                        const vAppMin = (perf.speeds && perf.speeds.vAppMin) || perf.minApproachSpeed || 135;
+                        aero.targetIAS = (typeof aero.estaProximaDoAIC === 'function' && aero.estaProximaDoAIC())
+                            ? vAppMin
+                            : vCleanMin;
+                    } else if (aero.cleared_approach) {
+                        const vAppMin = (perf.speeds && perf.speeds.vAppMin) || perf.minApproachSpeed || 140;
+                        aero.targetIAS = vAppMin;
+                    } else if (isDescending) {
                         aero.targetIAS = this.calcularIASPerfilDTG(dtg, perf);
                     } else if (isClimbing) {
                         aero.targetIAS = perf.speeds?.vClimb || 250;

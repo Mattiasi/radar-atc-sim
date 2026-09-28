@@ -24,6 +24,23 @@ import { TASK_TYPES } from './pilotEngine.js';
 export function formatarLinhaRazaoModo(aero) {
     if (!aero) return { textoRazao: '---', textoModo: 'AUTO', textoCompleto: '--- AUTO', clamped: false };
 
+    const modo = aero.verticalMode
+        || (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
+        || VERTICAL_MODES.AUTO;
+
+    // Se estiver em modo de aproximação (APP / G/S) ou autorizado procedimento,
+    // a razão e o modo APP não devem aparecer na etiqueta
+    if (aero.cleared_approach || aero.autorizadoProcedimento || modo === 'APP' || modo === 'G/S') {
+        const temModManual = Boolean(
+            aero.temModificacaoVertical ||
+            modo === VERTICAL_MODES.ATC_RATE ||
+            modo === VERTICAL_MODES.EXPEDITE
+        );
+        if (!temModManual) {
+            return { textoRazao: '', textoModo: '', textoCompleto: '', clamped: false };
+        }
+    }
+
     const vs = (aero.currentVS !== undefined) 
         ? aero.currentVS 
         : ((aero.posicaoRadar && aero.posicaoRadar.currentVS !== undefined)
@@ -39,12 +56,11 @@ export function formatarLinhaRazaoModo(aero) {
         textoRazao = `↓${centena}`;
     }
 
-    const modo = (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
-        ? aero.posicaoRadar.verticalMode
-        : (aero.verticalMode || VERTICAL_MODES.AUTO);
-    const clamped = (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural !== undefined)
-        ? aero.posicaoRadar.clampedAtStructural
-        : Boolean(aero.clampedAtStructural);
+    const clamped = (aero.clampedAtStructural !== undefined)
+        ? aero.clampedAtStructural
+        : ((aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural !== undefined)
+            ? aero.posicaoRadar.clampedAtStructural
+            : false);
     const indicadorClamp = clamped ? '*' : '';
 
     const textoCompleto = `${textoRazao}${indicadorClamp} ${modo}`;
@@ -55,25 +71,44 @@ export function formatarLinhaRazaoModo(aero) {
  * Determina se as linhas 5 e 6 da etiqueta devem estar visíveis.
  * Regra: Ficam visíveis se a etiqueta estiver expandida pelo controlador (clique no callsign)
  * OU se houver modificação ativa do controlador (razão vertical customizada / EXPEDITE / clamp).
+ * A autorização de aproximação (APP) NÃO torna as linhas visíveis.
  * @param {Object} aero - Instância da aeronave
  * @returns {boolean}
  */
 export function estaLinhasExtrasVisiveis(aero) {
     if (!aero) return false;
-    const temModificacao = Boolean(
+    const vMode = aero.verticalMode
+        || (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
+        || VERTICAL_MODES.AUTO;
+
+    // Se estiver em aproximação autorizada / APP, a razão e modo APP não devem aparecer na 6ª linha
+    if (aero.cleared_approach || aero.autorizadoProcedimento || vMode === 'APP' || vMode === 'G/S') {
+        const temModManual = Boolean(
+            aero.temModificacaoVertical ||
+            vMode === VERTICAL_MODES.ATC_RATE ||
+            vMode === VERTICAL_MODES.EXPEDITE
+        );
+        if (!temModManual) {
+            return false;
+        }
+    }
+
+    // Apenas modificações manuais do ATC (razão imposta ou expedite) ou clamp contam como modificação
+    const ehModificacaoManualATC = Boolean(
         aero.temModificacaoVertical ||
-        (aero.verticalMode && aero.verticalMode !== VERTICAL_MODES.AUTO) ||
-        (aero.posicaoRadar && aero.posicaoRadar.verticalMode && aero.posicaoRadar.verticalMode !== VERTICAL_MODES.AUTO) ||
+        vMode === VERTICAL_MODES.ATC_RATE ||
+        vMode === VERTICAL_MODES.EXPEDITE ||
         aero.clampedAtStructural ||
         (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural)
     );
-    return Boolean(aero.expandida || temModificacao);
+    return Boolean(aero.expandida || ehModificacaoManualATC);
 }
 
 /**
  * Renderiza a 6ª linha na etiqueta de dados no Canvas do radar (Razão vertical e Modo de escolha).
  * A 5ª linha fica intencionalmente vazia (reservada para uso futuro).
  * As linhas 5 e 6 só são exibidas se expandidas pelo controlador ou se houver modificação ativa.
+ * Quando o modo APP estiver ativo, a razão e o modo APP não são renderizados.
  * @param {CanvasRenderingContext2D} ctx - Contexto 2D do Canvas
  * @param {Object} aero - Instância da aeronave
  * @param {number} textX - Posição X âncora do texto
@@ -84,7 +119,24 @@ export function estaLinhasExtrasVisiveis(aero) {
 export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada = false) {
     if (!estaLinhasExtrasVisiveis(aero)) return;
 
+    // Se a aeronave estiver com aproximação autorizada / modo APP, não renderiza razão e modo APP
+    const vMode = (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
+        ? aero.posicaoRadar.verticalMode
+        : (aero.verticalMode || VERTICAL_MODES.AUTO);
+    if (aero.cleared_approach || aero.autorizadoProcedimento || vMode === 'APP' || vMode === 'G/S') {
+        const temModManual = Boolean(
+            aero.temModificacaoVertical ||
+            vMode === VERTICAL_MODES.ATC_RATE ||
+            vMode === VERTICAL_MODES.EXPEDITE
+        );
+        if (!temModManual) {
+            return;
+        }
+    }
+
     const { textoCompleto, clamped } = formatarLinhaRazaoModo(aero);
+    if (!textoCompleto || !textoCompleto.trim()) return;
+
     const posX = textX;
     // Linha 1: ly - 15 (Callsign/Tipo)
     // Linha 2: ly - 2 (Alt/CFL)
@@ -105,14 +157,8 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
         const boxX = isRight ? (posX - 2) : (posX - 74);
         ctx.fillRect(boxX, posY - 13, 76, 15);
         ctx.fillStyle = '#00ffff';
-    } else if (clamped) {
-        // Destaque âmbar/amarelo quando estiver no teto estrutural (Hard Clamp ativo)
-        ctx.fillStyle = '#ffaa00';
-    } else if (aero.verticalMode === VERTICAL_MODES.ATC_RATE || aero.verticalMode === VERTICAL_MODES.EXPEDITE) {
-        // Razão comandada pelo ATC exibida em verde radar discreto
-        ctx.fillStyle = '#00e676';
     } else {
-        // Modo AUTO em cor padrão
+        // O texto permanece preto (#000000) em todos os modos (AUTO, ATC-R, EXPD)
         ctx.fillStyle = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
     }
 

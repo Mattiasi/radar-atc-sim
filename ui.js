@@ -274,12 +274,29 @@ export class ScratchpadController {
 }
 
 /**
+ * Adiciona ou remove um token de uma string delimitada por espaços.
+ * @param {string} texto
+ * @param {string} token
+ * @returns {string}
+ */
+export function toggleTokenNoTexto(texto, token) {
+    let partes = (texto || "").trim().split(/\s+/).filter(Boolean);
+    const idx = partes.findIndex(p => p.toUpperCase() === token.toUpperCase());
+    if (idx >= 0) {
+        partes.splice(idx, 1);
+    } else {
+        partes.push(token.toUpperCase());
+    }
+    return partes.join(' ');
+}
+
+/**
  * Encapsula o menu dropdown flutuante de seleção de Flight Levels (FL).
  */
 export class MenuNivelController {
     constructor() {
         this.menu = null;
-        this.niveis = ["110","105","100","095","090","085","080","075","070","065","060","055","050","045","VIA","---"];
+        this.niveis = ["110","105","100","095","090","085","080","075","070","065","060","055","050","045","VIA","APP","---"];
     }
 
     inicializar() {
@@ -302,13 +319,29 @@ export class MenuNivelController {
             item.onmousedown = (e) => {
                 if (state.aeroEditandoNivel) {
                     const aero = state.aeroEditandoNivel;
-                    aero.nivAutorizado = nv;
 
-                    // Despacha no canal VERTICAL do piloto virtual
-                    if (aero.pilot) {
-                        aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nv });
+                    if (nv === "SR") {
+                        aero.textoLivre = toggleTokenNoTexto(aero.textoLivre, "SR");
+                        aero.analisarComandosTexto();
+                    } else if (nv === "MIN") {
+                        aero.textoLivre = toggleTokenNoTexto(aero.textoLivre, "MIN");
+                        aero.analisarComandosTexto();
+                    } else if (nv === "APP") {
+                        aero.textoLivre = toggleTokenNoTexto(aero.textoLivre, "APP");
+                        aero.analisarComandosTexto();
                     } else {
-                        aero.nivAutorizadoFisico = nv;
+                        aero.nivAutorizado = nv;
+
+                        if (nv === "VIA") {
+                            aero.autorizadoProcedimento = true;
+                        }
+
+                        // Despacha no canal VERTICAL do piloto virtual
+                        if (aero.pilot) {
+                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nv });
+                        } else {
+                            aero.nivAutorizadoFisico = nv;
+                        }
                     }
                 }
 
