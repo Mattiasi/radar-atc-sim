@@ -48,50 +48,50 @@ export const TASK_TYPES = {
 export const BASE_TASK_CONFIG = {
     [TASK_TYPES.HEADING]: {
         channel: TASK_CHANNELS.LATERAL,
-        baseProcessing: 6.0, // Readback mental, escuta ATC e identificação da proa (~1.5 varreduras)
-        baseSetting: 8.0,    // Rotação do knob de proa no MCP/FCU (~2 varreduras) (Total: 3 a 5 varreduras / ~12-18s)
+        baseProcessing: 7.5, // Readback mental, escuta ATC e identificação da proa (~2 varreduras)
+        baseSetting: 8.5,    // Rotação do knob de proa no MCP/FCU (~2 varreduras) (Total: 4 a 6 varreduras / ~16-24s)
         avionicsFactor: 1.0  // MCP/FCU direto na linha de visão
     },
     [TASK_TYPES.DIRECT_TO]: {
         channel: TASK_CHANNELS.LATERAL,
-        baseProcessing: 7.5, // Localização mental do fixo na carta/espaço aéreo (~1.8 varreduras)
-        baseSetting: 11.5,   // Olhar para o pedestal, página DIR, digitação no MCDU, LSK, crosscheck e EXEC (~2.8 varreduras) (Total: 4 a 6 varreduras / ~18-24s)
-        avionicsFactor: 1.0  // FMS/MCDU requer digitação e confirmação cruzada
+        baseProcessing: 9.0, // Localização mental do fixo na carta/espaço aéreo (~2 varreduras)
+        baseSetting: 13.0,   // Olhar para o pedestal, página DIR, digitação no MCDU, LSK, crosscheck e EXEC (~3 a 5 varreduras) (Total: 6 a 8 varreduras / ~24-32s)
+        avionicsFactor: 1.05 // FMS/MCDU requer digitação e confirmação cruzada
     },
     [TASK_TYPES.ROUTE]: {
         channel: TASK_CHANNELS.LATERAL,
-        baseProcessing: 5.5,
-        baseSetting: 7.5,
+        baseProcessing: 7.0,
+        baseSetting: 9.0,
         avionicsFactor: 1.0
     },
     [TASK_TYPES.ALTITUDE]: {
         channel: TASK_CHANNELS.VERTICAL,
-        baseProcessing: 6.0, // Readback e confirmação do novo nível (~1.5 varreduras)
-        baseSetting: 8.0,    // Rotação do seletor de altitude no MCP e acoplamento (pull/push) (~2 varreduras) (Total: 3 a 5 varreduras / ~12-18s)
+        baseProcessing: 7.5, // Readback e confirmação do novo nível (~2 varreduras)
+        baseSetting: 8.5,    // Rotação do seletor de altitude no MCP e acoplamento (pull/push) (~2 varreduras) (Total: 4 a 6 varreduras / ~16-24s)
         avionicsFactor: 1.0
     },
     [TASK_TYPES.VERTICAL_RATE]: {
         channel: TASK_CHANNELS.VERTICAL,
-        baseProcessing: 5.5,
-        baseSetting: 7.5,
+        baseProcessing: 7.0,
+        baseSetting: 8.5,
         avionicsFactor: 1.0
     },
     [TASK_TYPES.EXPEDITE]: {
         channel: TASK_CHANNELS.VERTICAL,
-        baseProcessing: 4.0,
-        baseSetting: 6.0,
+        baseProcessing: 5.0,
+        baseSetting: 7.0,
         avionicsFactor: 0.95
     },
     [TASK_TYPES.SPEED]: {
         channel: TASK_CHANNELS.LONGITUDINAL,
-        baseProcessing: 5.5, // Readback de velocidade (~1.4 varreduras)
-        baseSetting: 7.5,    // Rotação do knob de velocidade no MCP (~1.8 varreduras) (Total: 3 a 5 varreduras / ~12-17s)
+        baseProcessing: 7.0, // Readback de velocidade (~2 varreduras)
+        baseSetting: 8.0,    // Rotação do knob de velocidade no MCP (~2 varreduras) (Total: 4 a 6 varreduras / ~15-23s)
         avionicsFactor: 1.0
     },
     [TASK_TYPES.RESUME_SPEED]: {
         channel: TASK_CHANNELS.LONGITUDINAL,
-        baseProcessing: 5.0,
-        baseSetting: 7.0,
+        baseProcessing: 6.0,
+        baseSetting: 8.0,
         avionicsFactor: 1.0
     }
 };
@@ -101,12 +101,12 @@ export const BASE_TASK_CONFIG = {
  * Evita tempos de reação artificiais e planos, gerando uma curva em sino realista.
  * 
  * @param {number} [mean=1.0] Média da distribuição
- * @param {number} [stdDev=0.10] Desvio padrão
- * @param {number} [min=0.85] Limite inferior de segurança
- * @param {number} [max=1.20] Limite superior de segurança
+ * @param {number} [stdDev=0.12] Desvio padrão
+ * @param {number} [min=0.80] Limite inferior de segurança
+ * @param {number} [max=1.25] Limite superior de segurança
  * @returns {number} Multiplicador estocástico
  */
-export function gerarRuidoGaussiano(mean = 1.0, stdDev = 0.10, min = 0.85, max = 1.20) {
+export function gerarRuidoGaussiano(mean = 1.0, stdDev = 0.12, min = 0.80, max = 1.25) {
     let u1 = Math.random();
     let u2 = Math.random();
     while (u1 === 0) u1 = Math.random(); // Evita log(0)
@@ -139,8 +139,8 @@ export class PilotTask {
 
         // Recupera parâmetros nominais
         const config = BASE_TASK_CONFIG[this.type] || {
-            baseProcessing: 6.0,
-            baseSetting: 8.0,
+            baseProcessing: 7.5,
+            baseSetting: 8.5,
             avionicsFactor: 1.0
         };
 
@@ -148,13 +148,13 @@ export class PilotTask {
         const workload = pilot.calculateWorkload();
         const avionics = config.avionicsFactor || 1.0;
 
-        // Fórmula: TaskPhaseTime = BaseTime * PilotProfileFactor * (1 + (Workload * 0.40)) * AvionicsFactor * GaussianNoise()
-        this.processingDuration = config.baseProcessing * pilotFactor * (1 + (workload * 0.40)) * avionics * gerarRuidoGaussiano();
-        this.settingDuration = config.baseSetting * pilotFactor * (1 + (workload * 0.40)) * avionics * gerarRuidoGaussiano();
+        // Fórmula: TaskPhaseTime = BaseTime * PilotProfileFactor * (1 + (Workload * 0.50)) * AvionicsFactor * GaussianNoise()
+        this.processingDuration = config.baseProcessing * pilotFactor * (1 + (workload * 0.50)) * avionics * gerarRuidoGaussiano();
+        this.settingDuration = config.baseSetting * pilotFactor * (1 + (workload * 0.50)) * avionics * gerarRuidoGaussiano();
 
-        // Limites físicos de segurança (mínimo de ~2.5s por fase)
-        this.processingDuration = Math.max(2.5, this.processingDuration);
-        this.settingDuration = Math.max(2.5, this.settingDuration);
+        // Limites físicos de segurança (mínimo de ~3.0s por fase)
+        this.processingDuration = Math.max(3.0, this.processingDuration);
+        this.settingDuration = Math.max(3.0, this.settingDuration);
     }
 
     /**
