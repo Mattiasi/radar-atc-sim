@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { correcaoLon } from './utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
 import { scratchpadUI, menuNivelUI } from './ui.js';
+import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 
 /**
  * ============================================================================
@@ -62,9 +63,12 @@ export function configurarEventosUsuario() {
     state.canvas.addEventListener('mousedown', (e) => {
         if (e.button === 0) { // Botão esquerdo do mouse
             
-            // Fecha menu dropdown de Flight Level se aberto
+            // Fecha menu dropdown de Flight Level e de Razão Vertical se abertos
             if (menuNivelUI.estaAberto()) {
                 menuNivelUI.fechar();
+            }
+            if (menuRazaoController.estaAberto()) {
+                menuRazaoController.fechar();
             }
             
             // Ignora cliques que atingiram painéis HTML flutuantes, botões de topo ou o scratchpad
@@ -97,11 +101,19 @@ export function configurarEventosUsuario() {
                 let minX = isRight ? lx + 5 : lx - 135; 
                 let maxX = isRight ? lx + 135 : lx - 5;
                 
+                const linhasExtras = estaLinhasExtrasVisiveis(aero);
+                const maxEtiquetaY = linhasExtras ? (ly + 58) : (ly + 28);
+                
                 // Se o clique caiu dentro da Bounding Box da etiqueta
-                if (e.clientX >= minX && e.clientX <= maxX && e.clientY >= ly - 25 && e.clientY <= ly + 40) {
+                if (e.clientX >= minX && e.clientX <= maxX && e.clientY >= ly - 27 && e.clientY <= maxEtiquetaY) {
                     clicouEtiqueta = true;
                     
-                    if (e.clientY >= ly + 12 && e.clientY <= ly + 35) { 
+                    if (linhasExtras && e.clientY >= ly + 38 && e.clientY <= ly + 58) {
+                        // Linha 6 da etiqueta: Razão Vertical e Modo (AUTO, ATC-R, EXPD)
+                        scratchpadUI.confirmar();
+                        menuRazaoController.abrir(aero, e.clientX, e.clientY);
+                        return;
+                    } else if (e.clientY >= ly + 12 && e.clientY <= ly + 26) { 
                         // Linha 4 da etiqueta: Scratchpad / Texto Livre (só abre se clicar especificamente nesta linha)
                         clicouEmTextoAtivo = true;
                         if (state.aeroEditandoTexto !== aero) {
@@ -121,9 +133,15 @@ export function configurarEventosUsuario() {
                         } else { 
                             // Clicou fora do campo CFL: inicia reposicionamento da etiqueta
                             state.aeroArrastandoLabel = aero; 
+                            state.aeroClicadoCallsign = null;
                         }
+                    } else if (e.clientY >= ly - 27 && e.clientY <= ly - 12) {
+                        // Linha 1 da etiqueta: Callsign e Tipo de Aeronave
+                        state.aeroClicadoCallsign = aero;
+                        state.aeroArrastandoLabel = aero;
                     } else { 
-                        // Linha 1 (Callsign) ou Linha 3 (Velocidade): inicia reposicionamento da etiqueta
+                        // Linha 3 (Velocidade) ou área livre: inicia reposicionamento da etiqueta
+                        state.aeroClicadoCallsign = null;
                         state.aeroArrastandoLabel = aero; 
                     }
                     
@@ -271,14 +289,22 @@ export function configurarEventosUsuario() {
             // 2. Se clicou na etiqueta e soltou sem arrastar:
             if (state.aeroArrastandoLabel && !state.arrastouLabel) {
                 const aero = state.aeroArrastandoLabel;
-                // Se a etiqueta foi afastada (labelDist > 40), ao clicar gruda no plot!
-                if (aero.labelDist > 40) {
+                if (state.aeroClicadoCallsign === aero) {
+                    // Clique no Callsign (Linha 1):
+                    // Se não estava expandida: expande (expandida = true) e callsign fica verde.
+                    // Se já estava expandida: recolhe (expandida = false).
+                    // Se não houver alteração do controlador, o callsign fica preto e as linhas 5 e 6 somem.
+                    // Se houver alteração do controlador, as linhas 5 e 6 permanecem visíveis.
+                    aero.expandida = !aero.expandida;
+                    desenharRadar();
+                } else if (aero.labelDist > 40) {
+                    // Se a etiqueta foi afastada (labelDist > 40), ao clicar fora do callsign gruda no plot!
                     aero.labelDist = 40;
                     aero.labelAngle = Math.PI / 4;
                     desenharRadar();
                 }
-                // Não abre scratchpad aqui; deve-se clicar especificamente na 4ª linha da etiqueta.
             }
+            state.aeroClicadoCallsign = null;
             state.arrastando = false; 
             state.aeroArrastandoLabel = null;
         }
@@ -288,6 +314,7 @@ export function configurarEventosUsuario() {
     state.canvas.addEventListener('mouseleave', () => { 
         state.arrastando = false; 
         state.aeroArrastandoLabel = null; 
+        state.aeroClicadoCallsign = null;
         state.cliqueVetorAtivoX = null;
         state.arrastouVetorAtivo = false;
         state.canvas.style.cursor = 'default';

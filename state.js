@@ -31,8 +31,10 @@ export const state = {
 
     // --- INTERAÇÃO COM ETIQUETAS (DATA BLOCKS) ---
     aeroArrastandoLabel: null, // Instância da Aeronave cuja etiqueta está a ser reposicionada com o rato
+    aeroClicadoCallsign: null, // Instância da Aeronave cujo callsign foi clicado no mousedown
     aeroEditandoTexto: null,   // Instância da Aeronave com o bloco de texto (scratchpad) ativo
     aeroEditandoNivel: null,   // Instância da Aeronave com o menu flutuante de Flight Level (FL) aberto
+    aeroEditandoRazao: null,   // Instância da Aeronave com o menu flutuante de Razão Vertical aberto
     arrastouLabel: false,      // Trava lógica para diferenciar um clique rápido (para editar texto) de um arraste longo (para mover a etiqueta)
     labelClickX: 0,            // Coordenada X de onde a etiqueta foi agarrada (para calcular a distância do arraste)
     labelClickY: 0,            // Coordenada Y de onde a etiqueta foi agarrada

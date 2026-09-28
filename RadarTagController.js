@@ -1,0 +1,405 @@
+/**
+ * ============================================================================
+ * CONTROLADOR DA ETIQUETA RADAR E MENU VERTICAL (RadarTagController.js)
+ * ============================================================================
+ * Responsável por:
+ * 1. Formatar a 5ª linha da etiqueta de dados (razão vertical com setas ↑/↓ e modo vertical).
+ * 2. Renderizar a 5ª linha no Canvas do radar com destaques e aviso de teto estrutural.
+ * 3. Gerenciar o menu interativo de razão vertical (AUTO, INCREASE, DECREASE, EXPEDITE, SET).
+ * 4. Aplicar a trava de segurança física (Hard Clamp Rule) no comando SET.
+ * ============================================================================
+ */
+
+import { state } from './state.js';
+import { desenharRadar } from './render.js';
+import { getAircraftPerformance } from './PerformanceDB.js';
+import { VERTICAL_MODES } from './VirtualPilot.js';
+import { TASK_TYPES } from './pilotEngine.js';
+
+/**
+ * Formata a string de razão vertical e modo para a 5ª linha da etiqueta.
+ * @param {Object} aero - Instância da aeronave ou snapshot
+ * @returns {Object} { textoRazao, textoModo, textoCompleto, clamped }
+ */
+export function formatarLinhaRazaoModo(aero) {
+    if (!aero) return { textoRazao: '---', textoModo: 'AUTO', textoCompleto: '--- AUTO', clamped: false };
+
+    const vs = (aero.currentVS !== undefined) 
+        ? aero.currentVS 
+        : ((aero.posicaoRadar && aero.posicaoRadar.currentVS !== undefined)
+            ? aero.posicaoRadar.currentVS 
+            : (aero.verticalSpeed || 0));
+
+    let textoRazao = '---';
+    if (vs >= 100) {
+        const centena = Math.round(vs / 100);
+        textoRazao = `↑${centena}`;
+    } else if (vs <= -100) {
+        const centena = Math.round(Math.abs(vs) / 100);
+        textoRazao = `↓${centena}`;
+    }
+
+    const modo = (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
+        ? aero.posicaoRadar.verticalMode
+        : (aero.verticalMode || VERTICAL_MODES.AUTO);
+    const clamped = (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural !== undefined)
+        ? aero.posicaoRadar.clampedAtStructural
+        : Boolean(aero.clampedAtStructural);
+    const indicadorClamp = clamped ? '*' : '';
+
+    const textoCompleto = `${textoRazao}${indicadorClamp} ${modo}`;
+    return { textoRazao, textoModo: modo, textoCompleto, clamped };
+}
+
+/**
+ * Determina se as linhas 5 e 6 da etiqueta devem estar visíveis.
+ * Regra: Ficam visíveis se a etiqueta estiver expandida pelo controlador (clique no callsign)
+ * OU se houver modificação ativa do controlador (razão vertical customizada / EXPEDITE / clamp).
+ * @param {Object} aero - Instância da aeronave
+ * @returns {boolean}
+ */
+export function estaLinhasExtrasVisiveis(aero) {
+    if (!aero) return false;
+    const temModificacao = Boolean(
+        aero.temModificacaoVertical ||
+        (aero.verticalMode && aero.verticalMode !== VERTICAL_MODES.AUTO) ||
+        (aero.posicaoRadar && aero.posicaoRadar.verticalMode && aero.posicaoRadar.verticalMode !== VERTICAL_MODES.AUTO) ||
+        aero.clampedAtStructural ||
+        (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural)
+    );
+    return Boolean(aero.expandida || temModificacao);
+}
+
+/**
+ * Renderiza a 6ª linha na etiqueta de dados no Canvas do radar (Razão vertical e Modo de escolha).
+ * A 5ª linha fica intencionalmente vazia (reservada para uso futuro).
+ * As linhas 5 e 6 só são exibidas se expandidas pelo controlador ou se houver modificação ativa.
+ * @param {CanvasRenderingContext2D} ctx - Contexto 2D do Canvas
+ * @param {Object} aero - Instância da aeronave
+ * @param {number} textX - Posição X âncora do texto
+ * @param {number} ly - Posição Y âncora da etiqueta
+ * @param {boolean} isRight - True se a etiqueta está desenhada à direita do blip
+ * @param {boolean} [estaSelecionada=false] - True se o menu de razão estiver aberto
+ */
+export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada = false) {
+    if (!estaLinhasExtrasVisiveis(aero)) return;
+
+    const { textoCompleto, clamped } = formatarLinhaRazaoModo(aero);
+    const posX = textX;
+    // Linha 1: ly - 15 (Callsign/Tipo)
+    // Linha 2: ly - 2 (Alt/CFL)
+    // Linha 3: ly + 11 (GS/Dest)
+    // Linha 4: ly + 24 (Scratchpad)
+    // Linha 5: ly + 37 (Vazia - reservada)
+    // Linha 6: ly + 50 (Razão Vertical e Modo)
+    const posY = ly + 50;
+
+    ctx.save();
+    ctx.font = '11px monospace';
+    ctx.textAlign = isRight ? 'left' : 'right';
+    ctx.textBaseline = 'bottom';
+
+    // Se o menu de razão estiver aberto para este avião, desenha caixa de highlight ciano
+    if (estaSelecionada) {
+        ctx.fillStyle = '#004488';
+        const boxX = isRight ? (posX - 2) : (posX - 74);
+        ctx.fillRect(boxX, posY - 13, 76, 15);
+        ctx.fillStyle = '#00ffff';
+    } else if (clamped) {
+        // Destaque âmbar/amarelo quando estiver no teto estrutural (Hard Clamp ativo)
+        ctx.fillStyle = '#ffaa00';
+    } else if (aero.verticalMode === VERTICAL_MODES.ATC_RATE || aero.verticalMode === VERTICAL_MODES.EXPEDITE) {
+        // Razão comandada pelo ATC exibida em verde radar discreto
+        ctx.fillStyle = '#00e676';
+    } else {
+        // Modo AUTO em cor padrão
+        ctx.fillStyle = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
+    }
+
+    ctx.fillText(textoCompleto, posX, posY);
+    ctx.restore();
+}
+
+// Alias de compatibilidade
+export const renderizarLinha5 = renderizarLinha6;
+
+/**
+ * Controlador do Menu Dropdown Flutuante de Razão Vertical (ATC Interaction).
+ */
+export class MenuRazaoController {
+    constructor() {
+        this.menu = null;
+        this.aeroAtiva = null;
+        this.inputPrompt = null;
+    }
+
+    /**
+     * Inicializa o elemento HTML do menu no DOM.
+     */
+    inicializar() {
+        let menuExistente = document.getElementById('menuRazaoVertical');
+        if (menuExistente) {
+            this.menu = menuExistente;
+        } else {
+            this.menu = document.createElement('div');
+            this.menu.id = 'menuRazaoVertical';
+            this.menu.className = 'menu-flutuante-atc';
+            document.body.appendChild(this.menu);
+        }
+
+        // Estilos essenciais via JS para garantir independência do CSS
+        this.menu.style.position = 'absolute';
+        this.menu.style.backgroundColor = '#222222';
+        this.menu.style.border = '1px solid #00ffff';
+        this.menu.style.color = '#ffffff';
+        this.menu.style.fontFamily = 'monospace';
+        this.menu.style.fontSize = '12px';
+        this.menu.style.zIndex = '120';
+        this.menu.style.borderRadius = '4px';
+        this.menu.style.boxShadow = '2px 2px 10px rgba(0,0,0,0.7)';
+        this.menu.style.display = 'none';
+        this.menu.style.minWidth = '130px';
+        this.menu.style.userSelect = 'none';
+
+        // Impede propagação de clique para o canvas
+        this.menu.onmousedown = (e) => e.stopPropagation();
+
+        this.construirOpcoes();
+    }
+
+    /**
+     * Constrói as 5 opções do menu de razão vertical:
+     * 1. AUTO
+     * 2. INCREASE (+500 ft/min)
+     * 3. DECREASE (-500 ft/min)
+     * 4. EXPEDITE
+     * 5. SET [Valor]
+     */
+    construirOpcoes() {
+        if (!this.menu) return;
+        this.menu.innerHTML = '';
+
+        const criarItem = (rotulo, acao, corDestaque = '#00ffff') => {
+            const item = document.createElement('div');
+            item.className = 'menu-item-razao';
+            item.innerText = rotulo;
+            item.style.padding = '6px 10px';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+
+            item.onmouseenter = () => {
+                item.style.backgroundColor = corDestaque;
+                item.style.color = '#000000';
+                item.style.fontWeight = 'bold';
+            };
+            item.onmouseleave = () => {
+                item.style.backgroundColor = 'transparent';
+                item.style.color = '#ffffff';
+                item.style.fontWeight = 'normal';
+            };
+
+            item.onmousedown = (e) => {
+                e.stopPropagation();
+                if (this.aeroAtiva) {
+                    acao(this.aeroAtiva);
+                }
+                this.fechar();
+                desenharRadar();
+            };
+
+            return item;
+        };
+
+        // 1. AUTO: Reverte para o perfil calculado pelo piloto virtual
+        this.menu.appendChild(criarItem('AUTO (VNAV)', (aero) => {
+            aero.temModificacaoVertical = false;
+            aero.clampedAtStructural = false;
+            if (aero.pilot) {
+                aero.pilot.dispatch('VERTICAL', 'AUTO', {});
+            } else if (aero.virtualPilot) {
+                aero.virtualPilot.autoCommand();
+            } else {
+                aero.verticalMode = VERTICAL_MODES.AUTO;
+                aero.clampedAtStructural = false;
+            }
+        }, '#00ffff'));
+
+        // 2. INCREASE: Incrementa magnitude em +500 ft/min
+        this.menu.appendChild(criarItem('INCREASE (+500)', (aero) => {
+            aero.temModificacaoVertical = true;
+            const perf = getAircraftPerformance(aero.tipo);
+            const currentVS = aero.targetVS || aero.currentVS || (aero.verticalSpeed || -1500);
+            const isClimbing = currentVS >= 0;
+            let newRate;
+            if (isClimbing) {
+                newRate = currentVS + 500;
+                if (newRate > perf.rates.climbStructuralMax) {
+                    newRate = perf.rates.climbStructuralMax;
+                    aero.clampedAtStructural = true;
+                } else {
+                    aero.clampedAtStructural = false;
+                }
+            } else {
+                newRate = currentVS - 500;
+                if (newRate < perf.rates.descentStructuralMax) {
+                    newRate = perf.rates.descentStructuralMax;
+                    aero.clampedAtStructural = true;
+                } else {
+                    aero.clampedAtStructural = false;
+                }
+            }
+
+            if (aero.pilot) {
+                aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: newRate });
+            } else if (aero.virtualPilot) {
+                aero.virtualPilot.increaseRateCommand();
+            }
+        }, '#76ff03'));
+
+        // 3. DECREASE: Reduz magnitude em -500 ft/min
+        this.menu.appendChild(criarItem('DECREASE (-500)', (aero) => {
+            aero.temModificacaoVertical = true;
+            const currentVS = aero.targetVS || aero.currentVS || (aero.verticalSpeed || -1500);
+            const isClimbing = currentVS >= 0;
+            let newRate = isClimbing ? Math.max(500, currentVS - 500) : Math.min(-500, currentVS + 500);
+            aero.clampedAtStructural = false;
+
+            if (aero.pilot) {
+                aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: newRate });
+            } else if (aero.virtualPilot) {
+                aero.virtualPilot.decreaseRateCommand();
+            }
+        }, '#ffb300'));
+
+        // 4. EXPEDITE: Razão operacional máxima (climbExpedite ou descentExpedite)
+        this.menu.appendChild(criarItem('EXPEDITE', (aero) => {
+            aero.temModificacaoVertical = true;
+            aero.clampedAtStructural = false;
+            if (aero.pilot) {
+                aero.pilot.dispatch('VERTICAL', TASK_TYPES.EXPEDITE, {});
+            } else if (aero.virtualPilot) {
+                aero.virtualPilot.expediteCommand();
+            } else {
+                aero.verticalMode = VERTICAL_MODES.EXPEDITE;
+            }
+        }, '#ff5252'));
+
+        // 5. SET [Valor]: Entrada numérica com Hard Clamp Rule
+        const itemSet = document.createElement('div');
+        itemSet.className = 'menu-item-razao';
+        itemSet.innerText = 'SET (Custom)...';
+        itemSet.style.padding = '6px 10px';
+        itemSet.style.cursor = 'pointer';
+
+        itemSet.onmouseenter = () => {
+            itemSet.style.backgroundColor = '#00ffff';
+            itemSet.style.color = '#000000';
+            itemSet.style.fontWeight = 'bold';
+        };
+        itemSet.onmouseleave = () => {
+            itemSet.style.backgroundColor = 'transparent';
+            itemSet.style.color = '#ffffff';
+            itemSet.style.fontWeight = 'normal';
+        };
+
+        itemSet.onmousedown = (e) => {
+            e.stopPropagation();
+            const aero = this.aeroAtiva;
+            this.fechar();
+            if (aero) {
+                this.abrirPromptSet(aero);
+            }
+        };
+
+        this.menu.appendChild(itemSet);
+    }
+
+    /**
+     * Abre prompt modal limpo para digitação da razão no comando SET.
+     * Aplica o Hard Clamp Rule imediatamente sobre a entrada do usuário.
+     * @param {Object} aero - Instância da aeronave
+     */
+    abrirPromptSet(aero) {
+        const perf = getAircraftPerformance(aero.tipo);
+        const atual = aero.targetVS || aero.currentVS || (aero.verticalSpeed || -1500);
+
+        const resposta = window.prompt(
+            `[SET VERTICAL RATE - ${aero.callsign} (${aero.tipo})]\n` +
+            `Digite a razão em ft/min (+ para subida, - para descida).\n` +
+            `Teto Estrutural Máximo: +${perf.rates.climbStructuralMax} ft/min / ${perf.rates.descentStructuralMax} ft/min:`,
+            atual.toString()
+        );
+
+        if (resposta !== null && resposta.trim() !== "") {
+            const num = parseInt(resposta, 10);
+            if (!isNaN(num) && num !== 0) {
+                const isClimbing = num > 0;
+                let clampedRate = num;
+                let wasClamped = false;
+
+                if (isClimbing) {
+                    if (num > perf.rates.climbStructuralMax) {
+                        clampedRate = perf.rates.climbStructuralMax;
+                        wasClamped = true;
+                    }
+                } else {
+                    if (num < perf.rates.descentStructuralMax) {
+                        clampedRate = perf.rates.descentStructuralMax;
+                        wasClamped = true;
+                    }
+                }
+
+                aero.clampedAtStructural = wasClamped;
+                aero.temModificacaoVertical = true;
+                if (aero.virtualPilot) {
+                    aero.virtualPilot.clampedAtStructural = wasClamped;
+                }
+
+                if (wasClamped) {
+                    console.warn(`[Hard Clamp] Razão solicitada (${num} ft/min) excede o limite físico. Limitada a ${clampedRate} ft/min.`);
+                }
+
+                if (aero.pilot) {
+                    aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: clampedRate });
+                } else if (aero.virtualPilot) {
+                    aero.virtualPilot.setRateCommand(clampedRate);
+                } else {
+                    aero.targetVS = clampedRate;
+                    aero.verticalMode = VERTICAL_MODES.ATC_RATE;
+                }
+                desenharRadar();
+            }
+        }
+    }
+
+    /**
+     * Abre o menu ancorado na posição do clique da etiqueta.
+     * @param {Object} aero - Aeronave clicada
+     * @param {number} x - Coordenada X na tela
+     * @param {number} y - Coordenada Y na tela
+     */
+    abrir(aero, x, y) {
+        if (!this.menu) return;
+        this.aeroAtiva = aero;
+        state.aeroEditandoRazao = aero;
+        this.menu.style.left = `${Math.min(window.innerWidth - 150, Math.max(10, x - 20))}px`;
+        this.menu.style.top = `${Math.min(window.innerHeight - 170, Math.max(10, y + 10))}px`;
+        this.menu.style.display = 'block';
+    }
+
+    /**
+     * Fecha o menu e desmarca a aeronave em edição de razão.
+     */
+    fechar() {
+        if (!this.menu) return;
+        this.menu.style.display = 'none';
+        this.aeroAtiva = null;
+        state.aeroEditandoRazao = null;
+    }
+
+    estaAberto() {
+        return Boolean(this.menu && this.menu.style.display === 'block');
+    }
+}
+
+export const menuRazaoController = new MenuRazaoController();

@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { correcaoLon, calcularRumoDistancia } from './utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from './data.js';
 import { scratchpadUI } from './ui.js';
+import { renderizarLinha6, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 
 /**
  * Procura um fixo pelo nome e devolve a sua coordenada exata no ecrã (Canvas X/Y).
@@ -61,8 +62,10 @@ export function pegarAeronaveProxima(telaX, telaY) {
         let minX = isRight ? lx + 5 : lx - 135;
         let maxX = isRight ? lx + 135 : lx - 5;
         
-        // Se o clique caiu dentro do retângulo da etiqueta
-        if (telaX >= minX && telaX <= maxX && telaY >= ly - 25 && telaY <= ly + 40) return aero;
+        // Se o clique caiu dentro do retângulo da etiqueta (engloba até a linha 4 quando recolhida, ou linha 6 quando expandida/modificada)
+        const linhasExtras = estaLinhasExtrasVisiveis(aero);
+        const maxY = linhasExtras ? (ly + 58) : (ly + 28);
+        if (telaX >= minX && telaX <= maxX && telaY >= ly - 25 && telaY <= maxY) return aero;
     }
     return null;
 }
@@ -659,8 +662,10 @@ export function desenharRadar() {
         
         // Renderização para aviões visualmente identificados em fase de pouso final
         if (aero.squawk === "2000") {
-            state.ctx.fillStyle = 'hsl(0, 3%, 78%)'; 
+            const corSquawk = aero.expandida ? '#00e676' : 'hsl(0, 3%, 78%)'; 
+            state.ctx.fillStyle = corSquawk; 
             state.ctx.fillText("2000", textX, ly - 15);
+            state.ctx.fillStyle = 'hsl(0, 3%, 78%)'; 
             if (isRight) state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
             else state.ctx.fillText(nivDisplay, textX - 35, ly - 2); 
             
@@ -669,10 +674,27 @@ export function desenharRadar() {
             // Renderização padrão em rota
             
             // LINHA 1: Callsign e Tipo de Aeronave
-            state.ctx.fillText(`${aero.callsign.padEnd(8, ' ')} ${aero.tipo}`, textX, ly - 15);
+            // O callsign fica verde (#00e676) se a etiqueta estiver expandida; caso contrário, fica preto (#000000).
+            const corCallsign = aero.expandida ? '#00e676' : '#000000';
+            const callsignTexto = aero.callsign.padEnd(8, ' ');
+
+            if (isRight) {
+                state.ctx.fillStyle = corCallsign;
+                state.ctx.fillText(callsignTexto, textX, ly - 15);
+                state.ctx.fillStyle = '#000000';
+                const offsetTipo = state.ctx.measureText(callsignTexto + ' ').width;
+                state.ctx.fillText(aero.tipo, textX + offsetTipo, ly - 15);
+            } else {
+                state.ctx.fillStyle = '#000000';
+                state.ctx.fillText(aero.tipo, textX, ly - 15);
+                const offsetTipo = state.ctx.measureText(' ' + aero.tipo).width;
+                state.ctx.fillStyle = corCallsign;
+                state.ctx.fillText(callsignTexto, textX - offsetTipo, ly - 15);
+            }
             
             // LINHA 2: Altitude Atual e Altitude Autorizada
             let offsetNivAut;
+            state.ctx.fillStyle = '#000000';
             if (isRight) {
                 state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
                 offsetNivAut = textX + 45; // Distanciamento horizontal
@@ -717,6 +739,11 @@ export function desenharRadar() {
             // Renderiza normalmente o texto anotado na etiqueta
             state.ctx.fillText(aero.textoLivre, textX, ly + 24);
         }
+
+        // LINHA 5: Vazia por enquanto (reservada)
+        // LINHA 6: Razão Vertical Mantida e Modo Vertical (AUTO, ATC-R, EXPD)
+        // Renderizada em ly + 50 somente se expandida ou sob modificação ativa do controlador
+        renderizarLinha6(state.ctx, aero, textX, ly, isRight, aero === state.aeroEditandoRazao);
     });
     
     // 4. No topo de tudo, renderiza vetores ativos criados pelo controlador

@@ -4,6 +4,8 @@ import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restrico
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 import { PilotAgent } from './pilotEngine.js';
+import { VirtualPilot } from './VirtualPilot.js';
+import { FlightDynamicsEngine } from './FlightDynamicsEngine.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -223,13 +225,30 @@ export class Aeronave {
         this.ventoAtual = { fromDeg: 0, speedKt: 0, vLat: 0, vLon: 0, origem: "GLOBAL" }; // Vento atuante
 
         // --- 9. PILOT COCKPIT INTERACTION & DYNAMICS ENGINE ---
-        this.pilot = new PilotAgent(this);       // Agente de cabine virtual com gestão concorrente por canais
+        this.pilot = new PilotAgent(this);          // Agente de cabine virtual com gestão concorrente por canais
+        this.virtualPilot = new VirtualPilot(this); // FSM vertical, perfil de descida e modos (AUTO, ATC_RATE, EXPEDITE)
+        this.alt = this.flAtualNum * 100;
+        this.currentVS = 0;
+        this.targetVS = 0;
+        this.verticalMode = 'AUTO';
+        this.clampedAtStructural = false;
+        this.expandida = false;                // Etiqueta expandida (exibe linhas 5 e 6 com callsign verde)
+        this.temModificacaoVertical = false;   // True quando o controlador comanda razão customizada/expedite
+        this.currentIAS = this.vel;
+        this.targetIAS = this.vel;
+        this.currentThrust = 0.6;
+        this.targetThrust = 0.6;
+        this.stallProtectionActive = false;
         this.posicaoRadar = { 
             deltaLat: this.deltaLat, 
             deltaLon: this.deltaLon,
             track: (this.track !== undefined) ? this.track : this.proa,
             groundSpeed: (this.groundSpeed !== undefined) ? this.groundSpeed : this.vel,
-            nivAtual: this.nivAtual
+            nivAtual: this.nivAtual,
+            currentVS: 0,
+            verticalMode: 'AUTO',
+            clampedAtStructural: false,
+            temModificacaoVertical: false
         }; // Snapshot da varredura radar (0.25 Hz)
     }
 
@@ -753,46 +772,38 @@ export class Aeronave {
         }
 
         this.velDestino = velAlvoBase + (this.offsetVentoVel || 0);
+        this.targetIAS = this.velDestino;
+        this.currentIAS = this.vel;
 
         // Aplicação cinemática realista: Linear Assimétrica + Razão Vertical + Ruído Atmosférico (Padrão Ouro)
         atualizarVelocidadeRealista(this, dtSec);
+        this.currentIAS = this.vel;
 
         // =========================================================================
-        // ETAPA 5: ATUALIZAÇÃO CINEMÁTICA COM SOMA VETORIAL DE VENTO
+        // ETAPA 5: ATUALIZAÇÃO CINEMÁTICA COM SOMA VETORIAL DE VENTO (FLIGHT DYNAMICS)
         // -------------------------------------------------------------------------
         // Cinemática com vento integrado (Seções 20-26 da Especificação ATC):
-        // V_ground = V_air + V_wind
-        // A aeronave mantém sua velocidade indicada/verdadeira (TAS) e sua proa (Heading),
+        // TAS = IAS * (1 + (alt / 1000) * 0.018)
+        // V_ground = V_tas + V_wind
+        // A aeronave mantém sua velocidade indicada (IAS) e sua proa (Heading),
         // enquanto o vento atua continuamente no deslocamento sobre o solo (Ground Speed),
         // na trajetória efetiva (Track) e no ângulo de deriva (Drift Angle).
         // =========================================================================
         const windVec = windManager.getWindForAircraft(this);
         this.ventoAtual = windVec;
 
-        const radAir = this.proa * (Math.PI / 180);
-        const vAirLat = this.vel * Math.cos(radAir);
-        const vAirLon = this.vel * Math.sin(radAir);
+        // Converte IAS em TAS com altitude real
+        this.tas = FlightDynamicsEngine.calcularTAS(this.vel, this.alt || (this.flAtualNum * 100));
 
-        // Soma vetorial direta (em nós = NM/h):
-        const vGroundLat = vAirLat + windVec.vLat;
-        const vGroundLon = vAirLon + windVec.vLon;
-
-        // Ground Speed (módulo escalar da velocidade sobre o solo)
-        this.groundSpeed = Math.sqrt(vGroundLat * vGroundLat + vGroundLon * vGroundLon);
-
-        // Track (trajetória real sobre o solo em graus aeronáuticos 000-359°)
-        let trackDeg = (Math.atan2(vGroundLon, vGroundLat) * (180 / Math.PI) + 360) % 360;
-        this.track = trackDeg;
-
-        // Ângulo de deriva (Drift Angle = Track - Proa) normalizado em [-180°, +180°]
-        let difDrift = trackDeg - this.proa;
-        if (difDrift > 180) difDrift -= 360;
-        if (difDrift < -180) difDrift += 360;
-        this.driftAngle = difDrift;
+        // Vetor resultante com vento (Ground Speed, Track e Ângulo de Deriva)
+        const nav = FlightDynamicsEngine.calcularVetorGS(this.tas, this.proa, windVec);
+        this.groundSpeed = nav.gs;
+        this.track = nav.trackDeg;
+        this.driftAngle = nav.driftDeg;
 
         // Deslocamento cartesiano acumulado em milhas náuticas / deltas:
-        const distNMLat = vGroundLat * (dtSec / 3600);
-        const distNMLon = vGroundLon * (dtSec / 3600);
+        const distNMLat = nav.vGroundLat * (dtSec / 3600);
+        const distNMLon = nav.vGroundLon * (dtSec / 3600);
 
         this.deltaLat += distNMLat / 60;
         this.deltaLon += distNMLon / 60 / correcaoLon;
@@ -832,7 +843,19 @@ export class Aeronave {
         const altClearence = isVia ? 0 : parseInt(this.nivAutorizadoFisico, 10);
         const lnavAtivoOuPendente = this.modoLNAV || (this.wpPendente !== null);
 
-        if (lnavAtivoOuPendente && this.rota && this.rota.length > 0) {
+        // =========================================================================
+        // PRIORIDADE 1: SUBIDA AUTORIZADA PELO CONTROLADOR (ATC CLIMB CLEARANCE)
+        // =========================================================================
+        // Se o controlador autorizou um nível superior ao nível atual (altClearence > flAtualNum),
+        // a aeronave inicia a subida com a razão normal de subida (climbNormal),
+        // tanto em modo de rota automática (LNAV/STAR) quanto vetorada fora de rota.
+        if (!isVia && !isNaN(altClearence) && altClearence > this.flAtualNum) {
+            targetFL = altClearence;
+            const perfRate = (this.perf && this.perf.rates && this.perf.rates.climbNormal) 
+                ? this.perf.rates.climbNormal 
+                : 2200;
+            razaoEfetiva = perfRate;
+        } else if (lnavAtivoOuPendente && this.rota && this.rota.length > 0) {
             let startWpNome = null;
             let startWpIndex = this.wpIndex;
 
@@ -1013,31 +1036,26 @@ export class Aeronave {
             razaoEfetiva = razaoNominal;
         }
 
-        // Integração numérica da variação de altitude por frame
-        if (targetFL !== undefined && !isNaN(targetFL)) {
-            let flPerSec = (razaoEfetiva / 100) / 60; // Razão convertida de ft/min para FL/segundo
-            let deltaFL = flPerSec * dtSec;
+        this.targetFL = targetFL;
+        this.razaoNominal = razaoNominal;
+        this.razaoEfetiva = razaoEfetiva;
 
-            if (this.flAtualNum < targetFL) {
-                this.flAtualNum = Math.min(this.flAtualNum + deltaFL, targetFL);
-                this.verticalSpeed = Math.round(razaoEfetiva);
-            } else if (this.flAtualNum > targetFL) {
-                this.flAtualNum = Math.max(this.flAtualNum - deltaFL, targetFL);
-                this.verticalSpeed = -Math.round(razaoEfetiva);
-            } else {
-                this.verticalSpeed = 0;
-            }
-
-            // Indicador visual de tendência na etiqueta de dados do radar (↑ subindo, ↓ descendo)
-            let sinal = "";
-            if (this.flAtualNum < targetFL - 0.5) sinal = "↑";
-            else if (this.flAtualNum > targetFL + 0.5) sinal = "↓";
-
-            this.nivAtual = Math.round(this.flAtualNum).toString().padStart(3, '0') + sinal;
-        } else {
-            this.verticalSpeed = 0;
-            this.nivAtual = Math.round(this.flAtualNum).toString().padStart(3, '0');
+        // Atualização do Piloto Virtual (VNAV / Modos AUTO, ATC-R, EXPD)
+        if (this.virtualPilot) {
+            this.virtualPilot.update(dtSec);
         }
+
+        // Atualização do Motor de Dinâmica de Voo e Energia (FlightDynamicsEngine)
+        // Aplica suavização de razão (vsAccelRate / jerk control), balanço de energia, spool de empuxo e proteção de stall
+        FlightDynamicsEngine.integrarBalancoEnergia(this, this.perf || {}, dtSec);
+        FlightDynamicsEngine.atualizarCinematicaVertical(this, this.perf || {}, dtSec);
+
+        // Indicador visual de tendência na etiqueta de dados do radar (↑ subindo, ↓ descendo)
+        let sinal = "";
+        if (this.currentVS >= 100) sinal = "↑";
+        else if (this.currentVS <= -100) sinal = "↓";
+
+        this.nivAtual = Math.round(this.flAtualNum).toString().padStart(3, '0') + sinal;
 
         // =========================================================================
         // ETAPA 7: GERENCIAMENTO DE POUSO E CICLO DE VIDA (GARBAGE COLLECTION)

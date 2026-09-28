@@ -401,6 +401,36 @@ export class PilotAgent {
                 break;
             }
 
+            case TASK_TYPES.VERTICAL_RATE: {
+                const rate = task.params.rate;
+                if (aero.virtualPilot) {
+                    aero.virtualPilot.setRateCommand(rate);
+                } else {
+                    aero.targetVS = rate;
+                    aero.verticalMode = 'ATC-R';
+                }
+                break;
+            }
+
+            case TASK_TYPES.EXPEDITE: {
+                if (aero.virtualPilot) {
+                    aero.virtualPilot.expediteCommand();
+                } else {
+                    aero.verticalMode = 'EXPD';
+                }
+                break;
+            }
+
+            case 'AUTO': {
+                if (aero.virtualPilot) {
+                    aero.virtualPilot.autoCommand();
+                } else {
+                    aero.verticalMode = 'AUTO';
+                    aero.clampedAtStructural = false;
+                }
+                break;
+            }
+
             case TASK_TYPES.SPEED: {
                 const novaVel = task.params.speed;
                 aero.velManual = true;

@@ -59,7 +59,11 @@ function executarPassoRadar() {
                 deltaLon: a.deltaLon,
                 track: (a.track !== undefined) ? a.track : a.proa,
                 groundSpeed: (a.groundSpeed !== undefined) ? a.groundSpeed : a.vel,
-                nivAtual: a.nivAtual
+                nivAtual: a.nivAtual,
+                currentVS: (a.currentVS !== undefined) ? a.currentVS : (a.verticalSpeed || 0),
+                verticalMode: a.verticalMode || 'AUTO',
+                clampedAtStructural: Boolean(a.clampedAtStructural),
+                temModificacaoVertical: Boolean(a.temModificacaoVertical)
             };
         }
 
@@ -75,7 +79,11 @@ function executarPassoRadar() {
             deltaLon: a.deltaLon,
             track: (a.track !== undefined) ? a.track : a.proa,
             groundSpeed: (a.groundSpeed !== undefined) ? a.groundSpeed : a.vel,
-            nivAtual: a.nivAtual
+            nivAtual: a.nivAtual,
+            currentVS: (a.currentVS !== undefined) ? a.currentVS : (a.verticalSpeed || 0),
+            verticalMode: a.verticalMode || 'AUTO',
+            clampedAtStructural: Boolean(a.clampedAtStructural),
+            temModificacaoVertical: Boolean(a.temModificacaoVertical)
         };
     });
 

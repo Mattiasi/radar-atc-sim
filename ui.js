@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { desenharRadar } from './render.js';
 import { painelVentoUI } from './painelVentoUI.js';
 import { obterTodosFixosProcedimentos } from './data.js';
+import { menuRazaoController } from './RadarTagController.js';
 
 /**
  * ============================================================================
@@ -343,7 +344,7 @@ export class MenuNivelController {
 export const painelFluxoUI = new PainelFluxoController();
 export const scratchpadUI = new ScratchpadController();
 export const menuNivelUI = new MenuNivelController();
-export { painelVentoUI };
+export { painelVentoUI, menuRazaoController };
 
 /**
  * Função de inicialização central da camada de interface gráfica DOM.
@@ -352,5 +353,6 @@ export function inicializarUI() {
     painelFluxoUI.inicializar();
     scratchpadUI.inicializar();
     menuNivelUI.inicializar();
+    menuRazaoController.inicializar();
     painelVentoUI.inicializar();
 }
