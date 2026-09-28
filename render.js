@@ -20,9 +20,10 @@ export function pegarCoordenadaTela(nome) {
  * @param {Object} pt - Objeto contendo deltaLat e deltaLon.
  */
 export function deltaParaTela(pt) {
+    const alvo = (pt && pt.posicaoRadar) ? pt.posicaoRadar : pt;
     return {
-        x: state.centroX + state.offsetX + (pt.deltaLon * correcaoLon * state.escala),
-        y: state.centroY + state.offsetY - (pt.deltaLat * state.escala)
+        x: state.centroX + state.offsetX + (alvo.deltaLon * correcaoLon * state.escala),
+        y: state.centroY + state.offsetY - (alvo.deltaLat * state.escala)
     };
 }
 
@@ -619,13 +620,14 @@ export function desenharRadar() {
         
         // 3. Desenha o Paliteiro (Speed Vector Line / Traço Líder do Radar ao longo do Track)
         if (state.minutosPaliteiro > 0) {
-            let trackAng = (aero.track !== undefined) ? aero.track : aero.proa;
-            let gs = (aero.groundSpeed !== undefined) ? aero.groundSpeed : aero.vel;
+            const radarSnap = aero.posicaoRadar || aero;
+            let trackAng = (radarSnap.track !== undefined) ? radarSnap.track : ((aero.track !== undefined) ? aero.track : aero.proa);
+            let gs = (radarSnap.groundSpeed !== undefined) ? radarSnap.groundSpeed : ((aero.groundSpeed !== undefined) ? aero.groundSpeed : aero.vel);
             let radTrack = trackAng * (Math.PI / 180);
             let predNM = (gs / 60) * state.minutosPaliteiro; 
             let ptPred = deltaParaTela({ 
-                deltaLat: aero.deltaLat + (predNM / 60) * Math.cos(radTrack), 
-                deltaLon: aero.deltaLon + (predNM / 60 / correcaoLon) * Math.sin(radTrack) 
+                deltaLat: radarSnap.deltaLat + (predNM / 60) * Math.cos(radTrack), 
+                deltaLon: radarSnap.deltaLon + (predNM / 60 / correcaoLon) * Math.sin(radTrack) 
             });
             state.ctx.beginPath(); 
             state.ctx.moveTo(pt.x + 5 * Math.cos(radTrack - Math.PI/2), pt.y + 5 * Math.sin(radTrack - Math.PI/2)); 
@@ -651,14 +653,16 @@ export function desenharRadar() {
         state.ctx.textBaseline = 'bottom';
         
         let textX = lx + 12 * dir;
-        const gsDisplay = Math.round(aero.groundSpeed !== undefined ? aero.groundSpeed : aero.vel);
+        const radarSnap = aero.posicaoRadar || aero;
+        const gsDisplay = Math.round(radarSnap.groundSpeed !== undefined ? radarSnap.groundSpeed : (aero.groundSpeed !== undefined ? aero.groundSpeed : aero.vel));
+        const nivDisplay = radarSnap.nivAtual || aero.nivAtual;
         
         // Renderização para aviões visualmente identificados em fase de pouso final
         if (aero.squawk === "2000") {
             state.ctx.fillStyle = 'hsl(0, 3%, 78%)'; 
             state.ctx.fillText("2000", textX, ly - 15);
-            if (isRight) state.ctx.fillText(aero.nivAtual.padEnd(5, ' '), textX, ly - 2); 
-            else state.ctx.fillText(aero.nivAtual, textX - 35, ly - 2); 
+            if (isRight) state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
+            else state.ctx.fillText(nivDisplay, textX - 35, ly - 2); 
             
             state.ctx.fillText(`${gsDisplay.toString().padEnd(5, ' ')}`, textX, ly + 11);
         } else {
@@ -670,7 +674,7 @@ export function desenharRadar() {
             // LINHA 2: Altitude Atual e Altitude Autorizada
             let offsetNivAut;
             if (isRight) {
-                state.ctx.fillText(aero.nivAtual.padEnd(5, ' '), textX, ly - 2); 
+                state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
                 offsetNivAut = textX + 45; // Distanciamento horizontal
                 
                 // Desenha fundo de highlight se o menu dropdown deste avião estiver aberto
@@ -681,7 +685,7 @@ export function desenharRadar() {
                 state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : '#000000'; 
                 state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
             } else {
-                state.ctx.fillText(aero.nivAtual, textX - 35, ly - 2); 
+                state.ctx.fillText(nivDisplay, textX - 35, ly - 2); 
                 offsetNivAut = textX;
                 
                 if (aero === state.aeroEditandoNivel) { 

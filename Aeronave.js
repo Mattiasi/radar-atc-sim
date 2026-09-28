@@ -3,6 +3,7 @@ import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta 
 import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn } from './data.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
+import { PilotAgent } from './pilotEngine.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -78,9 +79,8 @@ export function atualizarVelocidadeRealista(ac, dt) {
         taxa = calcularTaxaDesacel(ac);
     }
 
-    // Ruído atmosférico dinâmico ao variar velocidades (rajadas de vento e turbulência leve: ±10%)
-    const fatorRuidoAtmosfera = 0.90 + Math.random() * 0.20; // 0.90 a 1.10
-    const taxaEfetiva = taxa * fatorRuidoAtmosfera;
+    // Taxa linear sem ruído estocástico de alta frequência
+    const taxaEfetiva = taxa;
 
     // Aplicação linear
     const direcao = Math.sign(tgtSpeed - curSpeed);
@@ -221,6 +221,16 @@ export class Aeronave {
         }
         this.pistaAtribuida = pistaPadrao || ((dest === "SBSP") ? "17R" : null); // Cabeceira terminal atribuída para vento local
         this.ventoAtual = { fromDeg: 0, speedKt: 0, vLat: 0, vLon: 0, origem: "GLOBAL" }; // Vento atuante
+
+        // --- 9. PILOT COCKPIT INTERACTION & DYNAMICS ENGINE ---
+        this.pilot = new PilotAgent(this);       // Agente de cabine virtual com gestão concorrente por canais
+        this.posicaoRadar = { 
+            deltaLat: this.deltaLat, 
+            deltaLon: this.deltaLon,
+            track: (this.track !== undefined) ? this.track : this.proa,
+            groundSpeed: (this.groundSpeed !== undefined) ? this.groundSpeed : this.vel,
+            nivAtual: this.nivAtual
+        }; // Snapshot da varredura radar (0.25 Hz)
     }
 
     /**
@@ -483,19 +493,11 @@ export class Aeronave {
             const gsOutra = trafegoPrecedente.groundSpeed || trafegoPrecedente.vel;
             const taxaFechamento = gsMinha - gsOutra; // kt
 
-            if (taxaFechamento > 0) {
-                if (menorDeltaDTG < 5.0) {
-                    // Separação crítica: redução assertiva
-                    correcaoTrafego = -Math.min(30, Math.max(15, taxaFechamento + 10));
-                } else if (menorDeltaDTG < 7.5 && taxaFechamento > 5) {
-                    // Fechamento moderado na faixa de aproximação
-                    correcaoTrafego = -Math.min(25, Math.max(10, taxaFechamento * 0.8));
-                } else if (menorDeltaDTG < 10.0 && taxaFechamento > 15) {
-                    // Prevenção antecipada
-                    correcaoTrafego = -Math.min(15, taxaFechamento * 0.5);
-                } else if (menorDeltaDTG < 14.0 && taxaFechamento > 25) {
-                    correcaoTrafego = -10;
-                }
+            if (taxaFechamento > 0 && menorDeltaDTG < 14.0) {
+                // Modulação suave e progressiva de velocidade sem degraus discretos:
+                // Fator de proximidade: 0.0 (em 14 NM) a 1.0 (em 4 NM)
+                const fatorProx = Math.max(0, Math.min(1.0, (14.0 - menorDeltaDTG) / 10.0));
+                correcaoTrafego = -Math.min(25, Math.round(taxaFechamento * fatorProx));
             }
 
             // Não ultrapassar a velocidade do tráfego precedente se estiver a menos de 6 NM
@@ -635,64 +637,14 @@ export class Aeronave {
         }
 
         // =========================================================================
-        // ETAPA 2: PROCESSAMENTO DE DELAYS (TEMPO DE REAÇÃO HUMANA DO PILOTO)
+        // ETAPA 2: PILOT COCKPIT INTERACTION & DYNAMICS ENGINE (DELTA-TIME PURO)
         // -------------------------------------------------------------------------
-        // Simula o tempo que a tripulação leva entre ouvir a instrução do controlador,
-        // colacionar (readback) e selecionar o comando no MCP/FCU da aeronave.
-        // A cada ciclo de 4 segundos, os contadores de delay são decrementados.
+        // O agente de cabine virtual avança os cronômetros das tarefas ativas
+        // nos canais concorrentes (LATERAL, VERTICAL, LONGITUDINAL) proporcionalmente
+        // ao dtSec, acoplando os comandos físicos ao atingir o estado EXECUTING.
         // =========================================================================
-        if (this.delayWp > 0) {
-            this.delayWp--;
-            if (this.delayWp === 0 && this.wpPendente !== null) {
-                if (typeof this.wpPendente === 'number') {
-                    this.wpIndex = this.wpPendente; 
-                    this.wpOffRoute = null; 
-                } else {
-                    this.wpOffRoute = this.wpPendente; 
-                }
-                this.modoLNAV = true; 
-                this.velManual = false; // Retomar o LNAV anula qualquer trava manual de velocidade do operador
-                this.wpPendente = null;
-                this.proaPendente = null; 
-                this.curvaMaiorPendente = false;
-            }
-        }
-
-        if (this.delayProa > 0) {
-            this.delayProa--;
-            if (this.delayProa === 0 && this.proaPendente !== null) {
-                this.modoLNAV = false; 
-                this.flyByProtegido = null;
-                this.proaDestino = this.proaPendente;
-                
-                // Normaliza ângulos no círculo trigonométrico para encontrar o arco mais curto
-                let difCurta = this.proaDestino - this.proa;
-                while (difCurta <= -180) difCurta += 360;
-                while (difCurta > 180) difCurta -= 360;
-
-                if (difCurta === 0) this.direcaoCurva = 0;
-                else if (this.curvaMaiorPendente) this.direcaoCurva = (difCurta > 0) ? -1 : 1; 
-                else this.direcaoCurva = (difCurta > 0) ? 1 : -1; 
-                
-                this.proaPendente = null;
-                this.curvaMaiorPendente = false;
-            }
-        }
-
-        if (this.delayVel > 0) {
-            this.delayVel--;
-            if (this.delayVel === 0 && this.velPendente !== null) {
-                this.velComando = this.velPendente; 
-                this.velPendente = null;
-            }
-        }
-
-        if (this.delayNivel > 0) {
-            this.delayNivel--;
-            if (this.delayNivel === 0 && this.nivAutorizadoPendente !== null) {
-                this.nivAutorizadoFisico = this.nivAutorizadoPendente;
-                this.nivAutorizadoPendente = null;
-            }
+        if (this.pilot) {
+            this.pilot.update(dtSec);
         }
 
         // =========================================================================
@@ -771,14 +723,36 @@ export class Aeronave {
         const velAlvoBase = this.calcularVelocidadeAlvoDinamica();
         this.velComando = velAlvoBase;
 
-        // SIMULAÇÃO DE RUÍDO ATMOSFÉRICO E VARREDURA DO RADAR:
-        // Variações leves de vento (rajadas de ±4 nós) em torno da velocidade comandada para evitar velocidade perfeitamente estática.
-        if (Math.random() < 0.25) {
-            let variacaoVento = Math.floor(Math.random() * 9) - 4; 
-            this.velDestino = velAlvoBase + variacaoVento;
-        } else if (Math.abs(this.velDestino - velAlvoBase) > 5) {
-            this.velDestino = velAlvoBase; 
+        // SIMULAÇÃO DE VARIAÇÃO ATMOSFÉRICA REALISTA (DELTA-TIME PURO):
+        // Flutuações lentas e sutis (15 a 35 segundos) de ±1 a 2 nós em vez de ruído aleatório em alta frequência (20 Hz),
+        // evitando oscilações bruscas e irreais no velocímetro / radar (ex: 250, 251, 250, 251).
+        this.timerVariacaoAtmosferica = (this.timerVariacaoAtmosferica || 0) + dtSec;
+        if (this.intervaloVariacaoAtmosferica === undefined) {
+            this.intervaloVariacaoAtmosferica = 15 + Math.random() * 15;
+            this.offsetVentoVel = 0;
         }
+
+        if (this.timerVariacaoAtmosferica >= this.intervaloVariacaoAtmosferica) {
+            this.timerVariacaoAtmosferica = 0;
+            this.intervaloVariacaoAtmosferica = 18 + Math.random() * 16; // Próximo ciclo em 18 a 34 segundos
+            
+            const ventoForte = (this.ventoAtual && this.ventoAtual.speedKt > 15);
+            const maxDesvio = ventoForte ? 2 : 1;
+            
+            // 60% de chance de voo calmo cravado (0 kt de desvio), 40% de leve oscilação
+            if (Math.random() < 0.40) {
+                this.offsetVentoVel = Math.floor(Math.random() * (maxDesvio * 2 + 1)) - maxDesvio;
+            } else {
+                this.offsetVentoVel = 0;
+            }
+        }
+
+        // Se houver comando explícito de velocidade do ATC (velManual), mantém cravado sem desvio
+        if (this.velManual) {
+            this.offsetVentoVel = 0;
+        }
+
+        this.velDestino = velAlvoBase + (this.offsetVentoVel || 0);
 
         // Aplicação cinemática realista: Linear Assimétrica + Razão Vertical + Ruído Atmosférico (Padrão Ouro)
         atualizarVelocidadeRealista(this, dtSec);
@@ -1117,11 +1091,8 @@ export class Aeronave {
             let ladoMaior = (matchProa[2] === '+'); 
             if (novaProa >= 0 && novaProa <= 360) {
                 novaProa = novaProa === 360 ? 0 : novaProa;
-                this.proaPendente = novaProa;
-                this.curvaMaiorPendente = ladoMaior;
-                this.delayProa = Math.floor(Math.random() * 2) + 2; // Delay de reação de 2 a 3 ciclos (8 a 12s)
-                this.wpPendente = null; 
-                this.flyByProtegido = null;
+                // Despacha no canal LATERAL (preempção imediata sobre curvas anteriores)
+                this.pilot.dispatch('LATERAL', 'HEADING', { heading: novaProa, maior: ladoMaior });
             }
         }
 
@@ -1133,19 +1104,15 @@ export class Aeronave {
 
         if (matchResume) {
             // Cancelamento explícito da restrição manual: retoma gerenciamento dinâmico (Seção 19)
-            this.velManual = false;
-            this.velPendente = null;
+            this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
         } else if (matchVel) {
             let novaVel = parseInt(matchVel[1], 10) * 10;
             if (novaVel >= 40 && novaVel <= 600) { 
-                this.velPendente = novaVel;
-                this.delayVel = Math.floor(Math.random() * 2) + 2; 
-                this.velManual = true; // Fixa velocidade manual com prioridade ATC (Seção 13)
+                this.pilot.dispatch('LONGITUDINAL', 'SPEED', { speed: novaVel });
             }
         } else if (this.velManual && !/\b\d{2}K\b/.test(texto)) {
             // Se o comando de velocidade manual foi apagado do scratchpad pelo operador
-            this.velManual = false;
-            this.velPendente = null;
+            this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
         }
 
         // ---------------------------------------------------------------------
@@ -1203,16 +1170,17 @@ export class Aeronave {
 
         if (wpTarget) {
             let idx = (this.rota && Array.isArray(this.rota)) ? this.rota.indexOf(wpTarget) : -1;
+            let novaRotaCalculada = null;
 
             // Direct-To Inteligente com Grafo de Rotas:
             // Se o fixo comandado não está na rota atual, ou está atrás da posição atual,
             // ou se a aeronave estava sob vetores radar fora de rota,
             // reconstrói a sequência completa a partir do grafo de navegação de cartasNavegacao!
             if (idx === -1 || idx < this.wpIndex) {
-                const novaRota = montarRotaAPartirDeFixo(wpTarget, this.dest || "SBSP");
-                if (novaRota && novaRota.length > 0) {
-                    this.rota = novaRota;
-                    idx = 0; // O ponto inicial da nova rota é o próprio fixo solicitado
+                const rotaGrafo = montarRotaAPartirDeFixo(wpTarget, this.dest || "SBSP");
+                if (rotaGrafo && rotaGrafo.length > 0) {
+                    novaRotaCalculada = rotaGrafo;
+                    idx = 0; // O ponto inicial da nova rota será o próprio fixo solicitado quando ativado
                 }
             }
 
@@ -1221,11 +1189,11 @@ export class Aeronave {
             // Se o comando de waypoint for novo e não conflitante com comando de proa ativo
             if (!matchProa && (this.ultimoWpComandadoTexto !== novoWpPendente || !this.modoLNAV)) {
                 this.ultimoWpComandadoTexto = novoWpPendente; 
-                this.wpPendente = novoWpPendente;
-                this.delayWp = Math.floor(Math.random() * 3) + 2;
-                this.proaPendente = null; 
-                this.desceuParaWp = {};
-                this.flyByProtegido = null;
+                this.pilot.dispatch('LATERAL', 'DIRECT_TO', { 
+                    target: novoWpPendente, 
+                    isIdx: (typeof novoWpPendente === 'number'),
+                    novaRota: novaRotaCalculada
+                });
             }
         } else {
             this.ultimoWpComandadoTexto = null;

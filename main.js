@@ -27,61 +27,108 @@ state.centroX = state.canvas.width / 2;
 state.centroY = state.canvas.height / 2;
 
 // Guarda o momento exato em que o simulador iniciou, para calcular o delta de tempo depois
-let ultimoTempoVarredura = performance.now();
+// Acumuladores de tempo simulado para desacoplamento Físico vs Radar
+let acumuladorFisicoSegundos = 0;
+let acumuladorRadarSegundos = 0;
 let ultimoTempoFrame = performance.now();
 
+const DT_FISICO = 0.05; // 20 Hz: passo fixo de física e dinâmica cognitiva do piloto (dt = 0.05s)
+const INTERVALO_VARREDURA_RADAR = 4.0; // 0.25 Hz: ciclo de varredura e plot do radar (4.0s de voo simulado)
+
 /**
- * Executa uma passada de física do radar (equivalente a 4 segundos de voo no tempo simulado).
+ * Executa uma passada de física contínua e dinâmica do piloto (20 Hz / dt = 0.05s).
+ * Integra curvas, VNAV, piloto automático e transições cognitivas das tarefas do piloto.
+ * @param {number} dt - Passo de tempo em segundos
+ */
+function executarPassoFisico(dt) {
+    state.aeronaves.forEach(a => {
+        a.atualizar(dt);
+    });
+}
+
+/**
+ * Executa o ciclo de varredura do radar ATC (0.25 Hz / a cada 4.0 segundos).
+ * Captura o snapshot atual do loop físico, registra o histórico de ecos e remove pousos.
  */
 function executarPassoRadar() {
     state.aeronaves.forEach(a => {
-        // 1. Guarda a posição atual no histórico antes de mover (para desenhar os pontinhos do rasto)
-        a.historico.push({ deltaLat: a.deltaLat, deltaLon: a.deltaLon });
+        // Inicializa posicaoRadar se ainda não existir
+        if (!a.posicaoRadar) {
+            a.posicaoRadar = { 
+                deltaLat: a.deltaLat, 
+                deltaLon: a.deltaLon,
+                track: (a.track !== undefined) ? a.track : a.proa,
+                groundSpeed: (a.groundSpeed !== undefined) ? a.groundSpeed : a.vel,
+                nivAtual: a.nivAtual
+            };
+        }
+
+        // Guarda o eco anterior no rasto histórico (pontinhos)
+        a.historico.push({ deltaLat: a.posicaoRadar.deltaLat, deltaLon: a.posicaoRadar.deltaLon });
         
         // Mantém apenas os últimos 5 ecos do radar na memória
         if (a.historico.length > 5) a.historico.shift();
         
-        // 2. Executa a máquina de estados (Curvas, Descidas, Velocidade) passando um "dt" de 4 segundos
-        a.atualizar(4);
+        // Captura o snapshot atual do loop físico para exibição na tela do radar (varredura a cada 4s)
+        a.posicaoRadar = { 
+            deltaLat: a.deltaLat, 
+            deltaLon: a.deltaLon,
+            track: (a.track !== undefined) ? a.track : a.proa,
+            groundSpeed: (a.groundSpeed !== undefined) ? a.groundSpeed : a.vel,
+            nivAtual: a.nivAtual
+        };
     });
 
-    // 3. Limpeza de Memória (Garbage Collection): Remove aviões que pousaram em SBSP
+    // Limpeza de Memória (Garbage Collection): Remove aviões que pousaram
     state.aeronaves = state.aeronaves.filter(a => !a.pousou);
     
-    // 4. Injeta novos aviões nas rotas caso a esteira de separação permita
+    // Injeta novos aviões nas rotas caso a esteira de separação permita
     gerenciarEsteiraDeTrafego(); 
 }
 
 /**
  * Motor de Jogo / Game Loop do Simulador.
- * Utiliza um padrão de "Fixed Timestep" para separar a lógica de física da lógica visual.
- * O intervalo entre as varreduras de radar é acelerado pelo fator de velocidade configurado (1x a 10x).
+ * Desacopla o Loop Físico/Comportamental (20 Hz) do Loop de Apresentação Radar (0.25 Hz / 4s).
+ * Ambos progridem rigorosamente proporcionais ao fator de velocidade configurado (1x a 10x).
  * 
  * @param {number} tempoAtual - Timestamp em milissegundos injetado automaticamente pelo requestAnimationFrame.
  */
 function loopPrincipal(tempoAtual) {
     const fator = state.fatorVelocidade || 1.0;
-    const intervaloVarredura = 4000 / fator;
 
-    // Atualização contínua do vento aleatório em tempo real (~60 FPS) acelerada pela velocidade da simulação
-    const dtFrame = Math.min(Math.max(0, (tempoAtual - ultimoTempoFrame) / 1000), 0.1);
+    // Delta time real decorrido em segundos desde o último frame (limitado a 0.1s contra abas em segundo plano)
+    const dtReal = Math.min(Math.max(0, (tempoAtual - ultimoTempoFrame) / 1000), 0.1);
     ultimoTempoFrame = tempoAtual;
 
-    if (dtFrame > 0) {
-        windManager.update(dtFrame * fator);
+    if (dtReal > 0) {
+        const dtSimulado = dtReal * fator;
+
+        // Atualização contínua do vento em tempo real
+        windManager.update(dtSimulado);
         if (painelVentoUI.estaAberto()) {
             painelVentoUI.atualizarSeVisivel();
         }
-    }
 
-    // Proteção contra acúmulo excessivo (ex: quando o utilizador troca de aba do navegador)
-    if (tempoAtual - ultimoTempoVarredura > intervaloVarredura * 4) {
-        ultimoTempoVarredura = tempoAtual - intervaloVarredura;
-    }
+        // 1. Loop Físico / Comportamental (20 Hz - dt = 0.05s)
+        acumuladorFisicoSegundos += dtSimulado;
+        let passosFisicos = 0;
+        const maxPassosFisicos = 10; // Proteção contra acúmulo excessivo
 
-    while (tempoAtual - ultimoTempoVarredura >= intervaloVarredura) {
-        executarPassoRadar();
-        ultimoTempoVarredura += intervaloVarredura;
+        while (acumuladorFisicoSegundos >= DT_FISICO && passosFisicos < maxPassosFisicos) {
+            executarPassoFisico(DT_FISICO);
+            acumuladorFisicoSegundos -= DT_FISICO;
+            passosFisicos++;
+        }
+        if (passosFisicos >= maxPassosFisicos) {
+            acumuladorFisicoSegundos = 0; // Descarta backlog se o navegador engasgar
+        }
+
+        // 2. Loop de Radar / Display (0.25 Hz - 4.0s)
+        acumuladorRadarSegundos += dtSimulado;
+        while (acumuladorRadarSegundos >= INTERVALO_VARREDURA_RADAR) {
+            executarPassoRadar();
+            acumuladorRadarSegundos -= INTERVALO_VARREDURA_RADAR;
+        }
     }
     
     // --- LÓGICA DE RENDERIZAÇÃO VISUAL (Executada a ~60 Frames Por Segundo) ---

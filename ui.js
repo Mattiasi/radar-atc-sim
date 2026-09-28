@@ -303,10 +303,11 @@ export class MenuNivelController {
                     const aero = state.aeroEditandoNivel;
                     aero.nivAutorizado = nv;
 
-                    // Se for diferente do nível atual, programa delay simulando o tempo de resposta do piloto
-                    if (aero.nivAutorizadoFisico !== nv && aero.nivAutorizadoPendente !== nv) {
-                        aero.nivAutorizadoPendente = nv;
-                        aero.delayNivel = Math.floor(Math.random() * 2) + 2;
+                    // Despacha no canal VERTICAL do piloto virtual
+                    if (aero.pilot) {
+                        aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nv });
+                    } else {
+                        aero.nivAutorizadoFisico = nv;
                     }
                 }
 
