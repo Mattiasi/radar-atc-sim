@@ -317,6 +317,7 @@ export const aerodromos = [
         nome: "SBSP",
         lat: latCentro,
         lon: lonCentro,
+        elevacaoFt: 2631,
         rumoPista: 170,
         // Prolongamento compartilhado no centro do aeródromo (alinhado com o eixo da pista 17R)
         prolongamento: {
@@ -337,7 +338,43 @@ export const aerodromos = [
                 compNM: 1.05,
                 larguraPx: 3.5,
                 sepYNM: 0, // Eixo principal (17R)
-                sepXNM: 0
+                sepXNM: 0,
+                cabeceiras: {
+                    "17R": {
+                        id: "17R",
+                        rumo: 170,
+                        frontCourseDeg: 170,
+                        elevacaoFt: 2631,
+                        ils: {
+                            ident: "ISBP",
+                            freq: "109.5",
+                            front_course_deg: 170,
+                            gs_angle_deg: 3.0,
+                            loc_max_distance_nm: 20.0,
+                            loc_capture_angle_deg: 2.5,
+                            loc_valid: true,
+                            gs_valid: true,
+                            enabled: true
+                        }
+                    },
+                    "35L": {
+                        id: "35L",
+                        rumo: 350,
+                        frontCourseDeg: 350,
+                        elevacaoFt: 2631,
+                        ils: {
+                            ident: "ICGN",
+                            freq: "110.1",
+                            front_course_deg: 350,
+                            gs_angle_deg: 3.0,
+                            loc_max_distance_nm: 20.0,
+                            loc_capture_angle_deg: 2.5,
+                            loc_valid: true,
+                            gs_valid: true,
+                            enabled: true
+                        }
+                    }
+                }
             },
             {
                 id: "17L/35R",
@@ -345,7 +382,23 @@ export const aerodromos = [
                 compNM: 0.77,
                 larguraPx: 3.0,
                 sepYNM: -0.097, // Eixo à esquerda (Leste), 180m de separação
-                sepXNM: 0.08
+                sepXNM: 0.08,
+                cabeceiras: {
+                    "17L": {
+                        id: "17L",
+                        rumo: 170,
+                        frontCourseDeg: 170,
+                        elevacaoFt: 2631,
+                        ils: { enabled: false, loc_valid: false, gs_valid: false }
+                    },
+                    "35R": {
+                        id: "35R",
+                        rumo: 350,
+                        frontCourseDeg: 350,
+                        elevacaoFt: 2631,
+                        ils: { enabled: false, loc_valid: false, gs_valid: false }
+                    }
+                }
             }
         ]
     },
@@ -406,6 +459,7 @@ export const aerodromos = [
         nome: "SBGR",
         lat: dmsParaDecimal(23, 26, 8, 'S'),
         lon: dmsParaDecimal(46, 28, 23, 'W'),
+        elevacaoFt: 2461,
         rumoPista: 100,
         pistas: [
             {
@@ -421,6 +475,42 @@ export const aerodromos = [
                     espacoNM: 1.0,       // Afastados em 1 NM
                     afastamentoNM: 1.0,  // Início a 1 NM da cabeceira
                     cor: '#ffffff'
+                },
+                cabeceiras: {
+                    "10R": {
+                        id: "10R",
+                        rumo: 96,
+                        frontCourseDeg: 96,
+                        elevacaoFt: 2461,
+                        ils: {
+                            ident: "IGRU",
+                            freq: "110.5",
+                            front_course_deg: 96,
+                            gs_angle_deg: 3.0,
+                            loc_max_distance_nm: 25.0,
+                            loc_capture_angle_deg: 2.5,
+                            loc_valid: true,
+                            gs_valid: true,
+                            enabled: true
+                        }
+                    },
+                    "28L": {
+                        id: "28L",
+                        rumo: 276,
+                        frontCourseDeg: 276,
+                        elevacaoFt: 2461,
+                        ils: {
+                            ident: "IGRL",
+                            freq: "111.5",
+                            front_course_deg: 276,
+                            gs_angle_deg: 3.0,
+                            loc_max_distance_nm: 25.0,
+                            loc_capture_angle_deg: 2.5,
+                            loc_valid: true,
+                            gs_valid: true,
+                            enabled: true
+                        }
+                    }
                 }
             },
             {
@@ -436,7 +526,24 @@ export const aerodromos = [
                     tamanhoTracoNM: 1.0, // 1 NM por tracejado
                     espacoNM: 1.0,       // Afastados em 1 NM
                     afastamentoNM: 1.0,  // Início a 1 NM da cabeceira
-                    cor: '#ffffff'}
+                    cor: '#ffffff'
+                },
+                cabeceiras: {
+                    "10L": {
+                        id: "10L",
+                        rumo: 96,
+                        frontCourseDeg: 96,
+                        elevacaoFt: 2461,
+                        ils: { enabled: false, loc_valid: false, gs_valid: false }
+                    },
+                    "28R": {
+                        id: "28R",
+                        rumo: 276,
+                        frontCourseDeg: 276,
+                        elevacaoFt: 2461,
+                        ils: { enabled: false, loc_valid: false, gs_valid: false }
+                    }
+                }
             }
         ]
     }
@@ -743,3 +850,32 @@ export const perfisAeronaves = AIRCRAFT_PERFORMANCE;
 
 export const ROTA_PRUMO = montarRotaAPartirDeFixo("PRUMO", "SBSP");
 export const ROTA_OGTAL = montarRotaAPartirDeFixo("OGTAL", "SBSP");
+
+/**
+ * Recupera os dados de ILS da cabeceira de um aeródromo de forma genérica e data-driven.
+ * @param {string} airportCode - Código do aeródromo (ex: "SBSP", "SBGR")
+ * @param {string} runwayId - Identificador da cabeceira (ex: "17R", "35L", "10R", "28L")
+ * @returns {Object|null}
+ */
+export function getRunwayILSData(airportCode, runwayId) {
+    const aerodromo = aerodromos.find(a => a.nome === airportCode);
+    if (!aerodromo || !aerodromo.pistas) return null;
+
+    for (const pista of aerodromo.pistas) {
+        if (!pista.cabeceiras) continue;
+        const cabeceira = pista.cabeceiras[runwayId];
+        if (cabeceira && cabeceira.ils && cabeceira.ils.enabled) {
+            return {
+                airport: airportCode,
+                runway: runwayId,
+                frontCourseDeg: cabeceira.frontCourseDeg !== undefined ? cabeceira.frontCourseDeg : pista.rumo,
+                elevacaoFt: cabeceira.elevacaoFt || aerodromo.elevacaoFt,
+                ...cabeceira.ils,
+                cabeceira: cabeceira,
+                pista: pista,
+                aerodromo: aerodromo
+            };
+        }
+    }
+    return null;
+}

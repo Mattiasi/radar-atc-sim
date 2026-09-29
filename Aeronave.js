@@ -7,6 +7,7 @@ import { PilotAgent } from './pilotEngine.js';
 import { VirtualPilot } from './VirtualPilot.js';
 import { FlightDynamicsEngine } from './FlightDynamicsEngine.js';
 import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_vertical_profile } from './ApproachProfileManager.js';
+import { update_ils_tracking, getRunwayILS, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from './ILSController.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -151,6 +152,7 @@ export class Aeronave {
         this.proaDestino = proa;                 // Proa alvo que a aeronave está buscando atingir
         this.proaPendente = null;                // Buffer de proa recebida do ATC aguardando o fim do delay de reação
         this.curvaMaiorPendente = false;         // Flag booleana: se true, força curva pelo arco maior (comando Hxxx+)
+        this.curvaForcada = false;               // Flag booleana: ativa quando uma curva pelo arco maior (+) está em execução
         this.direcaoCurva = 0;                   // Sentido atual da curva: -1 (Esquerda), 1 (Direita), 0 (Asas niveladas)
         this.delayProa = 0;                      // Ciclos restantes de espera antes de aplicar o comando de proa
         
@@ -316,6 +318,64 @@ export class Aeronave {
             clampedAtStructural: false,
             temModificacaoVertical: false
         }; // Snapshot da varredura radar (0.25 Hz)
+
+        // --- 10. SUBSISTEMA DE APROXIMAÇÃO ILS (LOC & GS) ---
+        this.autopilot = {
+            lateral_mode: ILS_LATERAL_MODES.HDG,
+            vertical_mode: ILS_VERTICAL_MODES.ALT_HOLD,
+            ils_authorized: (this.nivAutorizado === "ILS"),
+            loc_armed: false,
+            loc_captured: false,
+            loc_tracked: false,
+            gs_armed: false,
+            gs_captured: false,
+            gs_tracked: false
+        };
+        this.ils_lateral_mode = ILS_LATERAL_MODES.HDG;
+        this.ils_vertical_mode = ILS_VERTICAL_MODES.ALT_HOLD;
+        this.ils_authorized = (this.nivAutorizado === "ILS");
+        this._on_ground = false;
+        this._flight_phase = "IN_FLIGHT";
+        this.just_touched_down = false;
+    }
+
+    get assigned_runway() {
+        return this.pistaAtribuida;
+    }
+    set assigned_runway(val) {
+        this.pistaAtribuida = val;
+    }
+
+    get cleared_level() {
+        return this.nivAutorizado;
+    }
+    set cleared_level(val) {
+        this.nivAutorizado = val;
+        this.ils_authorized = (val === "ILS");
+        if (this.autopilot) this.autopilot.ils_authorized = this.ils_authorized;
+    }
+
+    get on_ground() {
+        return Boolean(this._on_ground);
+    }
+    set on_ground(val) {
+        this._on_ground = Boolean(val);
+    }
+
+    get flight_phase() {
+        return this._flight_phase || (this.pousou ? "LANDED" : "IN_FLIGHT");
+    }
+    set flight_phase(val) {
+        this._flight_phase = val;
+        if (val === "LANDED") this._on_ground = true;
+    }
+
+    get transponder() {
+        const self = this;
+        return {
+            get code() { return self.squawk; },
+            set code(val) { self.squawk = String(val); }
+        };
     }
 
     /**
@@ -623,6 +683,20 @@ export class Aeronave {
         let restricaoAlvo = null;
 
         // =========================================================================
+        // SUBSISTEMA ILS (LOC & GS) - EXECUÇÃO DA MÁQUINA DE ESTADOS E RASTREAMENTO
+        // =========================================================================
+        const runwayILS = getRunwayILS(this);
+        update_ils_tracking(this, dtSec, runwayILS);
+
+        const ilsLateralAtivo = this.autopilot && (
+            this.autopilot.lateral_mode === ILS_LATERAL_MODES.LOC_CAPTURE ||
+            this.autopilot.lateral_mode === ILS_LATERAL_MODES.LOC_TRACK
+        );
+        if (ilsLateralAtivo) {
+            this.modoLNAV = false;
+        }
+
+        // =========================================================================
         // ETAPA 1: NAVEGAÇÃO LATERAL AUTOMÁTICA (LNAV) & TRANSIÇÕES DE WAYPOINT (FLY-BY)
         // -------------------------------------------------------------------------
         // Calcula continuamente a proa magnética euclidiana em direção ao waypoint ativo.
@@ -747,33 +821,45 @@ export class Aeronave {
             let taxaCurva = 2.3 * dtSec; // Variação máxima de proa no frame atual (ex: 2.3 * 4s = 9.2°)
             let distFaltante;
 
-            if (this.modoLNAV || this.direcaoCurva === 0) {
-                // Em modo de rota (LNAV), sempre busca o caminho angular mais curto
+            // Em modo LNAV, rastreamento ILS (LOC) ou curvas normais sem o operador forçar o arco maior (+),
+            // a aeronave SEMPRE busca o caminho angular mais curto no círculo trigonométrico (-180° a +180°).
+            const sempreCurto = this.modoLNAV || ilsLateralAtivo || !this.curvaForcada;
+
+            if (sempreCurto) {
                 let difCurta = this.proaDestino - this.proa;
                 while (difCurta <= -180) difCurta += 360;
                 while (difCurta > 180) difCurta -= 360;
-                this.direcaoCurva = (difCurta > 0) ? 1 : -1;
+                this.direcaoCurva = (difCurta > 0) ? 1 : (difCurta < 0 ? -1 : 0);
                 distFaltante = Math.abs(difCurta);
             } else {
-                // Em modo de vetoração manual comandada, respeita a direção forçada (direita ou esquerda)
+                // Em modo de curva forçada pelo arco maior (ex: H090+), respeita a direção forçada
                 if (this.direcaoCurva === 1) { 
                     distFaltante = this.proaDestino - this.proa;
                     if (distFaltante < 0) distFaltante += 360;
-                } else { 
+                } else if (this.direcaoCurva === -1) { 
                     distFaltante = this.proa - this.proaDestino;
                     if (distFaltante < 0) distFaltante += 360;
+                } else {
+                    distFaltante = 0;
                 }
             }
 
             // Se o ângulo faltante for menor que a taxa do frame, atinge a proa final exatamente
             if (distFaltante <= taxaCurva) {
                 this.proa = this.proaDestino; 
-                if (!this.modoLNAV) this.direcaoCurva = 0; // Nivela asas
+                this.direcaoCurva = 0; // Nivela asas
+                this.curvaForcada = false;
             } else {
                 // Incrementa ou decrementa a proa conforme o sentido direcional
-                if (this.direcaoCurva === 1) this.proa = (this.proa + taxaCurva) % 360;
-                else this.proa = (this.proa - taxaCurva + 360) % 360;
+                if (this.direcaoCurva === 1) {
+                    this.proa = (this.proa + taxaCurva) % 360;
+                } else if (this.direcaoCurva === -1) {
+                    this.proa = (this.proa - taxaCurva + 360) % 360;
+                }
             }
+        } else {
+            this.direcaoCurva = 0;
+            this.curvaForcada = false;
         }
 
         // -------------------------------------------------------------------------
@@ -909,7 +995,8 @@ export class Aeronave {
 
         // Se o nível autorizado for "VIA" ou "---", a aeronave segue estritamente as restrições da carta
         const isVia = (this.nivAutorizadoFisico === "VIA" || this.nivAutorizadoFisico === "---");
-        const altClearence = isVia ? 0 : parseInt(this.nivAutorizadoFisico, 10);
+        const isILS = (this.nivAutorizadoFisico === "ILS" || this.cleared_level === "ILS");
+        const altClearence = isVia ? 0 : (isILS ? Math.round((this.altitude_before_ils || (this.flAtualNum * 100)) / 100) : parseInt(this.nivAutorizadoFisico, 10));
         const lnavAtivoOuPendente = this.modoLNAV || (this.wpPendente !== null);
 
         // =========================================================================
@@ -925,6 +1012,24 @@ export class Aeronave {
                 : 2200;
             razaoEfetiva = perfRate;
             this.descent_mode = 'CLIMB';
+        } else if (this.autopilot && (this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_CAPTURE || 
+                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_TRACK || 
+                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE || 
+                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN)) {
+            // =========================================================================
+            // MODO GLIDEPATH / ILS GS TRACKING:
+            // O guiamento vertical de aproximação ILS comanda continuamente a targetVS
+            // =========================================================================
+            this.descent_mode = (this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE) ? 'FLARE' : 'GLIDEPATH';
+            this.verticalMode = 'G/S';
+            targetFL = Math.round(this.alt / 100);
+            this.hold_altitude_until_waypoint = null;
+            this.vertical_floor_altitude = null;
+            this.vertical_floor_fl = null;
+        } else if (this.autopilot && this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
+            // Durante GS_ARM, a aeronave mantém a altitude autorizada (ALT_HOLD) aguardando o feixe
+            targetFL = (!isVia && !isNaN(altClearence) && altClearence > 0) ? altClearence : this.flAtualNum;
+            razaoEfetiva = razaoNominal;
         } else if (this.cleared_approach) {
             // =========================================================================
             // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "APP")
@@ -1183,10 +1288,19 @@ export class Aeronave {
         const destCoords = state.fixos[this.dest] || state.fixos["SBSP"];
         if (destCoords) {
             let distDest = calcularRumoDistancia(this, destCoords).distanciaNM;
-            if (distDest <= 0.8 && distDest > 0.35) {
-                this.squawk = "2000"; 
-            } else if (distDest <= 0.35) {
-                this.pousou = true;  
+            const emILS = this.autopilot && (
+                this.autopilot.loc_captured ||
+                this.autopilot.gs_captured ||
+                this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE ||
+                this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN ||
+                this.on_ground
+            );
+            if (!emILS) {
+                if (distDest <= 0.8 && distDest > 0.35) {
+                    this.squawk = "2000"; 
+                } else if (distDest <= 0.35) {
+                    this.pousou = true;  
+                }
             }
         }
     }
@@ -1215,6 +1329,29 @@ export class Aeronave {
         // Otimização: evita reprocessar comandos se o texto digitado não mudou
         if (texto === this.ultimoComandoTexto) return;
         this.ultimoComandoTexto = texto;
+
+        // ---------------------------------------------------------------------
+        // REGEX DE AUTORIZAÇÃO ILS VIA SCRATCHPAD: "ILS"
+        // ---------------------------------------------------------------------
+        if (/\bILS\b/.test(texto)) {
+            if (!this.altitude_before_ils) {
+                const flPrev = parseInt(this.nivAutorizado, 10);
+                this.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (this.alt || this.flAtualNum * 100);
+            }
+            this.nivAutorizado = "ILS";
+            this.cleared_level = "ILS";
+            this.ils_authorized = true;
+            if (this.autopilot) this.autopilot.ils_authorized = true;
+            if (this.pilot) {
+                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: 'ILS' });
+            } else {
+                this.nivAutorizadoFisico = "ILS";
+            }
+            // Remove o token "ILS" do texto livre para que a 4ª linha continue vazia (Seção 5)
+            this.textoLivre = this.textoLivre.replace(/\bILS\b/g, '').trim();
+            this.ultimoComandoTexto = this.textoLivre;
+            texto = this.textoLivre.toUpperCase().trim();
+        }
         
         // ---------------------------------------------------------------------
         // 1. REGEX DE PROA / HEADING: Hxxx ou Hxxx+ (ex: H090 ou H090+)

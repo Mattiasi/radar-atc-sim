@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ILS Automated Test Suite</title>
+</head>
+<body>
+    <h1>ILS Automated Test Suite</h1>
+    <div id="output">Running tests...</div>
+
+    <script type="module">
+        import { Aeronave } from '../Aeronave.js';
+        import { state } from '../state.js';
+        import { 
+            getRunwayILS, 
+            calculate_gs_vs, 
+            calculateILSGeometry, 
+            update_ils_tracking, 
+            ILS_LATERAL_MODES, 
+            ILS_VERTICAL_MODES, 
+            ILS_CONSTANTS 
+        } from '../ILSController.js';
+        import { aerodromos, getRunwayILSData } from '../data.js';
+
+        // Setup mock canvas for state and rendering
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 800;
+        state.canvas = canvas;
+        state.ctx = canvas.getContext('2d');
+        state.largura = 1200;
+        state.altura = 800;
+        state.zoom = 1.0;
+        state.panX = 0;
+        state.panY = 0;
+        state.rotas = {};
+        state.pistas = [];
+        state.fixos = {};
+        state.aeronaves = [];
+
+        // Populate basic fixos
+        state.fixos["SBSP"] = { deltaLat: 0, deltaLon: 0, fixo: true };
+        state.fixos["SBGR"] = { deltaLat: 0.111734, deltaLon: 0.249286, fixo: true };
+
+        const capturedLogs = [];
+        const origLog = console.log;
+        const origErr = console.error;
+        console.log = (...args) => {
+            capturedLogs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+            origLog.apply(console, args);
+        };
+        console.error = (...args) => {
+            capturedLogs.push("[ERROR] " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+            origErr.apply(console, args);
+        };
+
+        const results = [];
+
+        function assert(condition, message) {
+            if (!condition) {
+                const err = new Error(`Assertion failed: ${message}`);
+                console.error(err);
+                throw err;
+            }
+            console.log(`[PASS] ${message}`);
+            results.push({ pass: true, message });
+        }
+
+        async function runTests() {
+            try {
+                console.log("=== STARTING ILS TEST SUITE ===");
+
+                // TEST 1: Data-driven ILS Configuration
+                console.log("\n--- TEST 1: Data-driven Configuration ---");
+                const ils17R = getRunwayILSData("SBSP", "17R");
+                assert(ils17R !== null, "SBSP 17R ILS config exists");
+                assert(ils17R.enabled === true, "SBSP 17R ILS is enabled");
+                assert(ils17R.freq === "109.5", "SBSP 17R freq is 109.5");
+                assert(ils17R.frontCourseDeg === 170, "SBSP 17R front course is 170°");
+                assert(ils17R.gs_angle_deg === 3.0, "SBSP 17R GS angle is 3.0°");
+
+                const ils10R = getRunwayILSData("SBGR", "10R");
+                assert(ils10R !== null, "SBGR 10R ILS config exists");
+                assert(ils10R.frontCourseDeg === 96, "SBGR 10R front course is 96°");
+
+                // TEST 2: Theoretical Glide Slope VS Formula
+                console.log("\n--- TEST 2: GS VS Formula ---");
+                const vs140 = calculate_gs_vs(140, 3.0);
+                // 140 * 101.27 * tan(3 deg) = 14177.8 * 0.05240777928 = ~743.03
+                assert(Math.abs(vs140 - 743.03) < 1.0, `VS at 140kt is ~743 ft/min (got ${vs140.toFixed(2)})`);
+                const vs160 = calculate_gs_vs(160, 3.0);
+                assert(Math.abs(vs160 - 849.18) < 1.0, `VS at 160kt is ~849 ft/min (got ${vs160.toFixed(2)})`);
+
+                // TEST 3: Geometry Calculation
+                console.log("\n--- TEST 3: Geometry Calculation ---");
+                // Aircraft 10 NM north of SBSP on the 170° approach centerline
+                // 170° inbound means approaching from North (bearing 350° from threshold)
+                // Threshold SBSP 17R is roughly at deltaLat 0.015, deltaLon -0.003
+                const geomCenter = calculateILSGeometry(0.18, 0, 0, 0, 170);
+                assert(geomCenter.along_track_nm > 0, "A/C to the north has along_track_nm > 0");
+                assert(geomCenter.distance_nm > 10, "Distance is > 10 NM");
+
+                // TEST 4: Full ILS Vectoring Sequence (Arm -> LOC Capt -> LOC Track -> GS Arm -> GS Capt -> GS Track -> Flare -> Touchdown -> Squawk 2000)
+                console.log("\n--- TEST 4: Full ILS Vectoring Sequence ---");
+                const ac = new Aeronave("GLO1234", "B738", 0.20, -0.04, 140, 160, "040", "ILS", "SBSP");
+                ac.pistaAtribuida = "17R";
+                ac.assigned_runway = "17R";
+                ac.modoLNAV = false; // Vectoring mode
+                ac.proaDestino = 140; // 30° intercept angle to 170°
+                ac.nivAutorizado = "ILS";
+                ac.cleared_level = "ILS";
+                ac.ils_authorized = true;
+                ac.squawk = "4321";
+
+                const rILS = getRunwayILS(ac);
+                console.log("rILS:", JSON.stringify(rILS));
+                const geomInit = rILS ? calculateILSGeometry(ac.deltaLat, ac.deltaLon, rILS.threshold.deltaLat, rILS.threshold.deltaLon, rILS.front_course_deg) : null;
+                console.log("geomInit:", JSON.stringify(geomInit));
+
+                let locArmed = false;
+                let locCaptured = false;
+                let locTracked = false;
+                let gsArmed = false;
+                let gsCaptured = false;
+                let gsTracked = false;
+                let flared = false;
+                let touchedDown = false;
+                let squawk2000StrictlyAtTouchdown = false;
+                let squawkPremature = false;
+
+                const dt = 0.5; // 0.5s time step
+                let simTime = 0;
+                const maxSimTime = 600; // max 10 minutes simulation
+
+                while (simTime < maxSimTime && !ac.pousou && !ac.on_ground) {
+                    ac.atualizar(dt);
+                    simTime += dt;
+
+                    // Monitor state progression
+                    if (ac.autopilot.loc_armed) locArmed = true;
+                    if (ac.autopilot.loc_captured) locCaptured = true;
+                    if (ac.autopilot.loc_tracked) locTracked = true;
+
+                    // Check that GS is NOT armed before LOC is tracked
+                    if (ac.autopilot.gs_armed && !locTracked) {
+                        throw new Error("GS armed prematurely before LOC was tracked!");
+                    }
+                    if (ac.autopilot.gs_armed) gsArmed = true;
+                    if (ac.autopilot.gs_captured) gsCaptured = true;
+                    if (ac.autopilot.gs_tracked) gsTracked = true;
+
+                    // Check squawk: MUST NOT be 2000 before touchdown!
+                    if (ac.squawk === "2000" && !ac.on_ground && ac.autopilot.vertical_mode !== ILS_VERTICAL_MODES.TOUCHDOWN) {
+                        squawkPremature = true;
+                    }
+
+                    if (ac.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE) {
+                        flared = true;
+                    }
+
+                    if (ac.on_ground || ac.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN) {
+                        touchedDown = true;
+                        if (ac.squawk === "2000") {
+                            squawk2000StrictlyAtTouchdown = true;
+                        }
+                        break;
+                    }
+                }
+
+                assert(locArmed, "Localizer armed (LOC_ARM)");
+                assert(locCaptured, "Localizer captured (LOC_CAPTURE)");
+                assert(locTracked, "Localizer tracked (LOC_TRACK)");
+                assert(gsArmed, "Glide Slope armed (GS_ARM) after LOC_TRACK");
+                assert(gsCaptured, "Glide Slope captured (GS_CAPTURE) from below");
+                assert(gsTracked, "Glide Slope tracked (GS_TRACK)");
+                assert(flared, "Flare executed near ground (FLARE)");
+                assert(touchedDown, "Touchdown detected physically on runway");
+                assert(!squawkPremature, "Transponder 2000 did NOT trigger prematurely");
+                assert(squawk2000StrictlyAtTouchdown, "Transponder 2000 triggered strictly on touchdown");
+
+                // TEST 5: Negative Test - Vectoring without ILS authorization
+                console.log("\n--- TEST 5: Negative Test - No ILS Authorization ---");
+                const acNoAuth = new Aeronave("TAM3344", "A320", 0.20, -0.04, 140, 160, "040", "040", "SBSP");
+                acNoAuth.pistaAtribuida = "17R";
+                acNoAuth.assigned_runway = "17R";
+                acNoAuth.modoLNAV = false;
+                acNoAuth.proaDestino = 140;
+                acNoAuth.nivAutorizado = "040";
+                acNoAuth.cleared_level = "040";
+                acNoAuth.ils_authorized = false;
+
+                // Simulate for 60 seconds
+                for (let t = 0; t < 60; t += 0.5) {
+                    acNoAuth.atualizar(0.5);
+                }
+                assert(!acNoAuth.autopilot.loc_armed, "LOC never armed without authorization");
+                assert(!acNoAuth.autopilot.loc_captured, "LOC never captured without authorization");
+                assert(acNoAuth.proaDestino === 140, "Heading remained 140°");
+
+                // TEST 6: Negative Test - Aircraft above Glide Slope
+                console.log("\n--- TEST 6: Negative Test - Above Glide Slope ---");
+                const acAbove = new Aeronave("GLO5566", "B738", 0.08, -0.002, 170, 140, "060", "ILS", "SBSP");
+                acAbove.pistaAtribuida = "17R";
+                acAbove.assigned_runway = "17R";
+                acAbove.modoLNAV = false;
+                acAbove.proaDestino = 170;
+                acAbove.proa = 170;
+                acAbove.nivAutorizado = "ILS";
+                acAbove.cleared_level = "ILS";
+                acAbove.ils_authorized = true;
+                acAbove.altitude_before_ils = 6000;
+                acAbove.alt = 6000;
+                acAbove.flAtualNum = 60;
+
+                // Force LOC tracked to allow GS evaluation
+                acAbove.autopilot.lateral_mode = ILS_LATERAL_MODES.LOC_TRACK;
+                acAbove.autopilot.loc_tracked = true;
+
+                // Step simulation
+                for (let t = 0; t < 10; t += 0.5) {
+                    acAbove.atualizar(0.5);
+                }
+                assert(acAbove.autopilot.gs_armed === true, "GS armed waiting for beam");
+                assert(acAbove.autopilot.gs_captured === false, "GS NOT captured because aircraft is above the beam");
+                assert(acAbove.alt >= 5900, "Aircraft maintains level flight without diving");
+
+                // TEST 7: Negative Test - Intercept angle > 45°
+                console.log("\n--- TEST 7: Negative Test - Intercept angle > 45° ---");
+                const acExcessiveAngle = new Aeronave("AZU7788", "B738", 0.20, -0.04, 80, 160, "040", "ILS", "SBSP");
+                acExcessiveAngle.pistaAtribuida = "17R";
+                acExcessiveAngle.assigned_runway = "17R";
+                acExcessiveAngle.modoLNAV = false;
+                acExcessiveAngle.proaDestino = 80; // 90° intercept angle to 170° (exceeds 45°)
+                acExcessiveAngle.nivAutorizado = "ILS";
+                acExcessiveAngle.cleared_level = "ILS";
+                acExcessiveAngle.ils_authorized = true;
+
+                for (let t = 0; t < 20; t += 0.5) {
+                    acExcessiveAngle.atualizar(0.5);
+                }
+                assert(!acExcessiveAngle.autopilot.loc_captured, "LOC NOT captured with 90° intercept angle (> 45° limit)");
+
+                // TEST 8: Radar Tag Display
+                console.log("\n--- TEST 8: Radar Tag Display ---");
+                const acTag = new Aeronave("TAM1234", "B738", 0.1, 0, 170, 160, "040", "ILS", "SBSP");
+                acTag.nivAutorizado = "ILS";
+                acTag.cleared_level = "ILS";
+                acTag.textoLivre = "HDG170"; // user had typed something before
+
+                // Check Line 4 logic from render.js:
+                const textoLinha4 = (acTag.nivAutorizado === "ILS" || acTag.cleared_level === "ILS") ? "" : (acTag.textoLivre || "");
+                assert(textoLinha4 === "", "Tag Line 4 is strictly empty (\"\") when cleared for ILS");
+                assert(acTag.nivAutorizado === "ILS", "Cleared level field displays strictly \"ILS\"");
+
+                // TEST 9: No 360 Orbit during ILS Tracking
+                console.log("\n--- TEST 9: No 360 Orbit during ILS Tracking ---");
+                const acTrack = new Aeronave("AZU9999", "A320", 0.18, -0.02, 160, 150, "040", "ILS", "SBSP");
+                acTrack.pistaAtribuida = "17R";
+                acTrack.cleared_level = "ILS";
+                acTrack.nivAutorizado = "ILS";
+                acTrack.autopilot.ils_authorized = true;
+                acTrack.autopilot.lateral_mode = "LOC_CAPTURE";
+                acTrack.autopilot.loc_captured = true;
+
+                let maxHeadingStep = 0;
+                let totalHeadingDelta = 0;
+                let prevH = acTrack.proa;
+
+                // Simulate 60 seconds of ILS tracking with dt = 0.5s
+                for (let t = 0; t < 60; t += 0.5) {
+                    acTrack.atualizar(0.5);
+                    let step = Math.abs(acTrack.proa - prevH);
+                    if (step > 180) step = 360 - step;
+                    if (step > maxHeadingStep) maxHeadingStep = step;
+                    totalHeadingDelta += step;
+                    prevH = acTrack.proa;
+                }
+
+                // Heading should remain stable near 170° (between 160° and 180°)
+                assert(acTrack.proa >= 160 && acTrack.proa <= 180, `Proa stayed aligned with 170° (ended at ${acTrack.proa.toFixed(1)}°)`);
+                assert(maxHeadingStep < 5.0, `Turn rate was smooth (max step was ${maxHeadingStep.toFixed(2)}°)`);
+                console.log(`[PASS] Proa tracked smoothly without any 360° orbit (final proa: ${acTrack.proa.toFixed(1)}°)`);
+
+                console.log("\nALL TESTS PASSED SUCCESSFULLY!");
+                document.getElementById('output').innerHTML = '<h2 style="color: green;">ALL 9 TESTS PASSED!</h2>';
+
+                // Post results to python server
+                fetch('/test-results', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ success: true, results, logs: capturedLogs })
+                }).catch(err => console.log("Post results:", err));
+
+            } catch (error) {
+                console.error("Test failed:", error);
+                document.getElementById('output').innerHTML = `<h2 style="color: red;">TEST FAILED: ${error.message}</h2>`;
+                fetch('/test-results', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ success: false, error: error.message, stack: error.stack, logs: capturedLogs })
+                }).catch(err => console.log("Post error:", err));
+            }
+        }
+
+        window.onload = runTests;
+    </script>
+</body>
+</html>

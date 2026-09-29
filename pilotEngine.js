@@ -356,15 +356,29 @@ export class PilotAgent {
                 aero.flyByProtegido = null;
                 aero.wpOffRoute = null;
                 aero.proaDestino = novaProa;
+                aero.curvaForcada = ladoMaior;
+
+                // Se a aeronave estava sob guiamento de Localizer e o ATC comandou uma proa manual,
+                // desengaja o LOC e retorna para o modo HDG de vetoração
+                if (aero.autopilot && (aero.autopilot.lateral_mode === 'LOC_CAPTURE' || aero.autopilot.lateral_mode === 'LOC_TRACK')) {
+                    aero.autopilot.lateral_mode = 'HDG';
+                    aero.autopilot.loc_captured = false;
+                    aero.autopilot.loc_tracked = false;
+                }
 
                 // Calcula o arco no círculo trigonométrico
                 let difCurta = novaProa - aero.proa;
                 while (difCurta <= -180) difCurta += 360;
                 while (difCurta > 180) difCurta -= 360;
 
-                if (difCurta === 0) aero.direcaoCurva = 0;
-                else if (ladoMaior) aero.direcaoCurva = (difCurta > 0) ? -1 : 1;
-                else aero.direcaoCurva = (difCurta > 0) ? 1 : -1;
+                if (difCurta === 0) {
+                    aero.direcaoCurva = 0;
+                    aero.curvaForcada = false;
+                } else if (ladoMaior) {
+                    aero.direcaoCurva = (difCurta > 0) ? -1 : 1;
+                } else {
+                    aero.direcaoCurva = (difCurta > 0) ? 1 : -1;
+                }
                 break;
             }
 

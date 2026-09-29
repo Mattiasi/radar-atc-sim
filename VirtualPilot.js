@@ -41,12 +41,29 @@ export class VirtualPilot {
         const aero = this.aero;
         if (!aero) return;
 
+        // Se a aeronave estiver sob controle vertical de Glide Slope / Flare / Touchdown do ILS:
+        const emGuiamentoILS = aero.autopilot && (
+            aero.autopilot.vertical_mode === 'GS_CAPTURE' ||
+            aero.autopilot.vertical_mode === 'GS_TRACK' ||
+            aero.autopilot.vertical_mode === 'FLARE' ||
+            aero.autopilot.vertical_mode === 'TOUCHDOWN' ||
+            aero.on_ground
+        );
+        if (emGuiamentoILS) {
+            this.verticalMode = (aero.autopilot.vertical_mode === 'FLARE') ? 'FLARE' : 'G/S';
+            aero.verticalMode = this.verticalMode;
+            // O ILSController calcula continuamente a targetVS física e gerencia velocidades.
+            return;
+        }
+
         const perf = getAircraftPerformance(aero.tipo);
         const alt = aero.alt || (aero.flAtualNum * 100);
         
         // Determina a altitude alvo autorizada em pés
         let targetAlt = alt;
-        if (aero.target_altitude !== undefined && !isNaN(aero.target_altitude)) {
+        if (aero.cleared_level === "ILS" || aero.nivAutorizado === "ILS") {
+            targetAlt = aero.altitude_before_ils || (aero.flAtualNum * 100);
+        } else if (aero.target_altitude !== undefined && !isNaN(aero.target_altitude)) {
             targetAlt = aero.target_altitude;
         } else if (aero.targetFL !== undefined && !isNaN(aero.targetFL)) {
             targetAlt = aero.targetFL * 100;

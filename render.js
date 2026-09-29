@@ -100,8 +100,8 @@ export function pegarVetorProximo(telaX, telaY) {
 
     for (let i = 0; i < state.vetoresFixos.length; i++) {
         const v = state.vetoresFixos[i];
-        let oDelta = v.aeroOrigem ? v.aeroOrigem : v.origem;
-        let dDelta = v.aeroDestino ? v.aeroDestino : v.destino;
+        let oDelta = v.aeroOrigem ? (v.aeroOrigem.posicaoRadar || v.aeroOrigem) : v.origem;
+        let dDelta = v.aeroDestino ? (v.aeroDestino.posicaoRadar || v.aeroDestino) : v.destino;
         if (!oDelta || !dDelta) continue;
 
         const oTela = deltaParaTela(oDelta);
@@ -526,10 +526,10 @@ export function desenharSimboloPista(cx, cy, aeroOuNome, rumoPistaFallback = 120
  */
 export function desenharVetores() {
     const tracaLinha = (vetorObj, cor, selecionado) => {
-        // Se ancorou num avião, atualiza dinamicamente a posição. Senão usa a coordenada fixa original.
-        let oDelta = vetorObj.aeroOrigem ? vetorObj.aeroOrigem : vetorObj.origem;
-        // O destino é livre (no cursor do rato) se a linha ainda estiver a ser criada, sem atração magnética
-        let dDelta = vetorObj.aeroDestino ? vetorObj.aeroDestino : vetorObj.destino;
+        // Se ancorou num avião, obtém o snapshot de 4s da varredura do radar (posicaoRadar)
+        // para que a posição da linha, rumo, distância e ETA atualizem estritamente a cada 4 segundos
+        let oDelta = vetorObj.aeroOrigem ? (vetorObj.aeroOrigem.posicaoRadar || vetorObj.aeroOrigem) : vetorObj.origem;
+        let dDelta = vetorObj.aeroDestino ? (vetorObj.aeroDestino.posicaoRadar || vetorObj.aeroDestino) : vetorObj.destino;
         if (!dDelta) {
             dDelta = telaParaDelta(state.mouseTelaX, state.mouseTelaY);
         }
@@ -552,7 +552,7 @@ export function desenharVetores() {
         state.ctx.beginPath();
         state.ctx.stroke();
 
-        // Escreve os dados (Proa, Distância) no fim da linha
+        // Escreve os dados (Proa, Distância) no fim da linha baseados no snapshot de 4s
         const info = calcularRumoDistancia(oDelta, dDelta);
         state.ctx.fillStyle = cor; 
         state.ctx.font = selecionado ? 'bold 14px Arial' : 'bold 13px Arial';
@@ -566,10 +566,14 @@ export function desenharVetores() {
         state.ctx.fillText(info.rumo.toString(), textX, dTela.y - 10);
         state.ctx.fillText(info.distancia.toString(), textX, dTela.y + 6);
         
-        // Se a origem for um avião em movimento, calcula o tempo estimado (ETA)
-        if (vetorObj.aeroOrigem && vetorObj.aeroOrigem.vel > 0) {
-            let tempoMin = (info.distanciaNM / vetorObj.aeroOrigem.vel) * 60;
-            state.ctx.fillText(tempoMin.toFixed(1), textX, dTela.y + 22);
+        // Se a origem for um avião em movimento, calcula o ETA baseado na Ground Speed do radar (4s)
+        if (vetorObj.aeroOrigem) {
+            const snapOrig = vetorObj.aeroOrigem.posicaoRadar || vetorObj.aeroOrigem;
+            const gsRadar = (snapOrig.groundSpeed !== undefined) ? snapOrig.groundSpeed : (vetorObj.aeroOrigem.groundSpeed || vetorObj.aeroOrigem.vel);
+            if (gsRadar > 0) {
+                let tempoMin = (info.distanciaNM / gsRadar) * 60;
+                state.ctx.fillText(tempoMin.toFixed(1), textX, dTela.y + 22);
+            }
         }
     };
     
@@ -736,8 +740,8 @@ export function desenharRadar() {
             state.ctx.lineTo(isRight ? textX + 80 : textX - 80, ly + 26); 
             state.ctx.stroke();
         } else {
-            // Renderiza normalmente o texto anotado na etiqueta
-            state.ctx.fillText(aero.textoLivre, textX, ly + 24);
+            // A quarta linha exibe textoLivre (apagada fisicamente quando APP ou ILS é selecionado)
+            state.ctx.fillText(aero.textoLivre || "", textX, ly + 24);
         }
 
         // LINHA 5: Vazia por enquanto (reservada)
