@@ -164,8 +164,62 @@ export class Aeronave {
         this.speedbrakes = false;                // Flag: speedbrakes / spoilers acionados (aumentam taxa de frenagem)
         this.speedbrakesComando = false;         // Flag: ativado explicitamente via Scratchpad (comando SB)
 
-        // Se nivAtual ou nivAutorizado não forem fornecidos, obtém automaticamente das restrições da rota
-        if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
+        // ---------------------------------------------------------------------
+        // REGRA DE SPAWN EM FIXO COM RESTRIÇÃO DE ALTITUDE:
+        // Se a aeronave nascer em cima de um ponto com restrição de altitude,
+        // ela DEVE nascer no nível dessa restrição e já autorizada a descida
+        // para a próxima restrição de nível inferior da carta.
+        // Exemplo: nasceu em OGTAL (restrição FL 120), nasce no FL 120 e já autorizada FL 090 (restrição de SP099).
+        // ---------------------------------------------------------------------
+        let fixoSobAero = null;
+        let idxFixoSobAero = -1;
+
+        if (rota && rota.length > 0) {
+            // 1. Verifica geometricamente se a posição inicial está em cima (<= 2.0 NM) de algum fixo da rota
+            if (state.fixos && Object.keys(state.fixos).length > 0) {
+                for (let i = 0; i < rota.length; i++) {
+                    const nomeFixo = rota[i];
+                    const coords = state.fixos[nomeFixo];
+                    if (coords) {
+                        const dLat = (coords.deltaLat - this.deltaLat) * 60;
+                        const dLon = (coords.deltaLon - this.deltaLon) * correcaoLon * 60;
+                        const dist = Math.hypot(dLat, dLon);
+                        if (dist <= 2.0 && restricoesFixos[nomeFixo] && restricoesFixos[nomeFixo].fl !== undefined) {
+                            fixoSobAero = nomeFixo;
+                            idxFixoSobAero = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 2. Fallback se estiver no waypoint 0 e possuir restrição
+            if (!fixoSobAero && spawnWpIndex === 0 && restricoesFixos[rota[0]] && restricoesFixos[rota[0]].fl !== undefined) {
+                fixoSobAero = rota[0];
+                idxFixoSobAero = 0;
+            }
+        }
+
+        if (fixoSobAero) {
+            const niveisFixo = obterNiveisSpawn(fixoSobAero, rota);
+            nivAtual = niveisFixo.nivAtual;
+            nivAutorizado = niveisFixo.nivAutorizado;
+
+            // Se nasceu em cima do fixo, já completou a passagem por ele;
+            // o próximo fixo alvo a perseguir no LNAV é o fixo subsequente na rota.
+            if (spawnWpIndex <= idxFixoSobAero && idxFixoSobAero + 1 < rota.length) {
+                spawnWpIndex = idxFixoSobAero + 1;
+            }
+
+            // Alinha a proa em direção ao próximo fixo se houver coordenadas
+            const proxNome = rota[spawnWpIndex];
+            if (proxNome && state.fixos && state.fixos[proxNome]) {
+                const info = calcularRumoDistancia(this, state.fixos[proxNome]);
+                this.proa = parseInt(info.rumo, 10);
+                this.proaDestino = this.proa;
+                this.track = this.proa;
+            }
+        } else if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
             const refWp = rota[spawnWpIndex] || rota[0];
             const niveisAuto = obterNiveisSpawn(refWp, rota);
             if (!nivAtual) nivAtual = niveisAuto.nivAtual;
@@ -234,7 +288,8 @@ export class Aeronave {
         this.cleared_approach = false;        // Flag canônica: autorização formal de aproximação (Cleared Approach)
         this.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT; // Modo vertical: RESTRICTED_DESCENT, OPEN_DESCENT, APPROACH_PROFILE, GLIDEPATH
         this.hold_altitude_until_waypoint = null; // Trava vertical: fixo onde o nível atual deve ser retido antes de liberar descida subsequente
-        this.target_altitude = this.flAtualNum * 100; // Altitude alvo em pés físicos contínuos
+        this.targetFL = parseInt(this.nivAutorizado) || this.flAtualNum;
+        this.target_altitude = this.targetFL * 100; // Altitude alvo em pés físicos contínuos
         this.vertical_floor_altitude = null;  // Trava rígida de segurança em pés que impede perfuração antes do fixo
         this.vertical_floor_fl = null;        // Trava rígida em Flight Level
         this.active_iac = null;               // Carta IAC ativa atribuída

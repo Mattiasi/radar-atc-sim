@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta, deltaParaGeo } from './utils.js';
-import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo } from './data.js';
+import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo, obterNiveisSpawn } from './data.js';
 import { Aeronave } from './Aeronave.js';
 
 /**
@@ -30,6 +30,7 @@ export function inicializarEspacoAereo() {
  * Função geométrica complexa que "caminha para trás" numa rota para descobrir
  * a coordenada exata de spawn (nascimento) de uma aeronave.
  * Ex: Onde fica um ponto exatamente a 15NM antes de OGTAL na rota ROTA_OGTAL?
+ * Se milhasDesejadas <= 0, o ponto retornado é exatamente no fixo alvo, apontando para o próximo fixo.
  * 
  * @param {Array} caminhoArray - Array com a sequência de fixos da rota
  * @param {string} fixoAlvo - O fixo de referência (ex: "OGTAL")
@@ -39,6 +40,27 @@ export function inicializarEspacoAereo() {
 export function calcularPontoNaMilhagem(caminhoArray, fixoAlvo, milhasDesejadas) {
     let idx = caminhoArray.indexOf(fixoAlvo);
     if (idx === -1) return null;
+
+    // Se milhasDesejadas for 0 ou negativo, nasce exatamente em cima do fixo alvo
+    if (milhasDesejadas <= 0) {
+        let pAtual = state.fixos[caminhoArray[idx]];
+        if (!pAtual) return null;
+        let proximoIdx = (idx + 1 < caminhoArray.length) ? idx + 1 : idx;
+        let pProximo = state.fixos[caminhoArray[proximoIdx]];
+        let rumo = 0;
+        if (pProximo && pProximo !== pAtual) {
+            rumo = parseInt(calcularRumoDistancia(pAtual, pProximo).rumo, 10);
+        } else if (idx > 0 && state.fixos[caminhoArray[idx - 1]]) {
+            rumo = parseInt(calcularRumoDistancia(state.fixos[caminhoArray[idx - 1]], pAtual).rumo, 10);
+        }
+        let ptGeo = deltaParaGeo(pAtual.deltaLat, pAtual.deltaLon);
+        return {
+            lat: ptGeo.lat,
+            lon: ptGeo.lon,
+            rumo: rumo,
+            wpIndex: proximoIdx
+        };
+    }
 
     let accDist = 0; // Distância acumulada durante a contagem regressiva
     let pAtual = state.fixos[caminhoArray[idx]];
@@ -144,14 +166,15 @@ export function carregarTrafegoTeste() {
 
         const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
         if (rotaCompleta && rotaCompleta.length > 0) {
-            let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 2);
+            let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0);
             if (spawnPt) {
                 let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230; 
                 let dados = gerarDadosAeronave();
+                const niveis = obterNiveisSpawn(fixoAlvo, rotaCompleta);
                 let aero = new Aeronave(
                     dados.callsign, dados.tipo, 
                     spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel, 
-                    "120", "090", "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                    niveis.nivAtual, niveis.nivAutorizado, "SBSP", "", rotaCompleta, spawnPt.wpIndex
                 );
                 aero.esteiraId = esteira.id;
                 aero.fixoOrigem = fixoAlvo;
@@ -207,10 +230,12 @@ export function gerenciarEsteiraDeTrafego() {
                             if (spawnPt) {
                                 let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230;
                                 let dados = gerarDadosAeronave();
+                                const targetWp = rotaCompleta[spawnPt.wpIndex] || fixoAlvo;
+                                const niveis = obterNiveisSpawn(targetWp, rotaCompleta);
                                 let novaAero = new Aeronave(
                                     dados.callsign, dados.tipo,
                                     spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel,
-                                    "120", "090", aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                                    niveis.nivAtual, niveis.nivAutorizado, aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
                                 );
                                 novaAero.esteiraId = esteira.id;
                                 novaAero.fixoOrigem = fixoAlvo;
@@ -227,14 +252,14 @@ export function gerenciarEsteiraDeTrafego() {
         if (!vivosNestaEsteira) {
             const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
             if (rotaCompleta && rotaCompleta.length > 0) {
-                let margem = Math.random() * 2.0;
-                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, esteira.separacao + margem);
+                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0);
                 if (spawnPt) {
                     let dados = gerarDadosAeronave();
+                    const niveis = obterNiveisSpawn(fixoAlvo, rotaCompleta);
                     let novaAero = new Aeronave(
                         dados.callsign, dados.tipo,
                         spawnPt.lat, spawnPt.lon, spawnPt.rumo, 240,
-                        "120", "090", "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                        niveis.nivAtual, niveis.nivAutorizado, "SBSP", "", rotaCompleta, spawnPt.wpIndex
                     );
                     novaAero.esteiraId = esteira.id;
                     novaAero.fixoOrigem = fixoAlvo;
