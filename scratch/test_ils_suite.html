@@ -8,6 +8,25 @@
     <h1>ILS Automated Test Suite</h1>
     <div id="output">Running tests...</div>
 
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error("Global Error:", e.message, e.filename, e.lineno);
+            fetch('/test-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ success: false, error: `${e.message} at ${e.filename}:${e.lineno}`, stack: e.error ? e.error.stack : '' })
+            });
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error("Unhandled Rejection:", e.reason);
+            fetch('/test-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ success: false, error: String(e.reason), stack: e.reason ? e.reason.stack : '' })
+            });
+        });
+    </script>
+
     <script type="module">
         import { Aeronave } from '../Aeronave.js';
         import { state } from '../state.js';
@@ -21,6 +40,9 @@
             ILS_CONSTANTS 
         } from '../ILSController.js';
         import { aerodromos, getRunwayILSData } from '../data.js';
+        import { menuNivelUI } from '../ui.js';
+        import { authorize_approach } from '../ApproachProfileManager.js';
+        import { inicializarEspacoAereo } from '../engine.js';
 
         // Setup mock canvas for state and rendering
         const canvas = document.createElement('canvas');
@@ -38,9 +60,8 @@
         state.fixos = {};
         state.aeronaves = [];
 
-        // Populate basic fixos
-        state.fixos["SBSP"] = { deltaLat: 0, deltaLon: 0, fixo: true };
-        state.fixos["SBGR"] = { deltaLat: 0.111734, deltaLon: 0.249286, fixo: true };
+        // Populate airspace fixos and runways
+        inicializarEspacoAereo();
 
         const capturedLogs = [];
         const origLog = console.log;
@@ -281,8 +302,116 @@
                 assert(maxHeadingStep < 5.0, `Turn rate was smooth (max step was ${maxHeadingStep.toFixed(2)}°)`);
                 console.log(`[PASS] Proa tracked smoothly without any 360° orbit (final proa: ${acTrack.proa.toFixed(1)}°)`);
 
+                // TEST 10: MenuNivel level choices (APP must be absent, VIA must be present)
+                console.log("\n--- TEST 10: Level Dropdown Options ---");
+                assert(!menuNivelUI.niveis.includes("APP"), "Level menu does NOT contain 'APP'");
+                assert(menuNivelUI.niveis.includes("VIA"), "Level menu contains 'VIA'");
+                assert(menuNivelUI.niveis.includes("ILS"), "Level menu contains 'ILS'");
+
+                // TEST 11: Full VIA procedural approach (STAR -> IAC step-down lock until blocked -> 3° glidepath -> landing)
+                console.log("\n--- TEST 11: VIA Procedural Approach with Step-Down Locks ---");
+                const sp032 = state.fixos["SP032"];
+                const acVia = new Aeronave("TAM1234", "A320", sp032.deltaLat + 0.04, sp032.deltaLon, 140, 180, "080", "VIA", "SBSP");
+                acVia.rota = ["SP032", "KOMGU", "GERSU", "URUTA", "SP139", "SP017", "SBSP"];
+                acVia.wpIndex = 0;
+                acVia.dest = "SBSP";
+                acVia.pistaAtribuida = "17R";
+                acVia.assigned_runway = "17R";
+                acVia.modoLNAV = true;
+                acVia.alt = 8000;
+                acVia.flAtualNum = 80;
+                acVia.nivAutorizado = "VIA";
+                acVia.cleared_level = "VIA";
+                acVia.autorizadoProcedimento = true;
+
+                let komguLocked = false;
+                let komguNeverBelow5500BeforeBlock = true;
+                let gersuLocked = false;
+                let urutaLocked = false;
+                let sp139Locked = false;
+                let glidepathEngaged = false;
+                let flaredVia = false;
+                let touchedDownVia = false;
+                let squawk2000Via = false;
+
+                const dtVia = 0.5;
+                let timeVia = 0;
+                while (timeVia < 750 && !acVia.pousou && !acVia.on_ground) {
+                    acVia.atualizar(dtVia);
+                    timeVia += dtVia;
+
+                    const curWp = (acVia.rota && acVia.wpIndex < acVia.rota.length) ? acVia.rota[acVia.wpIndex] : null;
+                    if (curWp === "KOMGU") {
+                        komguLocked = true;
+                        if (acVia.alt < 5450) {
+                            komguNeverBelow5500BeforeBlock = false;
+                        }
+                    }
+                    if (curWp === "GERSU") gersuLocked = true;
+                    if (curWp === "URUTA") urutaLocked = true;
+                    if (curWp === "SP139") sp139Locked = true;
+                    if (acVia.descent_mode === 'GLIDEPATH') glidepathEngaged = true;
+                    if (acVia.descent_mode === 'FLARE') flaredVia = true;
+                    if (acVia.on_ground) touchedDownVia = true;
+                    if (acVia.squawk === "2000") squawk2000Via = true;
+                }
+
+                assert(komguLocked, "Aircraft transitioned to KOMGU lock");
+                assert(komguNeverBelow5500BeforeBlock, "Aircraft held altitude at KOMGU (did not drop below 5500 ft before blocking)");
+                assert(gersuLocked, "Aircraft transitioned to GERSU step-down");
+                assert(glidepathEngaged, "Aircraft engaged 3° glidepath at FAF");
+                assert(squawk2000Via, "Squawk changed to 2000 on final/landing");
+                assert(acVia.pousou || acVia.on_ground, "Aircraft completed landing lifecycle on VIA");
+
+                // TEST 12: VIA safety rule (plane vectored at 4000 ft does NOT climb when cleared VIA to a 5000 ft fix)
+                console.log("\n--- TEST 12: VIA Safety Rule (Never climb if below restriction) ---");
+                const acLow = new Aeronave("GLO5555", "B738", 0.05, -0.05, 140, 160, "040", "040", "SBSP");
+                acLow.alt = 4000;
+                acLow.flAtualNum = 40;
+                acLow.rota = ["GERSU", "URUTA", "SP139", "SP017", "SBSP"];
+                acLow.wpIndex = 0;
+                acLow.nivAutorizado = "VIA";
+                acLow.cleared_level = "VIA";
+                acLow.autorizadoProcedimento = true;
+                acLow.cleared_approach = true;
+                authorize_approach(acLow);
+
+                assert(acLow.target_altitude <= 4000, `Target altitude is capped at current alt (4000 ft) instead of climbing to 5000 ft (got ${acLow.target_altitude})`);
+                for (let t = 0; t < 20; t += 0.5) {
+                    acLow.atualizar(0.5);
+                }
+                assert(acLow.alt <= 4050, `Aircraft maintained level flight and did not climb (alt: ${acLow.alt.toFixed(1)} ft)`);
+
+                // TEST 13: SP101 Waypoint Safety Test (Aircraft at SP101 on STAR OGTAL 2A must NOT squawk 2000 or disappear)
+                console.log("\n--- TEST 13: SP101 Waypoint Safety (STAR OGTAL 2A) ---");
+                const sp101Coords = state.fixos["SP101"];
+                assert(sp101Coords !== undefined, "SP101 waypoint exists in state.fixos");
+                
+                const acSp101 = new Aeronave("TAM3333", "A320", sp101Coords.deltaLat, sp101Coords.deltaLon, 330, 220, "090", "090", "SBSP");
+                acSp101.squawk = "4521";
+                if (acSp101.transponder) acSp101.transponder.code = "4521";
+                acSp101.alt = 9000;
+                acSp101.flAtualNum = 90;
+                acSp101.rota = ["OGTAL", "SP099", "SP101", "SP032", "KOMGU", "GERSU", "URUTA", "SP139", "SBSP"];
+                acSp101.wpIndex = 2; // SP101
+                acSp101.wpNome = "SP101";
+
+                // Simulate 30 seconds of flight over/past SP101
+                let sp101Triggered2000 = false;
+                let sp101PrematureLanding = false;
+                for (let t = 0; t < 30; t += 0.5) {
+                    acSp101.atualizar(0.5);
+                    if (acSp101.squawk === "2000") sp101Triggered2000 = true;
+                    if (acSp101.pousou || acSp101.on_ground) sp101PrematureLanding = true;
+                }
+
+                assert(!sp101Triggered2000, `Aircraft at SP101 did NOT trigger squawk 2000 (squawk remained ${acSp101.squawk})`);
+                assert(!sp101PrematureLanding, "Aircraft at SP101 did NOT prematurely land or disappear (pousou = false, on_ground = false)");
+                assert(acSp101.pousou === false, "pousou flag is strictly false");
+                assert(!acSp101.on_ground, "on_ground is strictly false");
+
                 console.log("\nALL TESTS PASSED SUCCESSFULLY!");
-                document.getElementById('output').innerHTML = '<h2 style="color: green;">ALL 9 TESTS PASSED!</h2>';
+                document.getElementById('output').innerHTML = '<h2 style="color: green;">ALL TESTS PASSED!</h2>';
 
                 // Post results to python server
                 fetch('/test-results', {

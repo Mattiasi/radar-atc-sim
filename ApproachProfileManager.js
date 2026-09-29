@@ -18,8 +18,9 @@
  */
 
 import { state } from './state.js';
-import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo } from './data.js';
+import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData } from './data.js';
 import { calcularRumoDistancia } from './utils.js';
+import { calculateILSGeometry } from './ILSController.js';
 
 /**
  * Modos verticais e de descida suportados pelo simulador ATC.
@@ -308,34 +309,52 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
     // -------------------------------------------------------------------------
     // 1. FASE DE CAPTURA E SEGUIMENTO DO GLIDEPATH (G/S / 3-Degree Glidepath)
     // -------------------------------------------------------------------------
-    if (aircraft.descent_mode === DESCENT_MODES.GLIDEPATH) {
-        aircraft.verticalMode = 'G/S';
+    if (aircraft.descent_mode === DESCENT_MODES.GLIDEPATH || aircraft.descent_mode === 'FLARE') {
+        aircraft.verticalMode = (aircraft.descent_mode === 'FLARE') ? 'FLARE' : 'G/S';
+        aircraft.vertical_floor_altitude = null;
+        aircraft.vertical_floor_fl = null;
 
-        // Ponto de referência da cabeceira da pista de pouso (SBSP RWY 17R: 2600 ft)
-        const destCoords = state.fixos ? (state.fixos[aircraft.dest] || state.fixos["SBSP"]) : null;
-        if (destCoords) {
-            const navDest = calcularRumoDistancia(aircraft, destCoords);
-            const distThresholdNM = navDest ? navDest.distanciaNM : 1.0;
-            const thresholdAltFt = 2600; // Elevação de cabeceira SBSP (FL026)
+        const rwy = getRunwayData(aircraft);
+        const thresholdAltFt = rwy ? rwy.threshold.elevation_ft : 2631;
+        let distThresholdNM = 1.0;
 
-            // Rampa ideal de 3°: altitude = cabeceira + (distância * 318.4 ft/NM)
-            const glidepathAltFt = thresholdAltFt + (distThresholdNM * 318.4);
-            const targetAltFt = Math.max(thresholdAltFt, glidepathAltFt);
-
-            aircraft.target_altitude = targetAltFt;
-            aircraft.targetFL = Math.round(targetAltFt / 100);
-
-            // Razão vertical nominal para seguir rampa de 3° (ft/min ≈ GS * 5.3)
-            const gs = aircraft.groundSpeed || aircraft.vel || 140;
-            const vsGlidepath = -Math.round(gs * 5.3);
-            aircraft.razaoEfetiva = Math.abs(vsGlidepath);
-            aircraft.targetVS = vsGlidepath;
-
-            if (aircraft.virtualPilot) {
-                aircraft.virtualPilot.verticalMode = 'G/S';
-                aircraft.virtualPilot.targetAlt = targetAltFt;
-                aircraft.virtualPilot.targetVS = vsGlidepath;
+        if (rwy) {
+            const geom = calculateILSGeometry(aircraft.deltaLat, aircraft.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
+            distThresholdNM = Math.max(0, geom.along_track_nm);
+        } else {
+            const destCoords = state.fixos ? (state.fixos[aircraft.dest] || state.fixos["SBSP"]) : null;
+            if (destCoords) {
+                const navDest = calcularRumoDistancia(aircraft, destCoords);
+                distThresholdNM = navDest ? navDest.distanciaNM : 1.0;
             }
+        }
+
+        // Rampa ideal de 3°: altitude = cabeceira + (distância * 318.4 ft/NM)
+        const glidepathAltFt = thresholdAltFt + (distThresholdNM * 318.4);
+        const targetAltFt = Math.max(thresholdAltFt, glidepathAltFt);
+
+        aircraft.target_altitude = targetAltFt;
+        aircraft.targetFL = Math.round(targetAltFt / 100);
+
+        // Razão vertical nominal para seguir rampa de 3° (ft/min ≈ GS * 5.3)
+        const gs = aircraft.groundSpeed || aircraft.vel || 140;
+        let vsGlidepath = -Math.round(gs * 5.3);
+
+        // Suavização do toque / flare próximo ao solo (altura <= 65 ft AGL)
+        const curAlt = (aircraft.alt !== undefined) ? aircraft.alt : (aircraft.flAtualNum * 100);
+        const heightAgl = curAlt - thresholdAltFt;
+        if (heightAgl <= 65 && distThresholdNM <= 0.5) {
+            const tFlare = Math.max(0, Math.min(1, heightAgl / 65));
+            vsGlidepath = Math.round(-120 + tFlare * (vsGlidepath - (-120)));
+        }
+
+        aircraft.razaoEfetiva = Math.abs(vsGlidepath);
+        aircraft.targetVS = vsGlidepath;
+
+        if (aircraft.virtualPilot) {
+            aircraft.virtualPilot.verticalMode = 'G/S';
+            aircraft.virtualPilot.targetAlt = targetAltFt;
+            aircraft.virtualPilot.targetVS = vsGlidepath;
         }
         return;
     }
@@ -382,6 +401,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
                 aircraft.hold_altitude_until_waypoint = "SBSP";
+                aircraft.vertical_floor_altitude = null;
+                aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
                 return;
             }
@@ -429,6 +450,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
                 aircraft.hold_altitude_until_waypoint = "SBSP";
+                aircraft.vertical_floor_altitude = null;
+                aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
             }
         }

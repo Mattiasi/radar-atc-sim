@@ -1,4 +1,4 @@
-import { dmsParaDecimal, latCentro, lonCentro } from './utils.js';
+import { dmsParaDecimal, latCentro, lonCentro, geoParaDelta } from './utils.js';
 
 /**
  * Cartas e Procedimentos de Navegação (STAR, SID, AIC).
@@ -877,5 +877,87 @@ export function getRunwayILSData(airportCode, runwayId) {
             };
         }
     }
+    return null;
+}
+
+/**
+ * Obtém os dados de pista e cabeceira física aplicáveis para a aeronave.
+ * @param {Object} aircraft - Instância da aeronave
+ * @returns {Object|null} { airport, runway, front_course_deg, comp_nm, threshold: { deltaLat, deltaLon, elevation_ft } }
+ */
+export function getRunwayData(aircraft) {
+    if (!aircraft) return null;
+    const destName = aircraft.dest || "SBSP";
+    const aerodromo = aerodromos.find(a => a.nome === destName) || aerodromos.find(a => a.nome === "SBSP");
+    if (!aerodromo) return null;
+
+    let runwayId = aircraft.assigned_runway || aircraft.pistaAtribuida;
+    if (!runwayId && aerodromo.pistas && aerodromo.pistas.length > 0) {
+        const p0 = aerodromo.pistas[0];
+        runwayId = p0.id.includes('/') ? p0.id.split('/')[0] : p0.id;
+    }
+
+    const aeroDelta = (aerodromo.lat !== undefined && aerodromo.lon !== undefined)
+        ? geoParaDelta(aerodromo.lat, aerodromo.lon)
+        : { deltaLat: 0, deltaLon: 0 };
+
+    if (!aerodromo.pistas || aerodromo.pistas.length === 0) {
+        return {
+            airport: destName,
+            runway: runwayId || "DEFAULT",
+            front_course_deg: aerodromo.rumoPista || 170,
+            comp_nm: 1.0,
+            threshold: {
+                deltaLat: aeroDelta.deltaLat,
+                deltaLon: aeroDelta.deltaLon,
+                elevation_ft: aerodromo.elevacaoFt || 2631
+            }
+        };
+    }
+
+    for (const pista of aerodromo.pistas) {
+        if (!pista.cabeceiras) continue;
+        const cab = pista.cabeceiras[runwayId];
+        if (cab) {
+            const cabDelta = (cab.lat !== undefined && cab.lon !== undefined)
+                ? geoParaDelta(cab.lat, cab.lon)
+                : aeroDelta;
+            return {
+                airport: destName,
+                runway: runwayId,
+                front_course_deg: cab.frontCourseDeg !== undefined ? cab.frontCourseDeg : pista.rumo,
+                comp_nm: pista.comprimentoM ? (pista.comprimentoM / 1852) : (pista.compNM || 1.0),
+                threshold: {
+                    deltaLat: cabDelta.deltaLat,
+                    deltaLon: cabDelta.deltaLon,
+                    elevation_ft: cab.elevacaoFt || aerodromo.elevacaoFt || 2631
+                }
+            };
+        }
+    }
+
+    // Fallback: primeira cabeceira disponível
+    for (const pista of aerodromo.pistas) {
+        if (!pista.cabeceiras) continue;
+        const firstKey = Object.keys(pista.cabeceiras)[0];
+        if (firstKey) {
+            const cab = pista.cabeceiras[firstKey];
+            const cabDelta = (cab.lat !== undefined && cab.lon !== undefined)
+                ? geoParaDelta(cab.lat, cab.lon)
+                : aeroDelta;
+            return {
+                airport: destName,
+                runway: firstKey,
+                front_course_deg: cab.frontCourseDeg !== undefined ? cab.frontCourseDeg : pista.rumo,
+                comp_nm: pista.comprimentoM ? (pista.comprimentoM / 1852) : (pista.compNM || 1.0),
+                threshold: {
+                    deltaLat: cabDelta.deltaLat,
+                    deltaLon: cabDelta.deltaLon,
+                    elevation_ft: cab.elevacaoFt || aerodromo.elevacaoFt || 2631
+                }
+            };
+        }
+    }
+
     return null;
 }

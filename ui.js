@@ -297,7 +297,7 @@ export function toggleTokenNoTexto(texto, token) {
 export class MenuNivelController {
     constructor() {
         this.menu = null;
-        this.niveis = ["110","105","100","095","090","085","080","075","070","065","060","055","050","045","VIA","APP","ILS","---"];
+        this.niveis = ["110","105","100","095","090","085","080","075","070","065","060","055","050","045","042","VIA","ILS","---"];
     }
 
     inicializar() {
@@ -327,7 +327,7 @@ export class MenuNivelController {
                     } else if (nv === "MIN") {
                         aero.textoLivre = toggleTokenNoTexto(aero.textoLivre, "MIN");
                         aero.analisarComandosTexto();
-                    } else if (nv === "APP") {
+                    } else if (nv === "VIA" || nv === "APP") {
                         // Apaga fisicamente a 4ª linha (textoLivre) e limpa o scratchpad se aberto
                         aero.textoLivre = "";
                         if (state.aeroEditandoTexto === aero && scratchpadUI && scratchpadUI.input) {
@@ -337,20 +337,20 @@ export class MenuNivelController {
                             const flPrev = parseInt(aero.nivAutorizado, 10);
                             aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
                         }
-                        aero.nivAutorizado = "APP";
-                        aero.cleared_level = "APP";
+                        aero.nivAutorizado = "VIA";
+                        aero.cleared_level = "VIA";
                         aero.cleared_approach = true;
                         aero.autorizadoProcedimento = true;
-                        aero.ils_authorized = true;
-                        if (aero.autopilot) aero.autopilot.ils_authorized = true;
+                        aero.ils_authorized = false;
+                        if (aero.autopilot) aero.autopilot.ils_authorized = false;
 
                         authorize_approach(aero);
 
                         // Despacha no canal VERTICAL do piloto virtual
                         if (aero.pilot) {
-                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "APP" });
+                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
                         } else {
-                            aero.nivAutorizadoFisico = "APP";
+                            aero.nivAutorizadoFisico = "VIA";
                         }
                     } else if (nv === "ILS") {
                         // Apaga fisicamente a 4ª linha (textoLivre) e limpa o scratchpad se aberto
@@ -382,10 +382,6 @@ export class MenuNivelController {
                         aero.cleared_level = nv;
                         aero.ils_authorized = false;
                         if (aero.autopilot) aero.autopilot.ils_authorized = false;
-
-                        if (nv === "VIA") {
-                            aero.autorizadoProcedimento = true;
-                        }
 
                         // Despacha no canal VERTICAL do piloto virtual
                         if (aero.pilot) {

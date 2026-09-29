@@ -250,14 +250,11 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
     const gsAngle = runway_ils_data.gs_angle_deg || ILS_CONSTANTS.GS_ANGLE_DEG;
     const locMaxDist = runway_ils_data.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0;
 
-    // 3. Verificar autorização ATC (cleared_level / nivAutorizado / cleared_approach / ils_authorized)
+    // 3. Verificar autorização ATC (cleared_level / nivAutorizado / ils_authorized)
+    // Regra Fundamental (Seções 6 e 7): Autorização ILS ocorre estritamente quando cleared_level == "ILS"
     const ils_authorized = Boolean(
         aircraft.cleared_level === "ILS" ||
         aircraft.nivAutorizado === "ILS" ||
-        aircraft.cleared_level === "APP" ||
-        aircraft.nivAutorizado === "APP" ||
-        aircraft.cleared_approach ||
-        aircraft.autorizadoProcedimento ||
         aircraft.ils_authorized ||
         (aircraft.autopilot && aircraft.autopilot.ils_authorized)
     );

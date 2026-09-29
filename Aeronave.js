@@ -1,13 +1,13 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC } from './data.js';
+import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 import { PilotAgent } from './pilotEngine.js';
 import { VirtualPilot } from './VirtualPilot.js';
 import { FlightDynamicsEngine } from './FlightDynamicsEngine.js';
-import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_vertical_profile } from './ApproachProfileManager.js';
-import { update_ils_tracking, getRunwayILS, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from './ILSController.js';
+import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_vertical_profile, findFirstIACFix, getFixAltitudeFt } from './ApproachProfileManager.js';
+import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from './ILSController.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -769,9 +769,17 @@ export class Aeronave {
                             }
                             this.wpIndex++; // Avança para o próximo waypoint da rota
                             
-                            // Se estiver com aproximação autorizada, atualiza a progressão de degraus da IAC
-                            if (this.cleared_approach) {
-                                update_approach_vertical_profile(this, dtSec);
+                            // Se estiver com aproximação autorizada ou em VIA, atualiza a progressão de degraus da IAC
+                            const isViaAtivo = (this.nivAutorizadoFisico === "VIA" || this.nivAutorizadoFisico === "---" || this.nivAutorizado === "VIA" || this.cleared_level === "VIA");
+                            if (this.cleared_approach || isViaAtivo) {
+                                const activeWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
+                                if (isFixoIAC(wpNome) || isFixoIAC(activeWp)) {
+                                    if (!this.cleared_approach) {
+                                        authorize_approach(this);
+                                    } else {
+                                        update_approach_vertical_profile(this, dtSec);
+                                    }
+                                }
                             }
                             
                             // Imediatamente atualiza a proa alvo em direção ao próximo fixo para iniciar a curva
@@ -1030,10 +1038,11 @@ export class Aeronave {
             // Durante GS_ARM, a aeronave mantém a altitude autorizada (ALT_HOLD) aguardando o feixe
             targetFL = (!isVia && !isNaN(altClearence) && altClearence > 0) ? altClearence : this.flAtualNum;
             razaoEfetiva = razaoNominal;
-        } else if (this.cleared_approach) {
+        } else if (this.cleared_approach || (isVia && (this.descent_mode === DESCENT_MODES.APPROACH_PROFILE || this.descent_mode === DESCENT_MODES.GLIDEPATH || this.descent_mode === 'FLARE'))) {
             // =========================================================================
-            // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "APP")
+            // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "VIA")
             // =========================================================================
+            this.cleared_approach = true;
             update_approach_vertical_profile(this, dtSec);
             targetFL = this.targetFL;
             razaoEfetiva = this.razaoEfetiva || razaoNominal;
@@ -1086,9 +1095,18 @@ export class Aeronave {
             }
 
             if (startWpNome) {
-                let iterWpNome = startWpNome;
-                let iterIndex = startWpIndex;
-                let distAcumulada = 0;
+                // Se estiver em VIA e o fixo ativo pertencer à AIC/IAC, transiciona para o perfil de aproximação
+                if (isVia && isFixoIAC(startWpNome)) {
+                    if (!this.cleared_approach) {
+                        authorize_approach(this);
+                    }
+                    update_approach_vertical_profile(this, dtSec);
+                    targetFL = this.targetFL;
+                    razaoEfetiva = this.razaoEfetiva || razaoNominal;
+                } else {
+                    let iterWpNome = startWpNome;
+                    let iterIndex = startWpIndex;
+                    let distAcumulada = 0;
 
                 let wpCoords = state.fixos[iterWpNome];
                 if (wpCoords) {
@@ -1239,6 +1257,7 @@ export class Aeronave {
                         targetFL = pisoFlyBy;
                     }
                 }
+                }
             }
         } else if (!isVia && !isNaN(altClearence)) {
             // Modo de vetoração manual fora da rota: desce com razão nominal para a altitude autorizada
@@ -1281,25 +1300,110 @@ export class Aeronave {
         // =========================================================================
         // ETAPA 7: GERENCIAMENTO DE POUSO E CICLO DE VIDA (GARBAGE COLLECTION)
         // -------------------------------------------------------------------------
-        // Verifica a proximidade em relação ao aeródromo de destino:
-        // - A menos de 0.8 NM: Altera o squawk para "2000" (contato visual com a torre).
-        // - A menos de 0.35 NM: Marca pousou = true para remoção da memória pelo main loop.
+        // Gerenciamento completo e realista de aproximação, toque e solo para
+        // aeronaves em aproximação RNAV / VIA e convencionais.
+        // As aeronaves sob guiamento ILS têm sua física de solo e toque gerida pelo ILSController.
         // =========================================================================
-        const destCoords = state.fixos[this.dest] || state.fixos["SBSP"];
-        if (destCoords) {
-            let distDest = calcularRumoDistancia(this, destCoords).distanciaNM;
-            const emILS = this.autopilot && (
-                this.autopilot.loc_captured ||
-                this.autopilot.gs_captured ||
-                this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE ||
-                this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN ||
-                this.on_ground
-            );
-            if (!emILS) {
-                if (distDest <= 0.8 && distDest > 0.35) {
-                    this.squawk = "2000"; 
-                } else if (distDest <= 0.35) {
-                    this.pousou = true;  
+        const emILS = this.autopilot && (
+            (this.autopilot.loc_captured || this.autopilot.gs_captured || 
+             this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE || 
+             this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN) &&
+            (this.cleared_level === "ILS" || this.nivAutorizado === "ILS" || this.autopilot.ils_authorized)
+        );
+
+        if (!emILS) {
+            const rwy = getRunwayData(this);
+            const rwyElevFt = rwy ? rwy.threshold.elevation_ft : 2631;
+            const rwyCompNM = rwy ? (rwy.comp_nm || 1.0) : 1.0;
+            const frontCourse = rwy ? (rwy.front_course_deg || 170) : 170;
+            const altFt = (this.alt !== undefined) ? this.alt : (this.flAtualNum * 100);
+            const heightAgl = altFt - rwyElevFt;
+
+            // Se a aeronave já tocou o solo, gerencia a desaceleração, rolagem e ciclo de vida
+            if (this.on_ground) {
+                this.flight_phase = "LANDED";
+                this._flight_phase = "LANDED";
+                this.alt = rwyElevFt;
+                this.flAtualNum = rwyElevFt / 100;
+                this.currentVS = 0;
+                this.targetVS = 0;
+                this.squawk = "2000";
+                if (this.transponder) this.transponder.code = "2000";
+
+                // Mantém o alinhamento no eixo da pista durante a rolagem no solo
+                this.proa = frontCourse;
+                this.proaDestino = frontCourse;
+                this.direcaoCurva = 0;
+
+                let alongTrack = -999;
+                if (rwy) {
+                    const geom = calculateILSGeometry(this.deltaLat, this.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, frontCourse);
+                    alongTrack = geom.along_track_nm;
+                }
+
+                // Desaceleração física na corrida de pista (Ground Rollout)
+                if (this.vel > 20) {
+                    this.vel = Math.max(20, this.vel - 5.0 * dtSec);
+                    this.currentIAS = this.vel;
+                }
+
+                if (!this.tempoNoSolo) this.tempoNoSolo = 0;
+                if (this.vel <= 20) {
+                    this.tempoNoSolo += dtSec;
+                }
+                if (this.tempoNoSolo >= 3.0 || alongTrack <= -rwyCompNM - 0.2) {
+                    this.pousou = true;
+                }
+            } else if (heightAgl <= 500) {
+                // Se ainda em voo, só avalia aproximação final e toque se estiver abaixo de 500 ft AGL
+                let alongTrack = 999;
+                let crossTrack = 999;
+                let distTh = 999;
+
+                if (rwy) {
+                    const geom = calculateILSGeometry(this.deltaLat, this.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, frontCourse);
+                    alongTrack = geom.along_track_nm;
+                    crossTrack = geom.cross_track_nm;
+                    distTh = geom.distance_nm;
+                }
+
+                const emAproximacaoFinal = (
+                    this.descent_mode === DESCENT_MODES.GLIDEPATH ||
+                    this.descent_mode === 'FLARE' ||
+                    this.flight_phase === 'APPROACH' ||
+                    this.wpNome === this.dest ||
+                    (this.rota && this.wpIndex >= this.rota.length - 2) ||
+                    distTh <= 2.5
+                );
+
+                // Deve estar alinhado com a pista (crossTrack <= 0.15 NM) e na aproximação final
+                if (emAproximacaoFinal && Math.abs(crossTrack) <= 0.15) {
+                    // 1. Mudança de Squawk para 2000 na aproximação final sobre a pista
+                    if (alongTrack <= 0.5 && alongTrack >= -rwyCompNM - 0.5 && heightAgl <= 50.0) {
+                        this.squawk = "2000";
+                        if (this.transponder) this.transponder.code = "2000";
+                    }
+
+                    // 2. Detecção de Toque (Touchdown) no solo da pista
+                    const sobrePista = (alongTrack <= 0.2 && alongTrack >= -rwyCompNM - 0.5);
+                    const noSolo = (heightAgl <= 35.0 || altFt <= rwyElevFt + 25.0);
+
+                    if (sobrePista && noSolo) {
+                        this.on_ground = true;
+                        this._on_ground = true;
+                        this.flight_phase = "LANDED";
+                        this._flight_phase = "LANDED";
+                        this.alt = rwyElevFt;
+                        this.flAtualNum = rwyElevFt / 100;
+                        this.currentVS = 0;
+                        this.targetVS = 0;
+                        this.squawk = "2000";
+                        if (this.transponder) this.transponder.code = "2000";
+
+                        this.proa = frontCourse;
+                        this.proaDestino = frontCourse;
+                        this.direcaoCurva = 0;
+                    }
                 }
             }
         }
@@ -1421,7 +1525,7 @@ export class Aeronave {
         const matchNoApp = /\b(NOAPP|NOAPX|CANCEL)\b/.test(texto);
         if (matchApp) {
             authorize_approach(this);
-        } else if (matchNoApp || (this.cleared_approach && !matchApp && this.nivAutorizado !== "VIA")) {
+        } else if (matchNoApp || (this.cleared_approach && !matchApp && this.nivAutorizado !== "VIA" && this.cleared_level !== "VIA")) {
             cancel_approach(this);
         }
 
@@ -1433,12 +1537,27 @@ export class Aeronave {
             const nvStr = matchAlt[1].padStart(3, '0');
             this.nivAutorizado = nvStr;
             this.nivAutorizadoFisico = nvStr;
+            this.cleared_level = nvStr;
+            this.cleared_approach = false;
+            this.autorizadoProcedimento = false;
             if (this.pilot) {
                 this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nvStr });
             }
         } else if (/\bVIA\b/.test(texto)) {
             this.nivAutorizado = "VIA";
             this.nivAutorizadoFisico = "VIA";
+            this.cleared_level = "VIA";
+            this.autorizadoProcedimento = true;
+            this.cleared_approach = true;
+            this.ils_authorized = false;
+            if (this.autopilot) this.autopilot.ils_authorized = false;
+
+            const activeIACFix = findFirstIACFix(this);
+            const wpAtual = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
+            if (!this.modoLNAV || isFixoIAC(wpAtual) || !this.rota || this.rota.length === 0) {
+                authorize_approach(this);
+            }
+
             if (this.pilot) {
                 this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
             }
