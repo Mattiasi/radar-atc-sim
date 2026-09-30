@@ -383,11 +383,10 @@ export class MenuNivelController {
                         aero.ils_authorized = false;
                         if (aero.autopilot) aero.autopilot.ils_authorized = false;
 
-                        // Despacha no canal VERTICAL do piloto virtual
+                        // Sincroniza imediatamente o nível físico e despacha comando ao piloto
+                        aero.nivAutorizadoFisico = nv;
                         if (aero.pilot) {
                             aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nv });
-                        } else {
-                            aero.nivAutorizadoFisico = nv;
                         }
                     }
                 }

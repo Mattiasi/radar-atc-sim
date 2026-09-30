@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
 import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
+import { getAircraftPerformance } from './PerformanceDB.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
 import { PilotAgent } from './pilotEngine.js';
@@ -133,8 +134,8 @@ export class Aeronave {
         }
         
         // --- 2. PERFIL DE PERFORMANCE CINEMÁTICA ---
-        // Coeficientes de aceleração, desaceleração e envelope de aproximação individual
-        const perf = AIRCRAFT_PERFORMANCE[this.tipo] || AIRCRAFT_PERFORMANCE["DEFAULT"] || perfisAeronaves[this.tipo] || perfisAeronaves["DEFAULT"];
+        // Coeficientes de aceleração, desaceleração, envelope de aproximação e limites de razão/velocidade
+        const perf = getAircraftPerformance(this.tipo);
         this.perf = perf;
         this.taxaAcel = perf.taxaAcel || perf.accelerationRate || 1.8;       // Aceleração máxima (kt/s²)
         this.taxaDesacel = perf.taxaDesacel || perf.decelerationRate || 1.2; // Desaceleração máxima (kt/s²)
@@ -1247,14 +1248,9 @@ export class Aeronave {
                     targetFL = flAlvoFinal;
                     razaoEfetiva = maiorRazaoNecessaria;
                 } else if (!isVia && altClearence < this.flAtualNum) {
-                    // Descida autorizada manualmente pelo controlador ATC que ainda não atingiu o TOD
-                    let deltaClearence = (this.flAtualNum - altClearence) * 0.3;
-                    if (distAcumulada <= deltaClearence + 1.5) {
-                        targetFL = altClearence;
-                        razaoEfetiva = razaoNominal;
-                    } else {
-                        targetFL = this.flAtualNum;
-                    }
+                    // Descida autorizada pelo controlador ATC (Clearance direta para o nível selecionado)
+                    targetFL = altClearence;
+                    razaoEfetiva = razaoNominal;
                 } else {
                     // Mantém o nível de cruzeiro do segmento se o avião estiver acima
                     if (this.flAtualNum > flCruzeiroSegmento) {
@@ -1283,11 +1279,6 @@ export class Aeronave {
         // TRAVA VERTICAL DE SEGURANÇA (Vertical Floor Clamp):
         // Garante que o perfil não fure a restrição de piso do fixo ativo (ex: hold_altitude_until_waypoint ou flyByProtegido)
         if (this.flyByProtegido && this.flyByProtegido.flMinimo !== undefined) {
-            const flyByFloorFt = this.flyByProtegido.flMinimo * 100;
-            if (this.vertical_floor_altitude === null || this.vertical_floor_altitude < flyByFloorFt) {
-                this.vertical_floor_altitude = flyByFloorFt;
-                this.vertical_floor_fl = this.flyByProtegido.flMinimo;
-            }
             if (targetFL < this.flyByProtegido.flMinimo) {
                 targetFL = this.flyByProtegido.flMinimo;
             }
