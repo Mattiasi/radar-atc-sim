@@ -70,6 +70,10 @@ export class FlightCommandService {
         const flPrev = parseInt(aero.nivAutorizado, 10);
         aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
     }
+    if (aero.semRestricoes) {
+        const nextIacFix = findFirstIACFix(aero);
+        if (nextIacFix) aero.srAteFixoIAC = nextIacFix;
+    }
     aero.nivAutorizado = "VIA";
     aero.cleared_level = "VIA";
     aero.ils_authorized = false;
@@ -81,6 +85,10 @@ export class FlightCommandService {
             if (!aero.altitude_before_ils) {
                 const flPrev = parseInt(aero.nivAutorizado, 10);
                 aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
+            }
+            if (aero.semRestricoes) {
+                const nextIacFix = findFirstIACFix(aero);
+                if (nextIacFix) aero.srAteFixoIAC = nextIacFix;
             }
             aero.nivAutorizado = "VIA";
             aero.cleared_level = "VIA";
@@ -397,6 +405,11 @@ export class FlightCommandService {
                 aero.descent_mode = DESCENT_MODES.OPEN_DESCENT;
                 aero.verticalMode = 'OP-D';
             }
+            
+            if (aero.nivAutorizado === "VIA" || aero.cleared_approach) {
+                const iacFix = findFirstIACFix(aero);
+                if (iacFix) aero.srAteFixoIAC = iacFix;
+            }
         } else if (aero.semRestricoes && !matchSR) {
             aero.semRestricoes = false;
             if (!aero.cleared_approach) {
@@ -474,6 +487,13 @@ export class FlightCommandService {
 
 // Instância Singleton do serviço
 export const flightCommandService = new FlightCommandService();
+
+
+
+
+
+
+
 
 
 
