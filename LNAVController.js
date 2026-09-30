@@ -72,8 +72,20 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                         }
                         aero.wpIndex++; 
                         
+                        // Se estava descendo sem restrições até o fixo do IAC (regra: SR -> VIA):
+                        if (aero.srAteFixoIAC) {
+                            const fixoAlvoIdx = aero.rota ? aero.rota.indexOf(aero.srAteFixoIAC) : -1;
+                            const jaPassouFixo = (wpNome === aero.srAteFixoIAC) || (fixoAlvoIdx !== -1 && aero.wpIndex > fixoAlvoIdx);
+                            if (jaPassouFixo) {
+                                aero.srAteFixoIAC = null;
+                                aero.semRestricoes = false;
+                                aero.descent_mode = DESCENT_MODES.APPROACH_PROFILE;
+                                authorize_approach(aero);
+                            }
+                        }
+
                         const isViaAtivo = (aero.nivAutorizadoFisico === "VIA" || aero.nivAutorizadoFisico === "---" || aero.nivAutorizado === "VIA" || aero.cleared_level === "VIA");
-                        if (aero.cleared_approach || isViaAtivo) {
+                        if (!aero.srAteFixoIAC && (aero.cleared_approach || isViaAtivo)) {
                             const activeWp = (aero.rota && aero.wpIndex < aero.rota.length) ? aero.rota[aero.wpIndex] : null;
                             if (isFixoIAC(wpNome) || isFixoIAC(activeWp)) {
                                 if (!aero.cleared_approach) {

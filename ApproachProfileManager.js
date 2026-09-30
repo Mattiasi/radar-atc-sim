@@ -371,41 +371,39 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
 
         // Se a aeronave ainda estiver com proteção ativa de fly-by deste fixo (curva em andamento e través não superado),
         // o fixo NÃO foi cruzado e o piso da restrição deve ser mantido rigorosamente!
-        if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
-            fixoCruzado = false;
-        } else {
-            const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
-            if (holdCoords) {
-                const nav = calcularRumoDistancia(aircraft, holdCoords);
-                const distNM = nav.distanciaNM;
-
-                if (aircraft.min_dist_to_hold_fix === undefined || aircraft.hold_fix_tracked !== holdFixName) {
-                    aircraft.min_dist_to_hold_fix = distNM;
-                    aircraft.hold_fix_tracked = holdFixName;
-                } else if (distNM < aircraft.min_dist_to_hold_fix) {
-                    aircraft.min_dist_to_hold_fix = distNM;
+        if (aircraft.rota && Array.isArray(aircraft.rota)) {
+            const holdIdx = aircraft.rota.indexOf(holdFixName);
+            if (holdIdx !== -1 && aircraft.wpIndex > holdIdx) {
+                fixoCruzado = true;
+                if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
+                    aircraft.flyByProtegido = null;
                 }
-
-                // Critério físico de bloqueio do fixo / passagem:
-                // 1. Sobrevoo direto muito próximo (distNM <= 0.25 NM)
-                // 2. Passagem pelo través (Beam passage): a aeronave atingiu a distância mínima de aproximação
-                //    (min_dist <= 1.2 NM) e a distância agora está aumentando (distNM >= min_dist + 0.10 NM)
-                const sobrevoou = (distNM <= 0.25);
-                const passouTraves = (aircraft.min_dist_to_hold_fix <= 1.2 && distNM >= aircraft.min_dist_to_hold_fix + 0.10);
-
-                if (sobrevoou || passouTraves) {
-                    fixoCruzado = true;
-                }
-                aircraft.last_distance_to_hold_fix = distNM;
             }
+        }
 
-            // Fallback de rota LNAV:
-            // Apenas se o waypoint ativo já for 2 ou mais fixos à frente do holdFix,
-            // ou se o fixo estiver a mais de 2.5 NM para trás
-            if (!fixoCruzado && aircraft.rota && Array.isArray(aircraft.rota)) {
-                const holdIdx = aircraft.rota.indexOf(holdFixName);
-                if (holdIdx !== -1 && aircraft.wpIndex >= holdIdx + 2) {
-                    fixoCruzado = true;
+        if (!fixoCruzado) {
+            if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
+                fixoCruzado = false;
+            } else {
+                const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
+                if (holdCoords) {
+                    const nav = calcularRumoDistancia(aircraft, holdCoords);
+                    const distNM = nav.distanciaNM;
+
+                    if (aircraft.min_dist_to_hold_fix === undefined || aircraft.hold_fix_tracked !== holdFixName) {
+                        aircraft.min_dist_to_hold_fix = distNM;
+                        aircraft.hold_fix_tracked = holdFixName;
+                    } else if (distNM < aircraft.min_dist_to_hold_fix) {
+                        aircraft.min_dist_to_hold_fix = distNM;
+                    }
+
+                    const sobrevoou = (distNM <= 0.25);
+                    const passouTraves = (aircraft.min_dist_to_hold_fix <= 1.2 && distNM >= aircraft.min_dist_to_hold_fix + 0.10);
+
+                    if (sobrevoou || passouTraves) {
+                        fixoCruzado = true;
+                    }
+                    aircraft.last_distance_to_hold_fix = distNM;
                 }
             }
         }
@@ -415,7 +413,7 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         // ---------------------------------------------------------------------
         if (fixoCruzado) {
             // Se cruzamos o FAF (SP139) ou SDF (SP017), transiciona para captura do GLIDEPATH
-            if (holdFixName === "SP139" || holdFixName === "SP017") {
+            if (holdFixName === "SP017") {
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
                 aircraft.hold_altitude_until_waypoint = "SBSP";

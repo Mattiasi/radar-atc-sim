@@ -41,7 +41,23 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         aero.vertical_floor_altitude = null;
         aero.vertical_floor_fl = null;
         aero.hold_altitude_until_waypoint = null;
+    } else if (aero.srAteFixoIAC) {
+        // Regra operacional: desce sem restrições direto até a altitude do fixo do IAC voado
+        aero.descent_mode = DESCENT_MODES.OPEN_DESCENT;
+        aero.verticalMode = 'OP-D';
+        const rest = restricoesFixos[aero.srAteFixoIAC];
+        const tetoDescida = (rest && rest.fl !== undefined) ? rest.fl : 55;
+        if (tetoDescida < aero.flAtualNum) {
+            targetFL = tetoDescida;
+            razaoEfetiva = razaoNominal;
+        } else {
+            targetFL = aero.flAtualNum;
+        }
     } else if (aero.descent_mode === DESCENT_MODES.GLIDEPATH || aero.descent_mode === 'FLARE') {
+        update_approach_vertical_profile(aero, dtSec);
+        targetFL = aero.targetFL;
+        razaoEfetiva = aero.razaoEfetiva || razaoNominal;
+    } else if (aero.cleared_approach || aero.descent_mode === DESCENT_MODES.APPROACH_PROFILE) {
         update_approach_vertical_profile(aero, dtSec);
         targetFL = aero.targetFL;
         razaoEfetiva = aero.razaoEfetiva || razaoNominal;
