@@ -126,12 +126,17 @@ export class FlightDynamicsEngine {
             ? ac.vertical_floor_altitude
             : null;
         if (ac.flyByProtegido && ac.flyByProtegido.flMinimo !== undefined) {
-            const flyByFt = ac.flyByProtegido.flMinimo * 100;
-            pisoAtivoFt = (pisoAtivoFt !== null) ? Math.max(pisoAtivoFt, flyByFt) : flyByFt;
+            const isViaAtivo = (ac.nivAutorizadoFisico === "VIA" || ac.nivAutorizadoFisico === "---" || ac.nivAutorizado === "VIA" || ac.cleared_level === "VIA");
+            if (isViaAtivo && !ac.semRestricoes) {
+                const flyByFt = ac.flyByProtegido.flMinimo * 100;
+                pisoAtivoFt = (pisoAtivoFt !== null) ? Math.max(pisoAtivoFt, flyByFt) : flyByFt;
+            }
         }
 
-        if (pisoAtivoFt !== null && ac.descent_mode !== 'GLIDEPATH' && ac.descent_mode !== 'FLARE' && !ac.on_ground) {
-            if (ac.alt < pisoAtivoFt) {
+        if (pisoAtivoFt !== null && ac.descent_mode !== 'OPEN_DESCENT' && ac.descent_mode !== 'GLIDEPATH' && ac.descent_mode !== 'FLARE' && !ac.on_ground) {
+            // Se o aviǜo estǭ mais de 500pǸs abaixo do piso (ex: vetoraǜo baixa), N?O teleporte-o para cima.
+            // S corrija pequenos overshoots fsicos.
+            if (ac.alt < pisoAtivoFt && ac.alt >= pisoAtivoFt - 500) {
                 ac.alt = pisoAtivoFt;
                 if (ac.currentVS < 0) ac.currentVS = 0;
             }
