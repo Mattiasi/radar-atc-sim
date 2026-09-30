@@ -39,8 +39,8 @@ export class PainelFluxoController {
         // Se state.configFluxo.esteiras ainda não estiver inicializado
         if (!state.configFluxo.esteiras || !Array.isArray(state.configFluxo.esteiras)) {
             state.configFluxo.esteiras = [
-                { id: "esteira_1", ativo: true, fixo: "OGTAL", separacao: 15 },
-                { id: "esteira_2", ativo: true, fixo: "PRUMO", separacao: 15 }
+                { id: "esteira_1", ativo: false, fixo: "OGTAL", separacao: 15 },
+                { id: "esteira_2", ativo: false, fixo: "PRUMO", separacao: 15 }
             ];
         }
 
