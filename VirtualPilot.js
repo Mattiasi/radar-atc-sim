@@ -65,8 +65,9 @@ export class VirtualPilot {
         
         // Determina a altitude alvo autorizada em pés
         let targetAlt = alt;
-        if (aero.cleared_level === "ILS" || aero.nivAutorizado === "ILS") {
-            targetAlt = aero.altitude_before_ils || (aero.flAtualNum * 100);
+        const isILSAuthorized = (aero.cleared_level === "ILS" || aero.nivAutorizado === "ILS" || aero.ils_authorized);
+        if (isILSAuthorized) {
+            targetAlt = Math.min(alt, aero.altitude_before_ils || alt);
         } else if (aero.target_altitude !== undefined && !isNaN(aero.target_altitude)) {
             targetAlt = aero.target_altitude;
         } else if (aero.targetFL !== undefined && !isNaN(aero.targetFL)) {
@@ -79,12 +80,12 @@ export class VirtualPilot {
             if (!isNaN(flNum)) targetAlt = flNum * 100;
         }
 
-        if (aero.vertical_floor_altitude !== null && aero.vertical_floor_altitude !== undefined) {
+        if (!isILSAuthorized && aero.vertical_floor_altitude !== null && aero.vertical_floor_altitude !== undefined) {
             targetAlt = Math.max(targetAlt, aero.vertical_floor_altitude);
         }
 
         const altDiff = targetAlt - alt;
-        const isClimbing = altDiff > 25;
+        const isClimbing = (!isILSAuthorized && altDiff > 25);
         const isDescending = altDiff < -25;
 
         // Se estiver dentro da janela de captura fina de altitude (±25 ft), nivele asas

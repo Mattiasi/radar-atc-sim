@@ -219,23 +219,27 @@ export function authorize_approach(aircraft, active_iac = null) {
     aircraft.last_distance_to_hold_fix = undefined;
 
     // Se a aeronave estiver vetorada (modoLNAV = false) e sem rota estruturada até o IAF,
-    // reconecta a rota da carta a partir do primeiro fixo da IAC
-    if (!aircraft.modoLNAV && (!aircraft.rota || aircraft.rota.length === 0 || !aircraft.rota.includes(first_iac_fix))) {
-        const rotaAproximacao = montarRotaAPartirDeFixo(first_iac_fix, aircraft.dest || "SBSP");
-        if (rotaAproximacao && rotaAproximacao.length > 0) {
-            aircraft.rota = rotaAproximacao;
-            aircraft.wpIndex = 0;
-            aircraft.wpOffRoute = null;
-            aircraft.modoLNAV = true;
-        }
-    } else if (aircraft.rota && aircraft.rota.includes(first_iac_fix)) {
-        // Assegura que o wpIndex não aponte para fixos passados se o IAF for o alvo
-        const idx = aircraft.rota.indexOf(first_iac_fix);
-        if (aircraft.wpIndex < idx) {
-            // Mantém seguindo a STAR até o IAF
-        } else if (aircraft.wpIndex > idx && !aircraft.modoLNAV) {
-            aircraft.wpIndex = idx;
-            aircraft.modoLNAV = true;
+    // reconecta a rota da carta a partir do primeiro fixo da IAC,
+    // EXCETO se a aeronave estiver autorizada ILS (onde deve manter a proa de vetoração do ATC)
+    const isILS = Boolean(aircraft.ils_authorized || aircraft.cleared_level === "ILS" || aircraft.nivAutorizado === "ILS");
+    if (!isILS) {
+        if (!aircraft.modoLNAV && (!aircraft.rota || aircraft.rota.length === 0 || !aircraft.rota.includes(first_iac_fix))) {
+            const rotaAproximacao = montarRotaAPartirDeFixo(first_iac_fix, aircraft.dest || "SBSP");
+            if (rotaAproximacao && rotaAproximacao.length > 0) {
+                aircraft.rota = rotaAproximacao;
+                aircraft.wpIndex = 0;
+                aircraft.wpOffRoute = null;
+                aircraft.modoLNAV = true;
+            }
+        } else if (aircraft.rota && aircraft.rota.includes(first_iac_fix)) {
+            // Assegura que o wpIndex não aponte para fixos passados se o IAF for o alvo
+            const idx = aircraft.rota.indexOf(first_iac_fix);
+            if (aircraft.wpIndex < idx) {
+                // Mantém seguindo a STAR até o IAF
+            } else if (aircraft.wpIndex > idx && !aircraft.modoLNAV) {
+                aircraft.wpIndex = idx;
+                aircraft.modoLNAV = true;
+            }
         }
     }
 

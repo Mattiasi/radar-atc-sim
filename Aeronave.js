@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { perfisAeronaves, AIRCRAFT_PERFORMANCE, APPROACH_SPEED_PROFILE, restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
+import { restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
 import { getAircraftPerformance } from './PerformanceDB.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
@@ -17,31 +17,18 @@ import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MO
  * - LNAV (Lateral Navigation): Segue sequências de waypoints (STAR) com antecipação de curvas (Fly-By).
  * - VNAV (Vertical Navigation): Calcula Top of Descent (TOD), perfis de descida de 3° e respeita restrições de cartas.
  * - Controle Dinâmico de Velocidade: Gestão baseada em Distance-To-Go / DME, performance individual, tráfego precedente e instruções ATC.
- * - Simulação Humana (Delay Buffer): Comandos do controlador ATC entram numa fila de retardo aleatório (2 a 4 segundos)
- *   para simular o tempo de reação do piloto antes de iniciar curvas, mudanças de velocidade ou altitude.
+ * - Simulação Humana (PilotAgent): Comandos do controlador ATC são processados pela cabine virtual com gestão por canais e tempos cognitivos realistas.
  */
 /**
  * Versão "Padrão Ouro" (Linear Assimétrica + Razão Vertical + Ruído Atmosférico)
- * Utiliza as taxas individuais de aceleração e desaceleração de cada aeronave definidas em data.js,
+ * Utiliza as taxas individuais de aceleração e desaceleração de cada aeronave definidas em PerformanceDB.js,
  * moduladas dinamicamente pela atitude de voo (razão vertical) e superfícies aerodinâmicas (speedbrakes):
  * 
- * - ACELERANDO: taxaAcel definida em data.js para o modelo.
- *   * Se estiver descendo (verticalSpeed < -200 ft/min), a gravidade auxilia na aceleração (+15%).
- *   * Se estiver subindo (verticalSpeed > 200 ft/min), o gradiente de subida consome empuxo (-15%).
- * - DESACELERANDO: baseado em taxaDesacel definida em data.js para o modelo (voo nivelado em IDLE).
- *   * Descendo (verticalSpeed < -200 ft/min): a gravidade empurra para frente, reduzindo a desaceleração
- *     (~60% da taxa nominal sem speedbrake, ~150% com speedbrake).
- *   * Nivelado em IDLE: taxa nominal de data.js (100% sem speedbrake, ~200% com speedbrake).
- * - Ruído Atmosférico: adiciona ligeiras flutuações dinâmicas de vento e turbulência (±10%)
- *   ao variar as velocidades, garantindo fidelidade de simulação sem quebrar a cinemática linear.
- * 
  * @param {Aeronave|Object} ac - Instância da aeronave ou objeto de estado cinemático
- * @param {number} dt - Delta time em segundos decorrido desde o último ciclo
+ * @param {number} [dt] - Delta time em segundos
  */
 export function calcularTaxaDesacel(ac) {
-    const perf = (ac.tipo && (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo])) 
-        ? (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo]) 
-        : (AIRCRAFT_PERFORMANCE["DEFAULT"] || { taxaDesacel: 1.2 });
+    const perf = ac.perf || getAircraftPerformance(ac.tipo);
     const baseDesacel = (ac.taxaDesacel !== undefined) ? ac.taxaDesacel : (perf.taxaDesacel || perf.decelerationRate || 1.2);
     const estaDescendo = ac.verticalSpeed && ac.verticalSpeed < -200; // ft/min
 
@@ -49,15 +36,13 @@ export function calcularTaxaDesacel(ac) {
         // Descendo: gravidade empurra a aeronave para frente, dificultando a desaceleração
         return baseDesacel * (ac.speedbrakes ? 1.5 : 0.6);
     } else {
-        // Nivelado em IDLE: taxa nominal da aeronave em data.js
+        // Nivelado em IDLE: taxa nominal da aeronave em PerformanceDB.js
         return baseDesacel * (ac.speedbrakes ? 2.0 : 1.0);
     }
 }
 
 export function calcularTaxaAcel(ac) {
-    const perf = (ac.tipo && (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo])) 
-        ? (AIRCRAFT_PERFORMANCE[ac.tipo] || perfisAeronaves[ac.tipo]) 
-        : (AIRCRAFT_PERFORMANCE["DEFAULT"] || { taxaAcel: 2.0 });
+    const perf = ac.perf || getAircraftPerformance(ac.tipo);
     const baseAcel = (ac.taxaAcel !== undefined) ? ac.taxaAcel : (perf.taxaAcel || perf.accelerationRate || 2.0);
 
     if (ac.verticalSpeed && ac.verticalSpeed < -200) {
@@ -151,18 +136,13 @@ export class Aeronave {
         // --- 3. NAVEGAÇÃO LATERAL (PROA / HEADING) ---
         this.proa = proa;                        // Proa magnética atual da aeronave (0-359°)
         this.proaDestino = proa;                 // Proa alvo que a aeronave está buscando atingir
-        this.proaPendente = null;                // Buffer de proa recebida do ATC aguardando o fim do delay de reação
-        this.curvaMaiorPendente = false;         // Flag booleana: se true, força curva pelo arco maior (comando Hxxx+)
         this.curvaForcada = false;               // Flag booleana: ativa quando uma curva pelo arco maior (+) está em execução
         this.direcaoCurva = 0;                   // Sentido atual da curva: -1 (Esquerda), 1 (Direita), 0 (Asas niveladas)
-        this.delayProa = 0;                      // Ciclos restantes de espera antes de aplicar o comando de proa
         
         // --- 4. GESTÃO DE VELOCIDADE INDICADA (IAS) ---
         this.vel = vel;                          // Velocidade atual em nós (Ground Speed simulada)
         this.velComando = vel;                   // Velocidade alvo definida pelo LNAV ou instruída pelo ATC
         this.velDestino = vel;                   // Velocidade alvo acrescida de ruídos atmosféricos e oscilações do radar
-        this.velPendente = null;                 // Buffer de velocidade pendente aguardando delay de reação
-        this.delayVel = 0;                       // Contador de ciclos de retardo para velocidade
         this.velManual = false;                  // Flag: true se o ATC fixou velocidade manual (anula reduções automáticas da rota)
         this.speedbrakes = false;                // Flag: speedbrakes / spoilers acionados (aumentam taxa de frenagem)
         this.speedbrakesComando = false;         // Flag: ativado explicitamente via Scratchpad (comando SB)
@@ -233,8 +213,6 @@ export class Aeronave {
         this.nivAtual = nivAtual;                // String formatada para a etiqueta do radar (ex: "055↓")
         this.nivAutorizado = nivAutorizado;      // Clearance textual exibido no radar (ex: "040" ou "VIA")
         this.nivAutorizadoFisico = nivAutorizado;// Alvo numérico de altitude para a física de descida
-        this.nivAutorizadoPendente = null;       // Buffer de nível autorizado enquanto corre o delay de reação do piloto
-        this.delayNivel = 0;                     // Contador de ciclos de espera para autorização de nível
         this.flAtualNum = parseInt(nivAtual) || 0; // Valor numérico de altitude em Flight Level (ex: FL 55 = 5500 pés)
         this.verticalSpeed = 0;                  // Inicializa nivelado; VNAV modula dinamicamente a razão de descida a partir do TOD
 
@@ -244,7 +222,6 @@ export class Aeronave {
         this.modoLNAV = (rota && rota.length > 0); // true = seguindo fixos da rota; false = vetorada por proa manual
         this.wpPendente = null;                  // Waypoint direto (DCT) pendente em buffer
         this.wpOffRoute = null;                  // Waypoint fora da rota padrão para voo direto temporário
-        this.delayWp = 0;                        // Contador de delay para ativação de novo waypoint
         this.flyByDist = 0.6;                    // Distância calculada em NM para antecipar a curva antes do fixo
         this.desceuParaWp = {};                  // Registro de histerese: impede interrupção de descidas já iniciadas
         this.flyByProtegido = null;              // Trava de segurança RNAV: { fixoNome, flMinimo, distMin } durante fly-by com restrição de piso
@@ -1038,22 +1015,29 @@ export class Aeronave {
             this.hold_altitude_until_waypoint = null;
             this.vertical_floor_altitude = null;
             this.vertical_floor_fl = null;
-        } else if (!isVia && !isNaN(altClearence) && altClearence > this.flAtualNum) {
+        } else if (!isVia && !isILS && !isNaN(altClearence) && altClearence > this.flAtualNum) {
             // =========================================================================
             // PRIORIDADE 2: SUBIDA AUTORIZADA PELO CONTROLADOR (ATC CLIMB CLEARANCE)
             // =========================================================================
             // Se o controlador autorizou um nível superior ao nível atual (altClearence > flAtualNum),
             // a aeronave inicia a subida com a razão normal de subida (climbNormal).
+            // NUNCA ativado se o avião estiver autorizado para aproximação ILS (!isILS).
             targetFL = altClearence;
             const perfRate = (this.perf && this.perf.rates && this.perf.rates.climbNormal) 
                 ? this.perf.rates.climbNormal 
                 : 2200;
             razaoEfetiva = perfRate;
             this.descent_mode = 'CLIMB';
-        } else if (this.autopilot && this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
-            // Durante GS_ARM, a aeronave mantém a altitude autorizada (ALT_HOLD) aguardando o feixe
-            targetFL = (!isVia && !isNaN(altClearence) && altClearence > 0) ? altClearence : this.flAtualNum;
+        } else if (isILS || (this.autopilot && this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM)) {
+            // Durante autorização ILS aguardando a interceptação do Glide Slope:
+            // Mantém nivelado na altitude atual (ALT_HOLD), NUNCA permitindo subida!
+            targetFL = (!isVia && !isNaN(altClearence) && altClearence > 0) ? Math.min(this.flAtualNum, altClearence) : this.flAtualNum;
             razaoEfetiva = razaoNominal;
+            this.verticalMode = 'ALT_HOLD';
+            this.targetVS = 0;
+            this.vertical_floor_altitude = null;
+            this.vertical_floor_fl = null;
+            this.hold_altitude_until_waypoint = null;
         } else if (this.cleared_approach || (isVia && (this.descent_mode === DESCENT_MODES.APPROACH_PROFILE || this.descent_mode === DESCENT_MODES.GLIDEPATH || this.descent_mode === 'FLARE'))) {
             // =========================================================================
             // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "VIA")
@@ -1453,18 +1437,22 @@ export class Aeronave {
         // REGEX DE AUTORIZAÇÃO ILS VIA SCRATCHPAD: "ILS"
         // ---------------------------------------------------------------------
         if (/\bILS\b/.test(texto)) {
-            if (!this.altitude_before_ils) {
-                const flPrev = parseInt(this.nivAutorizado, 10);
-                this.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (this.alt || this.flAtualNum * 100);
-            }
+            const currentAlt = this.alt || (this.flAtualNum * 100);
+            const flPrev = parseInt(this.nivAutorizado, 10);
+            // Trava a altitude de plataforma sem nunca permitir subida
+            this.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) 
+                ? Math.min(currentAlt, flPrev * 100) 
+                : currentAlt;
+
             this.nivAutorizado = "ILS";
             this.cleared_level = "ILS";
             this.ils_authorized = true;
+            this.cleared_approach = true;
+            this.autorizadoProcedimento = true;
+            this.nivAutorizadoFisico = "ILS";
             if (this.autopilot) this.autopilot.ils_authorized = true;
             if (this.pilot) {
                 this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: 'ILS' });
-            } else {
-                this.nivAutorizadoFisico = "ILS";
             }
             // Remove o token "ILS" do texto livre para que a 4ª linha continue vazia (Seção 5)
             this.textoLivre = this.textoLivre.replace(/\bILS\b/g, '').trim();

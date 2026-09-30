@@ -358,24 +358,24 @@ export class MenuNivelController {
                         if (state.aeroEditandoTexto === aero && scratchpadUI && scratchpadUI.input) {
                             scratchpadUI.input.value = "";
                         }
-                        if (!aero.altitude_before_ils) {
-                            const flPrev = parseInt(aero.nivAutorizado, 10);
-                            aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
-                        }
+                        const currentAlt = aero.alt || (aero.flAtualNum * 100);
+                        const flPrev = parseInt(aero.nivAutorizado, 10);
+                        // Trava a altitude de plataforma sem nunca permitir subida
+                        aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) 
+                            ? Math.min(currentAlt, flPrev * 100) 
+                            : currentAlt;
+
                         aero.nivAutorizado = "ILS";
                         aero.cleared_level = "ILS";
                         aero.ils_authorized = true;
                         aero.cleared_approach = true;
                         aero.autorizadoProcedimento = true;
+                        aero.nivAutorizadoFisico = "ILS";
                         if (aero.autopilot) aero.autopilot.ils_authorized = true;
-
-                        authorize_approach(aero);
 
                         // Despacha no canal VERTICAL do piloto virtual
                         if (aero.pilot) {
                             aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "ILS" });
-                        } else {
-                            aero.nivAutorizadoFisico = "ILS";
                         }
                     } else {
                         aero.nivAutorizado = nv;
