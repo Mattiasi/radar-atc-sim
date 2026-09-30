@@ -365,31 +365,45 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
     if (holdFixName) {
         let fixoCruzado = false;
 
-        // A) Detecção via LNAV wpIndex: se o waypoint ativo na rota já for posterior ao holdFix
-        if (aircraft.rota && Array.isArray(aircraft.rota)) {
-            const holdIdx = aircraft.rota.indexOf(holdFixName);
-            if (holdIdx !== -1 && aircraft.wpIndex > holdIdx) {
-                fixoCruzado = true;
+        // Se a aeronave ainda estiver com proteção ativa de fly-by deste fixo (curva em andamento e través não superado),
+        // o fixo NÃO foi cruzado e o piso da restrição deve ser mantido rigorosamente!
+        if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
+            fixoCruzado = false;
+        } else {
+            const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
+            if (holdCoords) {
+                const nav = calcularRumoDistancia(aircraft, holdCoords);
+                const distNM = nav.distanciaNM;
+
+                if (aircraft.min_dist_to_hold_fix === undefined || aircraft.hold_fix_tracked !== holdFixName) {
+                    aircraft.min_dist_to_hold_fix = distNM;
+                    aircraft.hold_fix_tracked = holdFixName;
+                } else if (distNM < aircraft.min_dist_to_hold_fix) {
+                    aircraft.min_dist_to_hold_fix = distNM;
+                }
+
+                // Critério físico de bloqueio do fixo / passagem:
+                // 1. Sobrevoo direto muito próximo (distNM <= 0.25 NM)
+                // 2. Passagem pelo través (Beam passage): a aeronave atingiu a distância mínima de aproximação
+                //    (min_dist <= 1.2 NM) e a distância agora está aumentando (distNM >= min_dist + 0.10 NM)
+                const sobrevoou = (distNM <= 0.25);
+                const passouTraves = (aircraft.min_dist_to_hold_fix <= 1.2 && distNM >= aircraft.min_dist_to_hold_fix + 0.10);
+
+                if (sobrevoou || passouTraves) {
+                    fixoCruzado = true;
+                }
+                aircraft.last_distance_to_hold_fix = distNM;
             }
-        }
 
-        // B) Detecção geométrica por aproximação e través (Beam passage)
-        const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
-        if (holdCoords && !fixoCruzado) {
-            const nav = calcularRumoDistancia(aircraft, holdCoords);
-            const distNM = nav.distanciaNM;
-            const flyByDist = Math.max(0.6, aircraft.flyByDist || 0.6);
-
-            // Se atingiu o raio de fly-by / sobrevoo do fixo
-            if (distNM <= flyByDist) {
-                fixoCruzado = true;
-            } else if (aircraft.last_distance_to_hold_fix !== undefined) {
-                // Se a distância estava inferior a 1.5 NM e começou a aumentar (passou o través do fixo)
-                if (aircraft.last_distance_to_hold_fix < 1.5 && distNM > aircraft.last_distance_to_hold_fix) {
+            // Fallback de rota LNAV:
+            // Apenas se o waypoint ativo já for 2 ou mais fixos à frente do holdFix,
+            // ou se o fixo estiver a mais de 2.5 NM para trás
+            if (!fixoCruzado && aircraft.rota && Array.isArray(aircraft.rota)) {
+                const holdIdx = aircraft.rota.indexOf(holdFixName);
+                if (holdIdx !== -1 && aircraft.wpIndex >= holdIdx + 2) {
                     fixoCruzado = true;
                 }
             }
-            aircraft.last_distance_to_hold_fix = distNM;
         }
 
         // ---------------------------------------------------------------------
@@ -404,6 +418,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
+                aircraft.min_dist_to_hold_fix = undefined;
+                aircraft.hold_fix_tracked = undefined;
                 return;
             }
 
@@ -441,6 +457,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 aircraft.vertical_floor_altitude = nextTargetAlt;
                 aircraft.vertical_floor_fl = nextTargetFL;
                 aircraft.last_distance_to_hold_fix = undefined;
+                aircraft.min_dist_to_hold_fix = undefined;
+                aircraft.hold_fix_tracked = nextFixName;
 
                 if (aircraft.virtualPilot) {
                     aircraft.virtualPilot.targetAlt = nextTargetAlt;
@@ -453,6 +471,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
+                aircraft.min_dist_to_hold_fix = undefined;
+                aircraft.hold_fix_tracked = undefined;
             }
         }
     }
@@ -468,6 +488,14 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         }
         if (aircraft.targetFL < aircraft.vertical_floor_fl) {
             aircraft.targetFL = aircraft.vertical_floor_fl;
+        }
+
+        // Trava física de piso: impede que a altitude real desça abaixo do piso antes do fixo ser bloqueado
+        if (aircraft.alt !== undefined && aircraft.alt < aircraft.vertical_floor_altitude && aircraft.descent_mode !== 'GLIDEPATH' && aircraft.descent_mode !== 'FLARE' && !aircraft.on_ground) {
+            aircraft.alt = aircraft.vertical_floor_altitude;
+            aircraft.flAtualNum = aircraft.vertical_floor_altitude / 100;
+            if (aircraft.currentVS < 0) aircraft.currentVS = 0;
+            if (aircraft.verticalSpeed < 0) aircraft.verticalSpeed = 0;
         }
     }
 }

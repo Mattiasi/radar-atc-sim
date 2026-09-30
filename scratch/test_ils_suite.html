@@ -327,6 +327,7 @@
                 let komguLocked = false;
                 let komguNeverBelow5500BeforeBlock = true;
                 let gersuLocked = false;
+                let gersuNeverBelow4700BeforeBlock = true;
                 let urutaLocked = false;
                 let sp139Locked = false;
                 let glidepathEngaged = false;
@@ -347,7 +348,12 @@
                             komguNeverBelow5500BeforeBlock = false;
                         }
                     }
-                    if (curWp === "GERSU") gersuLocked = true;
+                    if (curWp === "GERSU" || acVia.hold_altitude_until_waypoint === "GERSU") {
+                        gersuLocked = true;
+                        if (acVia.alt < 4690) {
+                            gersuNeverBelow4700BeforeBlock = false;
+                        }
+                    }
                     if (curWp === "URUTA") urutaLocked = true;
                     if (curWp === "SP139") sp139Locked = true;
                     if (acVia.descent_mode === 'GLIDEPATH') glidepathEngaged = true;
@@ -359,6 +365,7 @@
                 assert(komguLocked, "Aircraft transitioned to KOMGU lock");
                 assert(komguNeverBelow5500BeforeBlock, "Aircraft held altitude at KOMGU (did not drop below 5500 ft before blocking)");
                 assert(gersuLocked, "Aircraft transitioned to GERSU step-down");
+                assert(gersuNeverBelow4700BeforeBlock, "Aircraft held altitude at GERSU (did not drop below 4700 ft before blocking)");
                 assert(glidepathEngaged, "Aircraft engaged 3° glidepath at FAF");
                 assert(squawk2000Via, "Squawk changed to 2000 on final/landing");
                 assert(acVia.pousou || acVia.on_ground, "Aircraft completed landing lifecycle on VIA");
@@ -409,6 +416,110 @@
                 assert(!sp101PrematureLanding, "Aircraft at SP101 did NOT prematurely land or disappear (pousou = false, on_ground = false)");
                 assert(acSp101.pousou === false, "pousou flag is strictly false");
                 assert(!acSp101.on_ground, "on_ground is strictly false");
+
+                // TEST 14: GERSU Altitude Restriction Safety (Never below FL047 before passing GERSU)
+                console.log("\n--- TEST 14: GERSU Altitude Restriction Safety (RNPY17R) ---");
+                const komguCoords = state.fixos["KOMGU"];
+                const gersuCoords = state.fixos["GERSU"];
+                assert(gersuCoords !== undefined, "GERSU fix exists in state.fixos");
+
+                // Spawn aircraft at KOMGU at 5500 ft (FL 055), flying towards GERSU on RNAV 17R
+                const acGersu = new Aeronave("AZU4455", "E195", komguCoords.deltaLat, komguCoords.deltaLon, 55, 160, "055", "VIA", "SBSP");
+                acGersu.dest = "SBSP";
+                acGersu.pistaAtribuida = "17R";
+                acGersu.assigned_runway = "17R";
+                acGersu.modoLNAV = true;
+                acGersu.alt = 5500;
+                acGersu.flAtualNum = 55;
+                acGersu.rota = ["KOMGU", "GERSU", "URUTA", "SP139", "SP017", "SBSP"];
+                acGersu.wpIndex = 0;
+                acGersu.nivAutorizado = "VIA";
+                acGersu.cleared_level = "VIA";
+                acGersu.autorizadoProcedimento = true;
+                acGersu.cleared_approach = true;
+                authorize_approach(acGersu);
+
+                let gersuCrossed = false;
+                let droppedBelow4700BeforeCrossing = false;
+                let minAltBeforeGersu = 99999;
+
+                // Simulate for 180 seconds (KOMGU -> GERSU is ~5.6 NM, at 160 kt takes ~125 seconds)
+                for (let t = 0; t < 180; t += 0.5) {
+                    acGersu.atualizar(0.5);
+
+                    // Check if GERSU is still the hold fix
+                    const isHoldingGersu = (acGersu.hold_altitude_until_waypoint === "GERSU" || acGersu.hold_altitude_until_waypoint === "KOMGU");
+                    if (isHoldingGersu) {
+                        minAltBeforeGersu = Math.min(minAltBeforeGersu, acGersu.alt);
+                        if (acGersu.alt < 4700) {
+                            droppedBelow4700BeforeCrossing = true;
+                        }
+                        const tagLevel = parseInt(acGersu.nivAtual, 10);
+                        if (!isNaN(tagLevel) && tagLevel < 47) {
+                            droppedBelow4700BeforeCrossing = true;
+                        }
+                    } else if (!gersuCrossed && acGersu.hold_altitude_until_waypoint === "URUTA") {
+                        gersuCrossed = true;
+                    }
+                }
+
+                assert(gersuCrossed, "Aircraft successfully sequenced past GERSU to URUTA");
+                assert(!droppedBelow4700BeforeCrossing, `Aircraft NEVER dropped below 4700 ft before passing GERSU (min alt was ${minAltBeforeGersu.toFixed(1)} ft)`);
+                assert(minAltBeforeGersu >= 4700, `Minimum altitude before GERSU was >= 4700 ft (got ${minAltBeforeGersu.toFixed(1)} ft)`);
+
+                // TEST 15: Extended Glide Slope up to 30 NM (3° Glidepath Angle)
+                console.log("\n--- TEST 15: Extended Glide Slope up to 30 NM ---");
+                const rwy17R = getRunwayILSData("SBSP", "17R");
+                assert(rwy17R.loc_max_distance_nm === 30.0, "LOC max distance is 30 NM");
+                assert(rwy17R.gs_max_distance_nm === 30.0, "GS max distance is 30 NM");
+
+                // Position aircraft at 26 NM out on Front Course (170°), altitude 10,000 ft (FL 100)
+                const distInitNM = 26.0;
+                const dNorthNM = distInitNM * Math.cos((170 - 180) * (Math.PI / 180));
+                const dEastNM = distInitNM * Math.sin((170 - 180) * (Math.PI / 180));
+                const acInitLat = 0.008617 + (dNorthNM / 60);
+                const acInitLon = -0.001658 + (dEastNM / (60 * 0.916));
+
+                const acGS30 = new Aeronave("TAM9988", "A320", acInitLat, acInitLon, 170, 200, "100", "ILS", "SBSP");
+                acGS30.pistaAtribuida = "17R";
+                acGS30.assigned_runway = "17R";
+                acGS30.modoLNAV = false;
+                acGS30.proa = 170;
+                acGS30.proaDestino = 170;
+                acGS30.alt = 10000;
+                acGS30.flAtualNum = 100;
+                acGS30.altitude_before_ils = 10000;
+                acGS30.nivAutorizado = "ILS";
+                acGS30.cleared_level = "ILS";
+                acGS30.ils_authorized = true;
+
+                let gsCapturedAtLongDistance = false;
+                let captureDistanceNM = 0;
+                let vsTracked = 0;
+
+                // Simulate flight: at 200 kt, from 26 NM to ~22 NM takes ~75 seconds
+                for (let t = 0; t < 100; t += 0.5) {
+                    acGS30.atualizar(0.5);
+
+                    if (acGS30.autopilot.gs_captured && !gsCapturedAtLongDistance) {
+                        gsCapturedAtLongDistance = true;
+                        const rILS = getRunwayILS(acGS30);
+                        const geom = calculateILSGeometry(acGS30.deltaLat, acGS30.deltaLon, rILS.threshold.deltaLat, rILS.threshold.deltaLon, rILS.front_course_deg);
+                        captureDistanceNM = geom.along_track_nm;
+                    }
+
+                    if (acGS30.autopilot.gs_tracked) {
+                        vsTracked = acGS30.targetVS;
+                    }
+                }
+
+                assert(gsCapturedAtLongDistance, "Glide Slope captured beyond standard 20 NM limit");
+                assert(captureDistanceNM > 21.0 && captureDistanceNM <= 26.0, `GS intercepted between 21 and 26 NM (intercepted at ${captureDistanceNM.toFixed(1)} NM)`);
+                assert(acGS30.autopilot.gs_tracked, "Glide Slope tracked in GS_TRACK mode");
+                const expectedGSVS = calculate_gs_vs(acGS30.groundSpeed || acGS30.vel, 3.0);
+                assert(Math.abs(Math.abs(vsTracked) - expectedGSVS) < 150, `Target VS matches 3.0° descent angle for GS (${expectedGSVS.toFixed(0)} ft/min, got ${vsTracked.toFixed(0)})`);
+                assert(acGS30.descent_mode === 'GLIDEPATH', "Aircraft in GLIDEPATH descent mode");
+                assert(acGS30.verticalMode === 'G/S', "Aircraft verticalMode is G/S");
 
                 console.log("\nALL TESTS PASSED SUCCESSFULLY!");
                 document.getElementById('output').innerHTML = '<h2 style="color: green;">ALL TESTS PASSED!</h2>';

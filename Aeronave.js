@@ -529,6 +529,10 @@ export class Aeronave {
      * @returns {number} Velocidade-alvo em nós (KIAS).
      */
     calcularVelocidadeAlvoDinamica() {
+        if (this.on_ground || this.pousou || this.flight_phase === "LANDED") {
+            return 0;
+        }
+
         const perf = this.perf || AIRCRAFT_PERFORMANCE[this.tipo] || AIRCRAFT_PERFORMANCE["DEFAULT"];
         const dtg = this.calcularDistanceToGo();
         this.dtg = dtg;
@@ -885,9 +889,9 @@ export class Aeronave {
                 let difProa = Math.abs(this.proaDestino - this.proa);
                 if (difProa > 180) difProa = 360 - difProa;
 
-                // O fly-by termina quando a curva é concluída (asas niveladas na proa do próximo fixo com tolerância de 2°) 
+                // O fly-by termina quando a curva é concluída (asas niveladas na proa do próximo fixo com tolerância de 3°) 
                 // e a aeronave já ultrapassou o través do fixo protegido (distância mínima superada, afastando-se do fixo)
-                if (difProa <= 2 && distProt >= this.flyByProtegido.distMin) {
+                if ((difProa <= 3 && distProt >= this.flyByProtegido.distMin + 0.05) || distProt >= this.flyByProtegido.distMin + 0.3) {
                     this.flyByProtegido = null;
                 }
             } else {
@@ -902,45 +906,52 @@ export class Aeronave {
         // Baseado em DTG (Distance-to-Go / DME), envelope individual de cada aeronave,
         // tráfego precedente, taxa de aproximação por Ground Speed e prioridade ATC.
         // =========================================================================
-        const velAlvoBase = this.calcularVelocidadeAlvoDinamica();
-        this.velComando = velAlvoBase;
+        if (this.on_ground || this.pousou || this.flight_phase === "LANDED") {
+            this.velDestino = 0;
+            this.targetIAS = 0;
+            this.currentIAS = this.vel;
+            this.velComando = 0;
+        } else {
+            const velAlvoBase = this.calcularVelocidadeAlvoDinamica();
+            this.velComando = velAlvoBase;
 
-        // SIMULAÇÃO DE VARIAÇÃO ATMOSFÉRICA REALISTA (DELTA-TIME PURO):
-        // Flutuações lentas e sutis (15 a 35 segundos) de ±1 a 2 nós em vez de ruído aleatório em alta frequência (20 Hz),
-        // evitando oscilações bruscas e irreais no velocímetro / radar (ex: 250, 251, 250, 251).
-        this.timerVariacaoAtmosferica = (this.timerVariacaoAtmosferica || 0) + dtSec;
-        if (this.intervaloVariacaoAtmosferica === undefined) {
-            this.intervaloVariacaoAtmosferica = 15 + Math.random() * 15;
-            this.offsetVentoVel = 0;
-        }
-
-        if (this.timerVariacaoAtmosferica >= this.intervaloVariacaoAtmosferica) {
-            this.timerVariacaoAtmosferica = 0;
-            this.intervaloVariacaoAtmosferica = 18 + Math.random() * 16; // Próximo ciclo em 18 a 34 segundos
-            
-            const ventoForte = (this.ventoAtual && this.ventoAtual.speedKt > 15);
-            const maxDesvio = ventoForte ? 2 : 1;
-            
-            // 60% de chance de voo calmo cravado (0 kt de desvio), 40% de leve oscilação
-            if (Math.random() < 0.40) {
-                this.offsetVentoVel = Math.floor(Math.random() * (maxDesvio * 2 + 1)) - maxDesvio;
-            } else {
+            // SIMULAÇÃO DE VARIAÇÃO ATMOSFÉRICA REALISTA (DELTA-TIME PURO):
+            // Flutuações lentas e sutis (15 a 35 segundos) de ±1 a 2 nós em vez de ruído aleatório em alta frequência (20 Hz),
+            // evitando oscilações bruscas e irreais no velocímetro / radar (ex: 250, 251, 250, 251).
+            this.timerVariacaoAtmosferica = (this.timerVariacaoAtmosferica || 0) + dtSec;
+            if (this.intervaloVariacaoAtmosferica === undefined) {
+                this.intervaloVariacaoAtmosferica = 15 + Math.random() * 15;
                 this.offsetVentoVel = 0;
             }
+
+            if (this.timerVariacaoAtmosferica >= this.intervaloVariacaoAtmosferica) {
+                this.timerVariacaoAtmosferica = 0;
+                this.intervaloVariacaoAtmosferica = 18 + Math.random() * 16; // Próximo ciclo em 18 a 34 segundos
+                
+                const ventoForte = (this.ventoAtual && this.ventoAtual.speedKt > 15);
+                const maxDesvio = ventoForte ? 2 : 1;
+                
+                // 60% de chance de voo calmo cravado (0 kt de desvio), 40% de leve oscilação
+                if (Math.random() < 0.40) {
+                    this.offsetVentoVel = Math.floor(Math.random() * (maxDesvio * 2 + 1)) - maxDesvio;
+                } else {
+                    this.offsetVentoVel = 0;
+                }
+            }
+
+            // Se houver comando explícito de velocidade do ATC (velManual), mantém cravado sem desvio
+            if (this.velManual) {
+                this.offsetVentoVel = 0;
+            }
+
+            this.velDestino = velAlvoBase + (this.offsetVentoVel || 0);
+            this.targetIAS = this.velDestino;
+            this.currentIAS = this.vel;
+
+            // Aplicação cinemática realista: Linear Assimétrica + Razão Vertical + Ruído Atmosférico (Padrão Ouro)
+            atualizarVelocidadeRealista(this, dtSec);
+            this.currentIAS = this.vel;
         }
-
-        // Se houver comando explícito de velocidade do ATC (velManual), mantém cravado sem desvio
-        if (this.velManual) {
-            this.offsetVentoVel = 0;
-        }
-
-        this.velDestino = velAlvoBase + (this.offsetVentoVel || 0);
-        this.targetIAS = this.velDestino;
-        this.currentIAS = this.vel;
-
-        // Aplicação cinemática realista: Linear Assimétrica + Razão Vertical + Ruído Atmosférico (Padrão Ouro)
-        atualizarVelocidadeRealista(this, dtSec);
-        this.currentIAS = this.vel;
 
         // =========================================================================
         // ETAPA 5: ATUALIZAÇÃO CINEMÁTICA COM SOMA VETORIAL DE VENTO (FLIGHT DYNAMICS)
@@ -1008,32 +1019,36 @@ export class Aeronave {
         const lnavAtivoOuPendente = this.modoLNAV || (this.wpPendente !== null);
 
         // =========================================================================
-        // PRIORIDADE 1: SUBIDA AUTORIZADA PELO CONTROLADOR (ATC CLIMB CLEARANCE)
+        // PRIORIDADE 1: MODO GLIDEPATH / ILS GS TRACKING / FLARE
         // =========================================================================
-        // Se o controlador autorizou um nível superior ao nível atual (altClearence > flAtualNum),
-        // a aeronave inicia a subida com a razão normal de subida (climbNormal),
-        // tanto em modo de rota automática (LNAV/STAR) quanto vetorada fora de rota.
-        if (!isVia && !isNaN(altClearence) && altClearence > this.flAtualNum) {
-            targetFL = altClearence;
-            const perfRate = (this.perf && this.perf.rates && this.perf.rates.climbNormal) 
-                ? this.perf.rates.climbNormal 
-                : 2200;
-            razaoEfetiva = perfRate;
-            this.descent_mode = 'CLIMB';
-        } else if (this.autopilot && (this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_CAPTURE || 
-                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_TRACK || 
-                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE || 
-                                      this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN)) {
-            // =========================================================================
-            // MODO GLIDEPATH / ILS GS TRACKING:
-            // O guiamento vertical de aproximação ILS comanda continuamente a targetVS
-            // =========================================================================
+        // Uma vez capturada ou rastreando a rampa do ILS (ou em flare/toque),
+        // o guiamento vertical do Glide Slope comanda a trajetória continuamente.
+        const isCapturingOrTrackingGS = this.autopilot && (
+            this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_CAPTURE || 
+            this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_TRACK || 
+            this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE || 
+            this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN
+        );
+
+        if (isCapturingOrTrackingGS) {
             this.descent_mode = (this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE) ? 'FLARE' : 'GLIDEPATH';
             this.verticalMode = 'G/S';
             targetFL = Math.round(this.alt / 100);
             this.hold_altitude_until_waypoint = null;
             this.vertical_floor_altitude = null;
             this.vertical_floor_fl = null;
+        } else if (!isVia && !isNaN(altClearence) && altClearence > this.flAtualNum) {
+            // =========================================================================
+            // PRIORIDADE 2: SUBIDA AUTORIZADA PELO CONTROLADOR (ATC CLIMB CLEARANCE)
+            // =========================================================================
+            // Se o controlador autorizou um nível superior ao nível atual (altClearence > flAtualNum),
+            // a aeronave inicia a subida com a razão normal de subida (climbNormal).
+            targetFL = altClearence;
+            const perfRate = (this.perf && this.perf.rates && this.perf.rates.climbNormal) 
+                ? this.perf.rates.climbNormal 
+                : 2200;
+            razaoEfetiva = perfRate;
+            this.descent_mode = 'CLIMB';
         } else if (this.autopilot && this.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
             // Durante GS_ARM, a aeronave mantém a altitude autorizada (ALT_HOLD) aguardando o feixe
             targetFL = (!isVia && !isNaN(altClearence) && altClearence > 0) ? altClearence : this.flAtualNum;
@@ -1266,7 +1281,18 @@ export class Aeronave {
         }
 
         // TRAVA VERTICAL DE SEGURANÇA (Vertical Floor Clamp):
-        // Garante que o perfil não fure a restrição de piso do fixo ativo (ex: hold_altitude_until_waypoint)
+        // Garante que o perfil não fure a restrição de piso do fixo ativo (ex: hold_altitude_until_waypoint ou flyByProtegido)
+        if (this.flyByProtegido && this.flyByProtegido.flMinimo !== undefined) {
+            const flyByFloorFt = this.flyByProtegido.flMinimo * 100;
+            if (this.vertical_floor_altitude === null || this.vertical_floor_altitude < flyByFloorFt) {
+                this.vertical_floor_altitude = flyByFloorFt;
+                this.vertical_floor_fl = this.flyByProtegido.flMinimo;
+            }
+            if (targetFL < this.flyByProtegido.flMinimo) {
+                targetFL = this.flyByProtegido.flMinimo;
+            }
+        }
+
         if (this.vertical_floor_fl !== null && this.vertical_floor_fl !== undefined) {
             targetFL = Math.max(targetFL, this.vertical_floor_fl);
         }
@@ -1348,10 +1374,8 @@ export class Aeronave {
                 }
 
                 if (!this.tempoNoSolo) this.tempoNoSolo = 0;
-                if (this.vel <= 20) {
-                    this.tempoNoSolo += dtSec;
-                }
-                if (this.tempoNoSolo >= 3.0 || alongTrack <= -rwyCompNM - 0.2) {
+                this.tempoNoSolo += dtSec;
+                if ((this.vel <= 25 && this.tempoNoSolo >= 2.5) || this.tempoNoSolo >= 4.5 || alongTrack <= -rwyCompNM - 0.1) {
                     this.pousou = true;
                 }
             } else if (heightAgl <= 500) {

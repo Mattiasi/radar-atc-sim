@@ -119,6 +119,24 @@ export class FlightDynamicsEngine {
 
         // Integração de Altitude física: alt (ft) += (currentVS / 60) * dt
         ac.alt += (ac.currentVS / 60) * dt;
+
+        // TRAVA VERTICAL DE SEGURANÇA (Hard Floor Clamping):
+        // Garante que nenhuma inércia física fure o piso autorizado/restrição do fixo antes do bloqueio
+        let pisoAtivoFt = (ac.vertical_floor_altitude !== null && ac.vertical_floor_altitude !== undefined)
+            ? ac.vertical_floor_altitude
+            : null;
+        if (ac.flyByProtegido && ac.flyByProtegido.flMinimo !== undefined) {
+            const flyByFt = ac.flyByProtegido.flMinimo * 100;
+            pisoAtivoFt = (pisoAtivoFt !== null) ? Math.max(pisoAtivoFt, flyByFt) : flyByFt;
+        }
+
+        if (pisoAtivoFt !== null && ac.descent_mode !== 'GLIDEPATH' && ac.descent_mode !== 'FLARE' && !ac.on_ground) {
+            if (ac.alt < pisoAtivoFt) {
+                ac.alt = pisoAtivoFt;
+                if (ac.currentVS < 0) ac.currentVS = 0;
+            }
+        }
+
         ac.flAtualNum = ac.alt / 100;
 
         // Atualiza a propriedade verticalSpeed da aeronave para compatibilidade

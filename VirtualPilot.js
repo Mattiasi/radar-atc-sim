@@ -79,12 +79,16 @@ export class VirtualPilot {
             if (!isNaN(flNum)) targetAlt = flNum * 100;
         }
 
-        const altDiff = targetAlt - alt;
-        const isClimbing = altDiff > 50;
-        const isDescending = altDiff < -50;
+        if (aero.vertical_floor_altitude !== null && aero.vertical_floor_altitude !== undefined) {
+            targetAlt = Math.max(targetAlt, aero.vertical_floor_altitude);
+        }
 
-        // Se estiver dentro da janela de captura de altitude (±100 ft), nivele asas
-        if (Math.abs(altDiff) <= 100) {
+        const altDiff = targetAlt - alt;
+        const isClimbing = altDiff > 25;
+        const isDescending = altDiff < -25;
+
+        // Se estiver dentro da janela de captura fina de altitude (±25 ft), nivele asas
+        if (Math.abs(altDiff) <= 25) {
             aero.targetVS = 0;
             if (this.verticalMode !== VERTICAL_MODES.AUTO && !aero.cleared_approach) {
                 this.verticalMode = VERTICAL_MODES.AUTO;
@@ -115,11 +119,18 @@ export class VirtualPilot {
                         ? aero.razaoEfetiva
                         : perf.rates.climbNormal;
                     vsRequired = Math.min(vsRequired, perf.rates.climbNormal);
+                    if (altDiff < 150) {
+                        vsRequired = Math.min(vsRequired, Math.max(150, (altDiff / 150) * vsRequired));
+                    }
                 } else if (isDescending) {
-                    vsRequired = (aero.razaoEfetiva !== undefined && aero.razaoEfetiva > 0)
+                    const nominalDescent = (aero.razaoEfetiva !== undefined && aero.razaoEfetiva > 0)
                         ? -aero.razaoEfetiva
                         : ((altDiff / dtg) * (gs / 60));
-                    vsRequired = Math.max(vsRequired, perf.rates.descentNormal);
+                    vsRequired = Math.max(nominalDescent, perf.rates.descentNormal);
+                    // Suavização da captura de altitude (flare de chegada ao nível alvo para evitar overshoot)
+                    if (altDiff > -150) {
+                        vsRequired = Math.max(vsRequired, (altDiff / 150) * Math.abs(nominalDescent));
+                    }
                 } else {
                     vsRequired = 0;
                 }

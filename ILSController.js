@@ -50,7 +50,8 @@ export const ILS_CONSTANTS = {
     LOC_MAX_INTERCEPT_DEG: 65.0,       // Ângulo de interceptação máximo permitido (graus) ampliado para vetoração ATC realista
     LOC_MAX_DISTANCE_NM: 30.0,         // Alcance do Localizer estendido para 30 NM em cada cabeceira
     GS_ANGLE_DEG: 3.0,                 // Ângulo nominal da rampa de descida (graus)
-    GS_CAPTURE_WINDOW_FT: 350.0,       // Janela de captura da rampa FROM BELOW (permite captura robusta sem pular o feixe)
+    GS_MAX_DISTANCE_NM: 30.0,          // Alcance do Glide Slope estendido para 30 NM em cada cabeceira
+    GS_CAPTURE_WINDOW_FT: 200.0,       // Janela de captura da rampa FROM BELOW (permite captura robusta sem pular o feixe)
     K_LOC: 25.0,                       // Ganho de correção lateral para o Localizer (graus/NM)
     MAX_INTERCEPT_CORRECTION: 30.0,    // Correção máxima de proa para interceptar o eixo (graus)
     K_GS: 3.2,                         // Ganho proporcional de correção vertical da rampa ((ft/min)/ft)
@@ -186,9 +187,11 @@ export function getRunwayILS(aircraft) {
                     elevation_ft: cabeceira.elevacaoFt || aerodromo.elevacaoFt || 2631
                 },
                 front_course_deg: frontCourse,
+                comp_nm: compNM,
                 loc_frequency: cabeceira.ils.freq || "109.5",
                 gs_angle_deg: cabeceira.ils.gs_angle_deg || ILS_CONSTANTS.GS_ANGLE_DEG,
                 loc_max_distance_nm: cabeceira.ils.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0,
+                gs_max_distance_nm: cabeceira.ils.gs_max_distance_nm || ILS_CONSTANTS.GS_MAX_DISTANCE_NM || 30.0,
                 loc_capture_angle_deg: cabeceira.ils.loc_capture_angle_deg || ILS_CONSTANTS.LOC_CAPTURE_LIMIT_DEG,
                 loc_valid: cabeceira.ils.loc_valid !== false,
                 gs_valid: cabeceira.ils.gs_valid !== false,
@@ -248,7 +251,8 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
     const th = runway_ils_data.threshold;
     const frontCourse = runway_ils_data.front_course_deg;
     const gsAngle = runway_ils_data.gs_angle_deg || ILS_CONSTANTS.GS_ANGLE_DEG;
-    const locMaxDist = runway_ils_data.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0;
+    const locMaxDist = Math.max(30.0, runway_ils_data.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0);
+    const gsMaxDist = Math.max(30.0, runway_ils_data.gs_max_distance_nm || ILS_CONSTANTS.GS_MAX_DISTANCE_NM || 30.0);
 
     // 3. Verificar autorização ATC (cleared_level / nivAutorizado / ils_authorized)
     // Regra Fundamental (Seções 6 e 7): Autorização ILS ocorre estritamente quando cleared_level == "ILS"
@@ -408,16 +412,16 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
     // 13. VERIFICAR CONDIÇÃO FROM BELOW (SEÇÃO 27)
     // =========================================================================
     // A captura ocorre quando o feixe aproxima (aeronave abaixo da rampa ou na rampa)
-    // Permite captura de -50 ft a +350 ft (ou desvio angular <= 0.45° com erro moderado)
+    // Permite captura de -50 ft a +200 ft (ou desvio angular <= 0.25° com erro vertical <= 250 ft)
     const angular_gs_error = Math.atan2(Math.abs(gs_error_ft), Math.max(distance_ft, 100)) * (180 / Math.PI);
-    const allow_gs_capture = (gs_error_ft >= -50.0 && gs_error_ft <= (ILS_CONSTANTS.GS_CAPTURE_WINDOW_FT || 350.0))
-        || (angular_gs_error <= 0.45 && gs_error_ft >= -80.0);
+    const allow_gs_capture = (gs_error_ft >= -50.0 && gs_error_ft <= (ILS_CONSTANTS.GS_CAPTURE_WINDOW_FT || 200.0))
+        || (angular_gs_error <= 0.25 && gs_error_ft >= -80.0 && Math.abs(gs_error_ft) <= 250.0);
 
     // =========================================================================
     // 14. AVALIAR CAPTURA DO GLIDE SLOPE (GS_CAPTURE)
     // =========================================================================
     if (aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
-        if (allow_gs_capture && along_track_nm > 0.5 && along_track_nm <= locMaxDist) {
+        if (allow_gs_capture && along_track_nm > 0.5 && along_track_nm <= gsMaxDist) {
             aircraft.autopilot.vertical_mode = ILS_VERTICAL_MODES.GS_CAPTURE;
             aircraft.autopilot.gs_captured = true;
             aircraft.descent_mode = 'GLIDEPATH';
@@ -455,7 +459,7 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
         const targetVS = vsNominal + vsCorr;
 
         // Comanda a razão vertical alvo para o motor cinemático
-        aircraft.targetVS = Math.max(-1800, Math.min(-200, targetVS));
+        aircraft.targetVS = Math.max(-2500, Math.min(-200, targetVS));
         aircraft.verticalMode = 'G/S';
         aircraft.descent_mode = 'GLIDEPATH';
         aircraft.hold_altitude_until_waypoint = null;
