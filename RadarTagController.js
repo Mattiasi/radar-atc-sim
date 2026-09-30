@@ -14,7 +14,7 @@ import { state } from './state.js';
 import { desenharRadar } from './render.js';
 import { getAircraftPerformance } from './PerformanceDB.js';
 import { VERTICAL_MODES } from './VirtualPilot.js';
-import { TASK_TYPES } from './pilotEngine.js';
+import { flightCommandService } from './FlightCommandService.js';
 
 /**
  * Formata a string de razão vertical e modo para a 5ª linha da etiqueta.
@@ -258,76 +258,22 @@ export class MenuRazaoController {
 
         // 1. AUTO: Reverte para o perfil calculado pelo piloto virtual
         this.menu.appendChild(criarItem('AUTO (VNAV)', (aero) => {
-            aero.temModificacaoVertical = false;
-            aero.clampedAtStructural = false;
-            if (aero.pilot) {
-                aero.pilot.dispatch('VERTICAL', 'AUTO', {});
-            } else if (aero.virtualPilot) {
-                aero.virtualPilot.autoCommand();
-            } else {
-                aero.verticalMode = VERTICAL_MODES.AUTO;
-                aero.clampedAtStructural = false;
-            }
+            flightCommandService.setVerticalRate(aero, 'AUTO');
         }, '#00ffff'));
 
         // 2. INCREASE: Incrementa magnitude em +500 ft/min
         this.menu.appendChild(criarItem('INCREASE (+500)', (aero) => {
-            aero.temModificacaoVertical = true;
-            const perf = getAircraftPerformance(aero.tipo);
-            const currentVS = aero.targetVS || aero.currentVS || (aero.verticalSpeed || -1500);
-            const isClimbing = currentVS >= 0;
-            let newRate;
-            if (isClimbing) {
-                newRate = currentVS + 500;
-                if (newRate > perf.rates.climbStructuralMax) {
-                    newRate = perf.rates.climbStructuralMax;
-                    aero.clampedAtStructural = true;
-                } else {
-                    aero.clampedAtStructural = false;
-                }
-            } else {
-                newRate = currentVS - 500;
-                if (newRate < perf.rates.descentStructuralMax) {
-                    newRate = perf.rates.descentStructuralMax;
-                    aero.clampedAtStructural = true;
-                } else {
-                    aero.clampedAtStructural = false;
-                }
-            }
-
-            if (aero.pilot) {
-                aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: newRate });
-            } else if (aero.virtualPilot) {
-                aero.virtualPilot.increaseRateCommand();
-            }
+            flightCommandService.setVerticalRate(aero, 'INCREASE');
         }, '#76ff03'));
 
         // 3. DECREASE: Reduz magnitude em -500 ft/min
         this.menu.appendChild(criarItem('DECREASE (-500)', (aero) => {
-            aero.temModificacaoVertical = true;
-            const currentVS = aero.targetVS || aero.currentVS || (aero.verticalSpeed || -1500);
-            const isClimbing = currentVS >= 0;
-            let newRate = isClimbing ? Math.max(500, currentVS - 500) : Math.min(-500, currentVS + 500);
-            aero.clampedAtStructural = false;
-
-            if (aero.pilot) {
-                aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: newRate });
-            } else if (aero.virtualPilot) {
-                aero.virtualPilot.decreaseRateCommand();
-            }
+            flightCommandService.setVerticalRate(aero, 'DECREASE');
         }, '#ffb300'));
 
         // 4. EXPEDITE: Razão operacional máxima (climbExpedite ou descentExpedite)
         this.menu.appendChild(criarItem('EXPEDITE', (aero) => {
-            aero.temModificacaoVertical = true;
-            aero.clampedAtStructural = false;
-            if (aero.pilot) {
-                aero.pilot.dispatch('VERTICAL', TASK_TYPES.EXPEDITE, {});
-            } else if (aero.virtualPilot) {
-                aero.virtualPilot.expediteCommand();
-            } else {
-                aero.verticalMode = VERTICAL_MODES.EXPEDITE;
-            }
+            flightCommandService.setVerticalRate(aero, 'EXPEDITE');
         }, '#ff5252'));
 
         // 5. SET [Valor]: Entrada numérica com Hard Clamp Rule
@@ -362,7 +308,7 @@ export class MenuRazaoController {
 
     /**
      * Abre prompt modal limpo para digitação da razão no comando SET.
-     * Aplica o Hard Clamp Rule imediatamente sobre a entrada do usuário.
+     * Aplica o Hard Clamp Rule imediatamente sobre a entrada do usuário via FlightCommandService.
      * @param {Object} aero - Instância da aeronave
      */
     abrirPromptSet(aero) {
@@ -377,44 +323,8 @@ export class MenuRazaoController {
         );
 
         if (resposta !== null && resposta.trim() !== "") {
-            const num = parseInt(resposta, 10);
-            if (!isNaN(num) && num !== 0) {
-                const isClimbing = num > 0;
-                let clampedRate = num;
-                let wasClamped = false;
-
-                if (isClimbing) {
-                    if (num > perf.rates.climbStructuralMax) {
-                        clampedRate = perf.rates.climbStructuralMax;
-                        wasClamped = true;
-                    }
-                } else {
-                    if (num < perf.rates.descentStructuralMax) {
-                        clampedRate = perf.rates.descentStructuralMax;
-                        wasClamped = true;
-                    }
-                }
-
-                aero.clampedAtStructural = wasClamped;
-                aero.temModificacaoVertical = true;
-                if (aero.virtualPilot) {
-                    aero.virtualPilot.clampedAtStructural = wasClamped;
-                }
-
-                if (wasClamped) {
-                    console.warn(`[Hard Clamp] Razão solicitada (${num} ft/min) excede o limite físico. Limitada a ${clampedRate} ft/min.`);
-                }
-
-                if (aero.pilot) {
-                    aero.pilot.dispatch('VERTICAL', TASK_TYPES.VERTICAL_RATE, { rate: clampedRate });
-                } else if (aero.virtualPilot) {
-                    aero.virtualPilot.setRateCommand(clampedRate);
-                } else {
-                    aero.targetVS = clampedRate;
-                    aero.verticalMode = VERTICAL_MODES.ATC_RATE;
-                }
-                desenharRadar();
-            }
+            flightCommandService.setVerticalRate(aero, resposta);
+            desenharRadar();
         }
     }
 

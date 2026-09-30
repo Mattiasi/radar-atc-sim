@@ -3,7 +3,7 @@ import { desenharRadar } from './render.js';
 import { painelVentoUI } from './painelVentoUI.js';
 import { obterTodosFixosProcedimentos } from './data.js';
 import { menuRazaoController } from './RadarTagController.js';
-import { authorize_approach } from './ApproachProfileManager.js';
+import { flightCommandService } from './FlightCommandService.js';
 
 /**
  * ============================================================================
@@ -327,67 +327,8 @@ export class MenuNivelController {
                     } else if (nv === "MIN") {
                         aero.textoLivre = toggleTokenNoTexto(aero.textoLivre, "MIN");
                         aero.analisarComandosTexto();
-                    } else if (nv === "VIA" || nv === "APP") {
-                        // Apaga fisicamente a 4ª linha (textoLivre) e limpa o scratchpad se aberto
-                        aero.textoLivre = "";
-                        if (state.aeroEditandoTexto === aero && scratchpadUI && scratchpadUI.input) {
-                            scratchpadUI.input.value = "";
-                        }
-                        if (!aero.altitude_before_ils) {
-                            const flPrev = parseInt(aero.nivAutorizado, 10);
-                            aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
-                        }
-                        aero.nivAutorizado = "VIA";
-                        aero.cleared_level = "VIA";
-                        aero.cleared_approach = true;
-                        aero.autorizadoProcedimento = true;
-                        aero.ils_authorized = false;
-                        if (aero.autopilot) aero.autopilot.ils_authorized = false;
-
-                        authorize_approach(aero);
-
-                        // Despacha no canal VERTICAL do piloto virtual
-                        if (aero.pilot) {
-                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
-                        } else {
-                            aero.nivAutorizadoFisico = "VIA";
-                        }
-                    } else if (nv === "ILS") {
-                        // Apaga fisicamente a 4ª linha (textoLivre) e limpa o scratchpad se aberto
-                        aero.textoLivre = "";
-                        if (state.aeroEditandoTexto === aero && scratchpadUI && scratchpadUI.input) {
-                            scratchpadUI.input.value = "";
-                        }
-                        const currentAlt = aero.alt || (aero.flAtualNum * 100);
-                        const flPrev = parseInt(aero.nivAutorizado, 10);
-                        // Trava a altitude de plataforma sem nunca permitir subida
-                        aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) 
-                            ? Math.min(currentAlt, flPrev * 100) 
-                            : currentAlt;
-
-                        aero.nivAutorizado = "ILS";
-                        aero.cleared_level = "ILS";
-                        aero.ils_authorized = true;
-                        aero.cleared_approach = true;
-                        aero.autorizadoProcedimento = true;
-                        aero.nivAutorizadoFisico = "ILS";
-                        if (aero.autopilot) aero.autopilot.ils_authorized = true;
-
-                        // Despacha no canal VERTICAL do piloto virtual
-                        if (aero.pilot) {
-                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "ILS" });
-                        }
                     } else {
-                        aero.nivAutorizado = nv;
-                        aero.cleared_level = nv;
-                        aero.ils_authorized = false;
-                        if (aero.autopilot) aero.autopilot.ils_authorized = false;
-
-                        // Sincroniza imediatamente o nível físico e despacha comando ao piloto
-                        aero.nivAutorizadoFisico = nv;
-                        if (aero.pilot) {
-                            aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nv });
-                        }
+                        flightCommandService.setLevel(aero, nv, true);
                     }
                 }
 

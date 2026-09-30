@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from './utils.js';
-import { restricoesFixos, montarRotaAPartirDeFixo, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
+import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from './data.js';
 import { getAircraftPerformance } from './PerformanceDB.js';
 import { windManager } from './windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
@@ -9,6 +9,7 @@ import { VirtualPilot } from './VirtualPilot.js';
 import { FlightDynamicsEngine } from './FlightDynamicsEngine.js';
 import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_vertical_profile, findFirstIACFix, getFixAltitudeFt } from './ApproachProfileManager.js';
 import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from './ILSController.js';
+import { flightCommandService } from './FlightCommandService.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -1038,11 +1039,10 @@ export class Aeronave {
             this.vertical_floor_altitude = null;
             this.vertical_floor_fl = null;
             this.hold_altitude_until_waypoint = null;
-        } else if (this.cleared_approach || (isVia && (this.descent_mode === DESCENT_MODES.APPROACH_PROFILE || this.descent_mode === DESCENT_MODES.GLIDEPATH || this.descent_mode === 'FLARE'))) {
+        } else if (this.descent_mode === DESCENT_MODES.GLIDEPATH || this.descent_mode === 'FLARE') {
             // =========================================================================
-            // MODO APPROACH_PROFILE & GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "VIA")
+            // MODO GLIDEPATH (AUTORIZADO PROCEDIMENTO IAC / "VIA" APÓS O FAF)
             // =========================================================================
-            this.cleared_approach = true;
             update_approach_vertical_profile(this, dtSec);
             targetFL = this.targetFL;
             razaoEfetiva = this.razaoEfetiva || razaoNominal;
@@ -1055,11 +1055,12 @@ export class Aeronave {
             this.verticalMode = 'OP-D';
 
             let tetoDescida = altClearence;
+            let isGA = this.callsign && (this.callsign.startsWith("PT") || this.callsign.startsWith("PR") || this.callsign.startsWith("PS"));
             if (!isVia && altClearence > 0) {
-                // Piso de segurança de entrada na IAC (FL055) mantido antes do início da IAC
-                tetoDescida = Math.max(altClearence, 55);
+                // Piso de segurança de entrada na IAC (FL055) mantido antes do início da IAC, exceto para aviação geral VFR/baixa altitude
+                tetoDescida = isGA ? altClearence : Math.max(altClearence, 55);
             } else {
-                tetoDescida = 55;
+                tetoDescida = isGA ? altClearence : 55;
             }
 
             if (tetoDescida < this.flAtualNum) {
@@ -1095,12 +1096,18 @@ export class Aeronave {
             }
 
             if (startWpNome) {
-                // Se estiver em VIA e o fixo ativo pertencer à AIC/IAC, transiciona para o perfil de aproximação
-                if (isVia && isFixoIAC(startWpNome)) {
+                let isGlidepathMode = false;
+                
+                // Se estiver autorizado aproximação ou em fixo IAC com VIA, atualiza a máquina de estados IAC
+                if (this.cleared_approach || (isVia && isFixoIAC(startWpNome))) {
                     if (!this.cleared_approach) {
                         authorize_approach(this);
                     }
                     update_approach_vertical_profile(this, dtSec);
+                    isGlidepathMode = (this.descent_mode === DESCENT_MODES.GLIDEPATH || this.descent_mode === 'FLARE');
+                }
+
+                if (isGlidepathMode) {
                     targetFL = this.targetFL;
                     razaoEfetiva = this.razaoEfetiva || razaoNominal;
                 } else {
@@ -1132,6 +1139,7 @@ export class Aeronave {
                 }
 
                 let encontrouDescida = false;
+                let temRestricaoAtivaFutura = false;
                 let flAlvoFinal = this.flAtualNum;
                 let maiorRazaoNecessaria = razaoNominal;
 
@@ -1158,6 +1166,7 @@ export class Aeronave {
                         }
 
                         if (this.flAtualNum > flAlvoFixo) {
+                            temRestricaoAtivaFutura = true;
                             let deltaAltFt = (this.flAtualNum - flAlvoFixo) * 100;
                             // Distância ideal até o Top of Descent (0.3 NM por FL a perder)
                             let distTOD = (this.flAtualNum - flAlvoFixo) * 0.3;
@@ -1231,6 +1240,9 @@ export class Aeronave {
                 if (encontrouDescida) {
                     targetFL = flAlvoFinal;
                     razaoEfetiva = maiorRazaoNecessaria;
+                } else if (temRestricaoAtivaFutura) {
+                    // Mantém nível atual aguardando o TOD da restrição ativa à frente
+                    targetFL = this.flAtualNum;
                 } else if (!isVia && altClearence < this.flAtualNum) {
                     // Descida autorizada pelo controlador ATC (Clearance direta para o nível selecionado)
                     targetFL = altClearence;
@@ -1428,226 +1440,6 @@ export class Aeronave {
      *      ela recupera automaticamente a rota completa (ROTA_PRUMO ou ROTA_OGTAL) e reengaja o LNAV.
      */
     analisarComandosTexto() {
-        let texto = this.textoLivre.toUpperCase().trim();
-        // Otimização: evita reprocessar comandos se o texto digitado não mudou
-        if (texto === this.ultimoComandoTexto) return;
-        this.ultimoComandoTexto = texto;
-
-        // ---------------------------------------------------------------------
-        // REGEX DE AUTORIZAÇÃO ILS VIA SCRATCHPAD: "ILS"
-        // ---------------------------------------------------------------------
-        if (/\bILS\b/.test(texto)) {
-            const currentAlt = this.alt || (this.flAtualNum * 100);
-            const flPrev = parseInt(this.nivAutorizado, 10);
-            // Trava a altitude de plataforma sem nunca permitir subida
-            this.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) 
-                ? Math.min(currentAlt, flPrev * 100) 
-                : currentAlt;
-
-            this.nivAutorizado = "ILS";
-            this.cleared_level = "ILS";
-            this.ils_authorized = true;
-            this.cleared_approach = true;
-            this.autorizadoProcedimento = true;
-            this.nivAutorizadoFisico = "ILS";
-            if (this.autopilot) this.autopilot.ils_authorized = true;
-            if (this.pilot) {
-                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: 'ILS' });
-            }
-            // Remove o token "ILS" do texto livre para que a 4ª linha continue vazia (Seção 5)
-            this.textoLivre = this.textoLivre.replace(/\bILS\b/g, '').trim();
-            this.ultimoComandoTexto = this.textoLivre;
-            texto = this.textoLivre.toUpperCase().trim();
-        }
-        
-        // ---------------------------------------------------------------------
-        // 1. REGEX DE PROA / HEADING: Hxxx ou Hxxx+ (ex: H090 ou H090+)
-        // ---------------------------------------------------------------------
-        let matchProa = texto.match(/\bH(\d{3})(\+?)/);
-        if (matchProa) {
-            let novaProa = parseInt(matchProa[1], 10);
-            let ladoMaior = (matchProa[2] === '+'); 
-            if (novaProa >= 0 && novaProa <= 360) {
-                novaProa = novaProa === 360 ? 0 : novaProa;
-                // Despacha no canal LATERAL (preempção imediata sobre curvas anteriores)
-                this.pilot.dispatch('LATERAL', 'HEADING', { heading: novaProa, maior: ladoMaior });
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 2. REGEX DE VELOCIDADE INDICADA: xxK OU MIN OU RETOMADA AUTOMÁTICA (FREE/NORM)
-        // ---------------------------------------------------------------------
-        const matchMIN = /\bMIN\b/.test(texto);
-        const matchVel = texto.match(/\b(\d{2})K\b/);
-        const matchResume = /\b(FREE|FREEV|RSM|RSV|NORM|RESUME|VFREE|AUTO)\b/.test(texto);
-
-        if (matchResume) {
-            // Cancelamento explícito da restrição manual: retoma gerenciamento dinâmico (Seção 19)
-            this.velocidadeMinima = false;
-            this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
-        } else if (matchMIN) {
-            this.velocidadeMinima = true;
-            this.velManual = false;
-        } else if (matchVel) {
-            this.velocidadeMinima = false;
-            let novaVel = parseInt(matchVel[1], 10) * 10;
-            if (novaVel >= 40 && novaVel <= 600) { 
-                this.pilot.dispatch('LONGITUDINAL', 'SPEED', { speed: novaVel });
-            }
-        } else {
-            if (this.velocidadeMinima && !matchMIN) {
-                this.velocidadeMinima = false;
-            }
-            if (this.velManual && !/\b\d{2}K\b/.test(texto)) {
-                this.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 2.1. REGEX DE DESCIDA SEM RESTRIÇÕES: SR
-        // ---------------------------------------------------------------------
-        const matchSR = /\bSR\b/.test(texto);
-        if (matchSR) {
-            this.semRestricoes = true;
-            if (!this.cleared_approach) {
-                this.descent_mode = DESCENT_MODES.OPEN_DESCENT;
-                this.verticalMode = 'OP-D';
-            }
-        } else if (this.semRestricoes && !matchSR) {
-            this.semRestricoes = false;
-            if (!this.cleared_approach) {
-                this.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT;
-                this.verticalMode = 'AUTO';
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 2.2. REGEX DE AUTORIZAÇÃO DE PROCEDIMENTO (IAC / AIC): APP / APX / RNP / ILS / AUT
-        // ---------------------------------------------------------------------
-        const matchApp = /\b(APX|APP|RNP|IAC|ILS|AUT|PROC)\b/.test(texto);
-        const matchNoApp = /\b(NOAPP|NOAPX|CANCEL)\b/.test(texto);
-        if (matchApp) {
-            authorize_approach(this);
-        } else if (matchNoApp || (this.cleared_approach && !matchApp && this.nivAutorizado !== "VIA" && this.cleared_level !== "VIA")) {
-            cancel_approach(this);
-        }
-
-        // ---------------------------------------------------------------------
-        // 2.3. REGEX DE NÍVEL / ALTITUDE DIGITADA NO SCRATCHPAD (ex: 060, 070, FL060, VIA)
-        // ---------------------------------------------------------------------
-        const matchAlt = texto.match(/\b(?:FL)?(1[0-2][0-9]|0[2-9][0-9])\b/);
-        if (matchAlt) {
-            const nvStr = matchAlt[1].padStart(3, '0');
-            this.nivAutorizado = nvStr;
-            this.nivAutorizadoFisico = nvStr;
-            this.cleared_level = nvStr;
-            this.cleared_approach = false;
-            this.autorizadoProcedimento = false;
-            if (this.pilot) {
-                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nvStr });
-            }
-        } else if (/\bVIA\b/.test(texto)) {
-            this.nivAutorizado = "VIA";
-            this.nivAutorizadoFisico = "VIA";
-            this.cleared_level = "VIA";
-            this.autorizadoProcedimento = true;
-            this.cleared_approach = true;
-            this.ils_authorized = false;
-            if (this.autopilot) this.autopilot.ils_authorized = false;
-
-            const activeIACFix = findFirstIACFix(this);
-            const wpAtual = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
-            if (!this.modoLNAV || isFixoIAC(wpAtual) || !this.rota || this.rota.length === 0) {
-                authorize_approach(this);
-            }
-
-            if (this.pilot) {
-                this.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 3. REGEX DE SPEEDBRAKES / SPOILERS: SB ou NOSB / SBOFF
-        // ---------------------------------------------------------------------
-        const matchSB = /\b(SB|SPB|BRK)\b/.test(texto);
-        const matchNoSB = /\b(NOSB|NOBRK|SBOFF)\b/.test(texto);
-        if (matchNoSB) {
-            this.speedbrakes = false;
-            this.speedbrakesComando = false;
-        } else if (matchSB) {
-            this.speedbrakes = true;
-            this.speedbrakesComando = true;
-        } else if (this.speedbrakesComando && !matchSB) {
-            // Se o comando SB foi apagado do scratchpad pelo operador
-            this.speedbrakes = false;
-            this.speedbrakesComando = false;
-        }
-
-        // ---------------------------------------------------------------------
-        // 4. IDENTIFICAÇÃO DE FIXOS / DIRECT-TO (DCT)
-        // ---------------------------------------------------------------------
-        const dicFixos = {
-            "PRU": "PRUMO", "IRP": "IROPU", "LVD": "LUVDI", "GRS": "GERSU",
-            "URU": "URUTA", "SP139": "SP139", "KMG": "KOMGU", "OGT": "OGTAL",
-            "SP017": "SP017", "SP099": "SP099", "SP101": "SP101", 
-            "SP032": "SP032", "SBSP": "SBSP", "SBJH": "SBJH", "SBGR": "SBGR", "SBMT": "SBMT"
-        };
-        // Registra automaticamente todos os fixos de navegação conhecidos por nome completo
-        if (Array.isArray(fixosNavegacao)) {
-            fixosNavegacao.forEach(f => {
-                if (f.nome && !dicFixos[f.nome]) {
-                    dicFixos[f.nome] = f.nome;
-                }
-            });
-        }
-
-        // Identifica se alguma mnemônica ou nome completo de fixo foi digitado no Scratchpad
-        let wpTarget = null;
-        for (let key in dicFixos) {
-            const regex = new RegExp(`\\b${key}\\b`, 'i');
-            if (regex.test(texto)) {
-                wpTarget = dicFixos[key];
-                break;
-            }
-        }
-        if (!wpTarget) {
-            for (let key in dicFixos) {
-                if (texto.includes(key) || texto.includes(dicFixos[key])) {
-                    wpTarget = dicFixos[key];
-                    break;
-                }
-            }
-        }
-
-        if (wpTarget) {
-            let idx = (this.rota && Array.isArray(this.rota)) ? this.rota.indexOf(wpTarget) : -1;
-            let novaRotaCalculada = null;
-
-            // Direct-To Inteligente com Grafo de Rotas:
-            // Se o fixo comandado não está na rota atual, ou está atrás da posição atual,
-            // ou se a aeronave estava sob vetores radar fora de rota,
-            // reconstrói a sequência completa a partir do grafo de navegação de cartasNavegacao!
-            if (idx === -1 || idx < this.wpIndex) {
-                const rotaGrafo = montarRotaAPartirDeFixo(wpTarget, this.dest || "SBSP");
-                if (rotaGrafo && rotaGrafo.length > 0) {
-                    novaRotaCalculada = rotaGrafo;
-                    idx = 0; // O ponto inicial da nova rota será o próprio fixo solicitado quando ativado
-                }
-            }
-
-            let novoWpPendente = (idx !== -1) ? idx : wpTarget;
-
-            // Se o comando de waypoint for novo e não conflitante com comando de proa ativo
-            if (!matchProa && (this.ultimoWpComandadoTexto !== novoWpPendente || !this.modoLNAV)) {
-                this.ultimoWpComandadoTexto = novoWpPendente; 
-                this.pilot.dispatch('LATERAL', 'DIRECT_TO', { 
-                    target: novoWpPendente, 
-                    isIdx: (typeof novoWpPendente === 'number'),
-                    novaRota: novaRotaCalculada
-                });
-            }
-        } else {
-            this.ultimoWpComandadoTexto = null;
-        }
+        flightCommandService.parseAndExecuteScratchpad(this, this.textoLivre);
     }
 }

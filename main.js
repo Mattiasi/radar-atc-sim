@@ -150,8 +150,8 @@ function loopPrincipal(tempoAtual) {
 
 // --- 2. SEQUÊNCIA DE INICIALIZAÇÃO (BOOT) ---
 inicializarEspacoAereo();       // Carrega a geometria das rotas e TMA
-carregarTrafegoTeste();         // Faz spawn dos 2 aviões iniciais de demonstração
 inicializarUI();                // Inicializa e encapsula os elementos HTML/DOM (Painel, Scratchpad e Menus)
+carregarTrafegoTeste();         // Faz spawn dos 2 aviões iniciais de demonstração
 configurarEventosUsuario();     // Liga os "ouvintes" (Listeners) de rato e teclado
 aplicarLimites(false);          // Garante que o zoom e o enquadramento inicial estão corretos
 
