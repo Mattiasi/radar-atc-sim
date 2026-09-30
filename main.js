@@ -1,16 +1,3 @@
-window.addEventListener('error', function(event) {
-    const errDiv = document.createElement('div');
-    errDiv.style.position = 'absolute';
-    errDiv.style.top = '50%';
-    errDiv.style.left = '50%';
-    errDiv.style.transform = 'translate(-50%, -50%)';
-    errDiv.style.backgroundColor = 'red';
-    errDiv.style.color = 'white';
-    errDiv.style.padding = '20px';
-    errDiv.style.zIndex = '999999';
-    errDiv.innerHTML = '<h2>CRASH</h2><p>' + event.message + '</p><pre>' + event.filename + ':' + event.lineno + '</pre>';
-    document.body.appendChild(errDiv);
-});
 import { state } from './state.js';
 import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego } from './engine.js';
 import { configurarEventosUsuario, aplicarLimites } from './events.js';
@@ -170,29 +157,3 @@ aplicarLimites(false);          // Garante que o zoom e o enquadramento inicial 
 
 // Dispara o motor pela primeira vez
 requestAnimationFrame(loopPrincipal);
-
-const oldDesenharAeronaves = window.desenharAeronaves;
-if (!window.debugInjected) {
-    window.debugInjected = true;
-    setInterval(() => {
-        const dbg = document.getElementById('debugOverlay') || document.createElement('div');
-        dbg.id = 'debugOverlay';
-        dbg.style.position = 'absolute';
-        dbg.style.top = '10px';
-        dbg.style.left = '10px';
-        dbg.style.backgroundColor = 'rgba(0,0,0,0.8)';
-        dbg.style.color = 'lime';
-        dbg.style.padding = '10px';
-        dbg.style.fontFamily = 'monospace';
-        dbg.style.zIndex = '999999';
-        
-        let html = 'DEBUG INFO<br>';
-        if (window.state && window.state.aeronaves) {
-            window.state.aeronaves.slice(0,3).forEach(a => {
-                html += a.callsign + ' | FL:' + a.flAtualNum.toFixed(1) + ' | targetFL:' + a.targetFL + ' | targetAlt:' + a.target_altitude + ' | targetVS:' + Math.round(a.targetVS) + ' | altClear:' + a.nivAutorizadoFisico + ' | isVia:' + (a.nivAutorizadoFisico === 'VIA') + '<br>';
-            });
-        }
-        dbg.innerHTML = html;
-        document.body.appendChild(dbg);
-    }, 1000);
-}
