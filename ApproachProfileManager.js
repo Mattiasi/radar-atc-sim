@@ -369,17 +369,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
     if (holdFixName) {
         let fixoCruzado = false;
 
-        // Se a aeronave ainda estiver com proteção ativa de fly-by deste fixo (curva em andamento e través não superado),
-        // o fixo NÃO foi cruzado e o piso da restrição deve ser mantido rigorosamente!
-        if (aircraft.rota && Array.isArray(aircraft.rota)) {
-            const holdIdx = aircraft.rota.indexOf(holdFixName);
-            if (holdIdx !== -1 && aircraft.wpIndex > holdIdx) {
-                fixoCruzado = true;
-                if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
-                    aircraft.flyByProtegido = null;
-                }
-            }
-        }
+        // O wpIndex incrementa antecipadamente devido ao fly-by. Não forçamos o cruzamento
+        // prematuramente. Vamos depender do flyByProtegido e da distância física real.
 
         if (!fixoCruzado) {
             if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {

@@ -65,7 +65,18 @@ export class FlightCommandService {
                     if (el) el.value = "";
                 }
             }
-        } else if (cmd === "VIA" || cmd === "APP") {
+        } else if (cmd === "VIA") {
+    if (!aero.altitude_before_ils) {
+        const flPrev = parseInt(aero.nivAutorizado, 10);
+        aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
+    }
+    aero.nivAutorizado = "VIA";
+    aero.cleared_level = "VIA";
+    aero.ils_authorized = false;
+    aero.nivAutorizadoFisico = "VIA";
+    if (aero.autopilot) aero.autopilot.ils_authorized = false;
+    if (aero.pilot) aero.pilot.dispatch("VERTICAL", "ALTITUDE", { level: "VIA" });
+} else if (cmd === "APP") {
             // Qualquer seleção ou comando APP é estritamente atribuído a VIA
             if (!aero.altitude_before_ils) {
                 const flPrev = parseInt(aero.nivAutorizado, 10);
@@ -463,4 +474,6 @@ export class FlightCommandService {
 
 // Instância Singleton do serviço
 export const flightCommandService = new FlightCommandService();
+
+
 

@@ -127,7 +127,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
 
             if (!aero.desceuParaWp) aero.desceuParaWp = {};
 
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 1; i++) {
                 if (!iterWpNome) break;
 
                 let rest = restricoesFixos[iterWpNome];

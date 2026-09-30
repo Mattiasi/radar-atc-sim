@@ -1,811 +1,811 @@
-{nome: "KP209", lat: dmsParaDecimal(23,01,13.30,'S'), lon: dmsParaDecimal(46,56,41.70,'W')}
-{nome: "KP191", lat: dmsParaDecimal(23,09,56.70,'S'), lon: dmsParaDecimal(46,55,30.00,'W')}
-{nome: "KP192", lat: dmsParaDecimal(23,07,71.70,'S'), lon: dmsParaDecimal(46,57,86.70,'W')}
-{nome: "KP702", lat: dmsParaDecimal(23,02,35.00,'S'), lon: dmsParaDecimal(47,05,38.30,'W')}
-{nome: "UBKUP", lat: dmsParaDecimal(23,10,63.30,'S'), lon: dmsParaDecimal(47,04,48.30,'W')}
-{nome: "KP107", lat: dmsParaDecimal(23,05,88.30,'S'), lon: dmsParaDecimal(47,00,45.00,'W')}
-{nome: "ARNIV", lat: dmsParaDecimal(23,04,05.00,'S'), lon: dmsParaDecimal(47,03,01.70,'W')}
-{nome: "RWY33", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(47,07,35.00,'W')}
-{nome: "KP034", lat: dmsParaDecimal(23,06,40.00,'S'), lon: dmsParaDecimal(47,05,00.00,'W')}
-{nome: "KP036", lat: dmsParaDecimal(23,08,23.30,'S'), lon: dmsParaDecimal(47,02,43.30,'W')}
-{nome: "KP037", lat: dmsParaDecimal(22,59,85.00,'S'), lon: dmsParaDecimal(47,08,88.30,'W')}
-{nome: "KP038", lat: dmsParaDecimal(23,02,28.30,'S'), lon: dmsParaDecimal(47,16,40.00,'W')}
-{nome: "KP039", lat: dmsParaDecimal(22,59,83.30,'S'), lon: dmsParaDecimal(47,14,35.00,'W')}
-{nome: "KP103", lat: dmsParaDecimal(22,57,40.00,'S'), lon: dmsParaDecimal(47,12,31.70,'W')}
-{nome: "ATARA", lat: dmsParaDecimal(22,53,76.70,'S'), lon: dmsParaDecimal(47,17,38.30,'W')}
-{nome: "SEBSU", lat: dmsParaDecimal(22,56,83.30,'S'), lon: dmsParaDecimal(47,13,10.00,'W')}
-{nome: "KP002", lat: dmsParaDecimal(22,58,48.30,'S'), lon: dmsParaDecimal(47,10,78.30,'W')}
-{nome: "RWY15", lat: dmsParaDecimal(22,59,90.00,'S'), lon: dmsParaDecimal(47,08,81.70,'W')}
-{nome: "NILKA", lat: dmsParaDecimal(22,58,53.30,'S'), lon: dmsParaDecimal(47,21,35.00,'W')}
-{nome: "NOBRE", lat: dmsParaDecimal(22,50,78.30,'S'), lon: dmsParaDecimal(47,21,55.00,'W')}
-{nome: "ITEDI", lat: dmsParaDecimal(22,48,88.30,'S'), lon: dmsParaDecimal(47,13,30.00,'W')}
-{nome: "KP014", lat: dmsParaDecimal(22,59,83.30,'S'), lon: dmsParaDecimal(47,08,75.00,'W')}
-{nome: "KP113", lat: dmsParaDecimal(22,52,81.70,'S'), lon: dmsParaDecimal(47,18,70.00,'W')}
-{nome: "KP013", lat: dmsParaDecimal(22,52,81.70,'S'), lon: dmsParaDecimal(47,18,71.70,'W')}
-{nome: "KP273", lat: dmsParaDecimal(22,58,46.70,'S'), lon: dmsParaDecimal(47,10,71.70,'W')}
-{nome: "VCP", lat: dmsParaDecimal(23,00,51.70,'S'), lon: dmsParaDecimal(47,07,76.70,'W')}
-{nome: "RENUM", lat: dmsParaDecimal(23,06,36.70,'S'), lon: dmsParaDecimal(47,00,91.70,'W')}
-{nome: "ALDEG", lat: dmsParaDecimal(23,04,31.70,'S'), lon: dmsParaDecimal(47,03,30.00,'W')}
-{nome: "KP059", lat: dmsParaDecimal(23,02,55.00,'S'), lon: dmsParaDecimal(47,05,38.30,'W')}
-{nome: "KP071", lat: dmsParaDecimal(23,00,93.30,'S'), lon: dmsParaDecimal(47,07,26.70,'W')}
-{nome: "KP044", lat: dmsParaDecimal(23,07,68.30,'S'), lon: dmsParaDecimal(46,59,38.30,'W')}
-{nome: "KP194", lat: dmsParaDecimal(22,50,86.70,'S'), lon: dmsParaDecimal(47,10,01.70,'W')}
-{nome: "KP186", lat: dmsParaDecimal(22,55,03.30,'S'), lon: dmsParaDecimal(47,14,05.00,'W')}
-{nome: "KP193", lat: dmsParaDecimal(22,54,36.70,'S'), lon: dmsParaDecimal(47,10,33.30,'W')}
-{nome: "KP188", lat: dmsParaDecimal(22,57,15.00,'S'), lon: dmsParaDecimal(47,12,65.00,'W')}
-{nome: "KP183", lat: dmsParaDecimal(22,51,58.30,'S'), lon: dmsParaDecimal(47,08,00.00,'W')}
-{nome: "KP063", lat: dmsParaDecimal(23,04,05.00,'S'), lon: dmsParaDecimal(47,03,01.70,'W')}
-{nome: "KP182", lat: dmsParaDecimal(23,09,81.70,'S'), lon: dmsParaDecimal(47,07,85.00,'W')}
-{nome: "KP181", lat: dmsParaDecimal(23,06,93.30,'S'), lon: dmsParaDecimal(47,05,43.30,'W')}
-{nome: "KOVGA", lat: dmsParaDecimal(22,59,80.00,'S'), lon: dmsParaDecimal(47,21,80.00,'W')}
-{nome: "LOLED", lat: dmsParaDecimal(22,54,73.30,'S'), lon: dmsParaDecimal(47,03,61.70,'W')}
-{nome: "MUPIP", lat: dmsParaDecimal(22,49,95.00,'S'), lon: dmsParaDecimal(47,22,68.30,'W')}
-{nome: "KP030", lat: dmsParaDecimal(22,58,66.70,'S'), lon: dmsParaDecimal(47,10,53.30,'W')}
-{nome: "ASUTI", lat: dmsParaDecimal(22,52,31.70,'S'), lon: dmsParaDecimal(47,19,38.30,'W')}
-{nome: "EDRAT", lat: dmsParaDecimal(23,50,35.00,'S'), lon: dmsParaDecimal(48,18,40.00,'W')}
-{nome: "GNOME", lat: dmsParaDecimal(23,13,38.30,'S'), lon: dmsParaDecimal(47,58,91.70,'W')}
-{nome: "KP217", lat: dmsParaDecimal(23,10,08.30,'S'), lon: dmsParaDecimal(47,44,88.30,'W')}
-{nome: "KP216", lat: dmsParaDecimal(23,06,26.70,'S'), lon: dmsParaDecimal(47,37,10.00,'W')}
-{nome: "KP214", lat: dmsParaDecimal(23,02,63.30,'S'), lon: dmsParaDecimal(47,29,70.00,'W')}
-{nome: "UTLOT", lat: dmsParaDecimal(22,28,43.30,'S'), lon: dmsParaDecimal(47,53,53.30,'W')}
-{nome: "KP201", lat: dmsParaDecimal(22,42,28.30,'S'), lon: dmsParaDecimal(47,35,10.00,'W')}
-{nome: "KP219", lat: dmsParaDecimal(23,17,71.70,'S'), lon: dmsParaDecimal(47,53,80.00,'W')}
-{nome: "VERME", lat: dmsParaDecimal(23,12,53.30,'S'), lon: dmsParaDecimal(47,49,91.70,'W')}
-{nome: "KP224", lat: dmsParaDecimal(23,26,81.70,'S'), lon: dmsParaDecimal(47,34,40.00,'W')}
-{nome: "KP223", lat: dmsParaDecimal(23,21,65.00,'S'), lon: dmsParaDecimal(47,24,81.70,'W')}
-{nome: "KP271", lat: dmsParaDecimal(23,15,48.30,'S'), lon: dmsParaDecimal(47,13,41.70,'W')}
-{nome: "KP221", lat: dmsParaDecimal(23,04,86.70,'S'), lon: dmsParaDecimal(47,12,53.30,'W')}
-{nome: "KP222", lat: dmsParaDecimal(23,07,93.30,'S'), lon: dmsParaDecimal(47,08,23.30,'W')}
-{nome: "EDMUS", lat: dmsParaDecimal(23,11,35.00,'S'), lon: dmsParaDecimal(45,23,15.00,'W')}
-{nome: "NIBVO", lat: dmsParaDecimal(23,13,60.00,'S'), lon: dmsParaDecimal(45,33,35.00,'W')}
-{nome: "KP153", lat: dmsParaDecimal(23,22,35.00,'S'), lon: dmsParaDecimal(46,04,78.30,'W')}
-{nome: "KP154", lat: dmsParaDecimal(23,27,46.70,'S'), lon: dmsParaDecimal(46,22,98.30,'W')}
-{nome: "KP213", lat: dmsParaDecimal(23,17,43.30,'S'), lon: dmsParaDecimal(46,38,40.00,'W')}
-{nome: "KP231", lat: dmsParaDecimal(23,11,86.70,'S'), lon: dmsParaDecimal(46,43,30.00,'W')}
-{nome: "KP269", lat: dmsParaDecimal(23,06,96.70,'S'), lon: dmsParaDecimal(46,47,61.70,'W')}
-{nome: "ENTIT", lat: dmsParaDecimal(22,25,05.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W')}
-{nome: "KP204", lat: dmsParaDecimal(22,38,80.00,'S'), lon: dmsParaDecimal(46,58,93.30,'W')}
-{nome: "KP226", lat: dmsParaDecimal(22,41,96.70,'S'), lon: dmsParaDecimal(47,00,58.30,'W')}
-{nome: "KP227", lat: dmsParaDecimal(22,53,70.00,'S'), lon: dmsParaDecimal(47,06,66.70,'W')}
-{nome: "KP228", lat: dmsParaDecimal(22,58,03.30,'S'), lon: dmsParaDecimal(47,00,68.30,'W')}
-{nome: "KP212", lat: dmsParaDecimal(23,14,31.70,'S'), lon: dmsParaDecimal(46,41,15.00,'W')}
-{nome: "KP211", lat: dmsParaDecimal(23,11,20.00,'S'), lon: dmsParaDecimal(46,43,88.30,'W')}
-{nome: "KP208", lat: dmsParaDecimal(23,01,81.70,'S'), lon: dmsParaDecimal(46,52,13.30,'W')}
-{nome: "KP207", lat: dmsParaDecimal(22,55,58.30,'S'), lon: dmsParaDecimal(47,04,06.70,'W')}
-{nome: "KP203", lat: dmsParaDecimal(22,33,93.30,'S'), lon: dmsParaDecimal(46,52,03.30,'W')}
-{nome: "KP266", lat: dmsParaDecimal(22,52,78.30,'S'), lon: dmsParaDecimal(47,30,18.30,'W')}
-{nome: "KP268", lat: dmsParaDecimal(22,43,85.00,'S'), lon: dmsParaDecimal(48,01,96.70,'W')}
-{nome: "OBLUG", lat: dmsParaDecimal(22,36,56.70,'S'), lon: dmsParaDecimal(48,27,56.70,'W')}
-{nome: "OSUDO", lat: dmsParaDecimal(23,06,50.00,'S'), lon: dmsParaDecimal(47,08,23.30,'W')}
-{nome: "KP263", lat: dmsParaDecimal(23,07,38.30,'S'), lon: dmsParaDecimal(47,44,55.00,'W')}
-{nome: "EGEVA", lat: dmsParaDecimal(23,08,38.30,'S'), lon: dmsParaDecimal(48,33,68.30,'W')}
-{nome: "KP241", lat: dmsParaDecimal(23,00,31.70,'S'), lon: dmsParaDecimal(47,01,13.30,'W')}
-{nome: "EGBEN", lat: dmsParaDecimal(22,54,23.30,'S'), lon: dmsParaDecimal(46,56,15.00,'W')}
-{nome: "DEXIB", lat: dmsParaDecimal(22,45,93.30,'S'), lon: dmsParaDecimal(47,01,26.70,'W')}
-{nome: "KP237", lat: dmsParaDecimal(22,39,13.30,'S'), lon: dmsParaDecimal(47,05,00.00,'W')}
-{nome: "ISMOB", lat: dmsParaDecimal(21,47,35.00,'S'), lon: dmsParaDecimal(47,11,81.70,'W')}
-{nome: "KP179", lat: dmsParaDecimal(22,17,10.00,'S'), lon: dmsParaDecimal(47,17,05.00,'W')}
-{nome: "KP242", lat: dmsParaDecimal(22,46,45.00,'S'), lon: dmsParaDecimal(46,48,93.30,'W')}
-{nome: "KP243", lat: dmsParaDecimal(22,44,31.70,'S'), lon: dmsParaDecimal(46,46,61.70,'W')}
-{nome: "URRAO", lat: dmsParaDecimal(22,40,81.70,'S'), lon: dmsParaDecimal(46,42,76.70,'W')}
-{nome: "KP244", lat: dmsParaDecimal(22,40,98.30,'S'), lon: dmsParaDecimal(46,23,28.30,'W')}
-{nome: "KONVI", lat: dmsParaDecimal(22,41,06.70,'S'), lon: dmsParaDecimal(46,10,55.00,'W')}
-{nome: "VUPOG", lat: dmsParaDecimal(20,44,53.30,'S'), lon: dmsParaDecimal(48,49,98.30,'W')}
-{nome: "GERTU", lat: dmsParaDecimal(22,25,80.00,'S'), lon: dmsParaDecimal(47,33,73.30,'W')}
-{nome: "KP251", lat: dmsParaDecimal(23,07,91.70,'S'), lon: dmsParaDecimal(47,02,05.00,'W')}
-{nome: "KP127", lat: dmsParaDecimal(23,12,20.00,'S'), lon: dmsParaDecimal(46,59,21.70,'W')}
-{nome: "MUDET", lat: dmsParaDecimal(23,19,60.00,'S'), lon: dmsParaDecimal(46,55,33.30,'W')}
-{nome: "GUABO", lat: dmsParaDecimal(23,32,05.00,'S'), lon: dmsParaDecimal(46,32,33.30,'W')}
-{nome: "UGIKI", lat: dmsParaDecimal(23,35,60.00,'S'), lon: dmsParaDecimal(46,25,78.30,'W')}
-{nome: "NIBRU", lat: dmsParaDecimal(23,34,38.30,'S'), lon: dmsParaDecimal(45,28,13.30,'W')}
-{nome: "UREMI", lat: dmsParaDecimal(23,23,33.30,'S'), lon: dmsParaDecimal(45,30,76.70,'W')}
-{nome: "KP258", lat: dmsParaDecimal(23,01,11.70,'S'), lon: dmsParaDecimal(47,14,16.70,'W')}
-{nome: "KP259", lat: dmsParaDecimal(23,08,11.70,'S'), lon: dmsParaDecimal(47,20,40.00,'W')}
-{nome: "KP262", lat: dmsParaDecimal(23,12,20.00,'S'), lon: dmsParaDecimal(47,14,70.00,'W')}
-{nome: "OPGUN", lat: dmsParaDecimal(22,54,41.70,'S'), lon: dmsParaDecimal(47,12,98.30,'W')}
-{nome: "KP264", lat: dmsParaDecimal(22,46,10.00,'S'), lon: dmsParaDecimal(48,02,73.30,'W')}
-{nome: "KP238", lat: dmsParaDecimal(23,02,15.00,'S'), lon: dmsParaDecimal(47,19,88.30,'W')}
-{nome: "KP239", lat: dmsParaDecimal(23,07,10.00,'S'), lon: dmsParaDecimal(47,32,60.00,'W')}
-{nome: "OPNOB", lat: dmsParaDecimal(23,07,53.30,'S'), lon: dmsParaDecimal(47,51,13.30,'W')}
-{nome: "ASETA", lat: dmsParaDecimal(23,17,13.30,'S'), lon: dmsParaDecimal(48,05,73.30,'W')}
-{nome: "KP246", lat: dmsParaDecimal(23,12,16.70,'S'), lon: dmsParaDecimal(47,13,58.30,'W')}
-{nome: "KP247", lat: dmsParaDecimal(23,17,30.00,'S'), lon: dmsParaDecimal(47,14,98.30,'W')}
-{nome: "KP248", lat: dmsParaDecimal(23,32,10.00,'S'), lon: dmsParaDecimal(47,18,98.30,'W')}
-{nome: "SOVSI", lat: dmsParaDecimal(24,06,31.70,'S'), lon: dmsParaDecimal(47,28,31.70,'W')}
-{nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W')}
-{nome: "KP257", lat: dmsParaDecimal(22,57,70.00,'S'), lon: dmsParaDecimal(47,26,70.00,'W')}
-{nome: "EKAGO", lat: dmsParaDecimal(22,56,28.30,'S'), lon: dmsParaDecimal(47,50,80.00,'W')}
-{nome: "KP261", lat: dmsParaDecimal(23,14,08.30,'S'), lon: dmsParaDecimal(47,20,25.00,'W')}
-{nome: "KP136", lat: dmsParaDecimal(23,20,35.00,'S'), lon: dmsParaDecimal(47,20,10.00,'W')}
-{nome: "KP254", lat: dmsParaDecimal(22,55,00.00,'S'), lon: dmsParaDecimal(47,08,51.70,'W')}
-{nome: "KP267", lat: dmsParaDecimal(22,53,60.00,'S'), lon: dmsParaDecimal(47,05,63.30,'W')}
-{nome: "KP256", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(47,01,51.70,'W')}
-{nome: "KP249", lat: dmsParaDecimal(22,38,68.30,'S'), lon: dmsParaDecimal(46,40,45.00,'W')}
-{nome: "SP003", lat: dmsParaDecimal(23,39,85.00,'S'), lon: dmsParaDecimal(46,45,55.00,'W')}
-{nome: "SP131", lat: dmsParaDecimal(23,37,93.30,'S'), lon: dmsParaDecimal(46,46,88.30,'W')}
-{nome: "SP132", lat: dmsParaDecimal(23,33,48.30,'S'), lon: dmsParaDecimal(46,43,05.00,'W')}
-{nome: "SP138", lat: dmsParaDecimal(23,36,31.70,'S'), lon: dmsParaDecimal(46,44,13.30,'W')}
-{nome: "SP078", lat: dmsParaDecimal(23,34,71.70,'S'), lon: dmsParaDecimal(46,41,36.70,'W')}
-{nome: "RW17R", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,61.70,'W')}
-{nome: "SP137", lat: dmsParaDecimal(23,45,70.00,'S'), lon: dmsParaDecimal(46,33,75.00,'W')}
-{nome: "RDE", lat: dmsParaDecimal(23,53,45.00,'S'), lon: dmsParaDecimal(46,31,68.30,'W')}
-{nome: "SP121", lat: dmsParaDecimal(23,41,96.70,'S'), lon: dmsParaDecimal(46,44,10.00,'W')}
-{nome: "SP124", lat: dmsParaDecimal(23,43,81.70,'S'), lon: dmsParaDecimal(46,42,81.70,'W')}
-{nome: "SP128", lat: dmsParaDecimal(23,42,50.00,'S'), lon: dmsParaDecimal(46,36,81.70,'W')}
-{nome: "SP129", lat: dmsParaDecimal(23,40,58.30,'S'), lon: dmsParaDecimal(46,37,30.00,'W')}
-{nome: "SP127", lat: dmsParaDecimal(23,42,20.00,'S'), lon: dmsParaDecimal(46,40,06.70,'W')}
-{nome: "RW35L", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,39,06.70,'W')}
-{nome: "RENIT", lat: dmsParaDecimal(23,32,96.70,'S'), lon: dmsParaDecimal(46,42,58.30,'W')}
-{nome: "SP126", lat: dmsParaDecimal(23,31,61.70,'S'), lon: dmsParaDecimal(46,47,20.00,'W')}
-{nome: "SP123", lat: dmsParaDecimal(23,34,80.00,'S'), lon: dmsParaDecimal(46,51,00.00,'W')}
-{nome: "OGTAL", lat: dmsParaDecimal(23,51,38.30,'S'), lon: dmsParaDecimal(46,37,55.00,'W')}
-{nome: "ESUNI", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W')}
-{nome: "USITO", lat: dmsParaDecimal(23,47,65.00,'S'), lon: dmsParaDecimal(46,32,41.70,'W')}
-{nome: "SURBU", lat: dmsParaDecimal(23,42,30.00,'S'), lon: dmsParaDecimal(46,36,11.70,'W')}
-{nome: "SP005", lat: dmsParaDecimal(23,40,00.00,'S'), lon: dmsParaDecimal(46,37,71.70,'W')}
-{nome: "KOMGU", lat: dmsParaDecimal(23,33,90.00,'S'), lon: dmsParaDecimal(46,49,66.70,'W')}
-{nome: "LUVDI", lat: dmsParaDecimal(23,29,58.30,'S'), lon: dmsParaDecimal(46,48,35.00,'W')}
-{nome: "GERSU", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(46,44,16.70,'W')}
-{nome: "URUTA", lat: dmsParaDecimal(23,33,46.70,'S'), lon: dmsParaDecimal(46,42,23.30,'W')}
-{nome: "SP048", lat: dmsParaDecimal(23,30,71.70,'S'), lon: dmsParaDecimal(46,43,96.70,'W')}
-{nome: "SP049", lat: dmsParaDecimal(23,33,51.70,'S'), lon: dmsParaDecimal(46,42,05.00,'W')}
-{nome: "SP052", lat: dmsParaDecimal(23,35,21.70,'S'), lon: dmsParaDecimal(46,40,88.30,'W')}
-{nome: "RW17L", lat: dmsParaDecimal(23,37,23.30,'S'), lon: dmsParaDecimal(46,39,46.70,'W')}
-{nome: "SP044", lat: dmsParaDecimal(23,47,31.70,'S'), lon: dmsParaDecimal(46,32,48.30,'W')}
-{nome: "SP046", lat: dmsParaDecimal(23,42,13.30,'S'), lon: dmsParaDecimal(46,36,08.30,'W')}
-{nome: "SP047", lat: dmsParaDecimal(23,40,10.00,'S'), lon: dmsParaDecimal(46,37,50.00,'W')}
-{nome: "RW35R", lat: dmsParaDecimal(23,37,86.70,'S'), lon: dmsParaDecimal(46,39,03.30,'W')}
-{nome: "VUGVI", lat: dmsParaDecimal(23,46,60.00,'S'), lon: dmsParaDecimal(46,33,13.30,'W')}
-{nome: "SP118", lat: dmsParaDecimal(23,49,33.30,'S'), lon: dmsParaDecimal(46,31,25.00,'W')}
-{nome: "SP112", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,38,98.30,'W')}
-{nome: "SP139", lat: dmsParaDecimal(23,34,71.70,'S'), lon: dmsParaDecimal(46,41,36.70,'W')}
-{nome: "SP017", lat: dmsParaDecimal(23,35,46.70,'S'), lon: dmsParaDecimal(46,40,85.00,'W')}
-{nome: "SP023", lat: dmsParaDecimal(23,39,73.30,'S'), lon: dmsParaDecimal(46,37,88.30,'W')}
-{nome: "STN", lat: dmsParaDecimal(23,29,25.00,'S'), lon: dmsParaDecimal(46,55,38.30,'W')}
-{nome: "STN01", lat: dmsParaDecimal(23,29,98.30,'S'), lon: dmsParaDecimal(46,49,55.00,'W')}
-{nome: "STN02", lat: dmsParaDecimal(23,30,46.70,'S'), lon: dmsParaDecimal(46,45,78.30,'W')}
-{nome: "ISP01", lat: dmsParaDecimal(23,34,48.30,'S'), lon: dmsParaDecimal(46,41,53.30,'W')}
-{nome: "AKRUB", lat: dmsParaDecimal(23,34,50.00,'S'), lon: dmsParaDecimal(46,50,23.30,'W')}
-{nome: "SP008", lat: dmsParaDecimal(23,34,53.30,'S'), lon: dmsParaDecimal(46,41,45.00,'W')}
-{nome: "SP004", lat: dmsParaDecimal(23,37,21.70,'S'), lon: dmsParaDecimal(46,39,56.70,'W')}
-{nome: "ANISE", lat: dmsParaDecimal(24,36,13.30,'S'), lon: dmsParaDecimal(46,37,53.30,'W')}
-{nome: "SP091", lat: dmsParaDecimal(24,23,66.70,'S'), lon: dmsParaDecimal(46,37,53.30,'W')}
-{nome: "SP111", lat: dmsParaDecimal(24,13,63.30,'S'), lon: dmsParaDecimal(46,37,55.00,'W')}
-{nome: "IBDAL", lat: dmsParaDecimal(23,45,48.30,'S'), lon: dmsParaDecimal(45,13,88.30,'W')}
-{nome: "MANLO", lat: dmsParaDecimal(23,47,81.70,'S'), lon: dmsParaDecimal(45,24,48.30,'W')}
-{nome: "SP033", lat: dmsParaDecimal(23,50,20.00,'S'), lon: dmsParaDecimal(46,12,28.30,'W')}
-{nome: "SP099", lat: dmsParaDecimal(23,46,60.00,'S'), lon: dmsParaDecimal(46,40,86.70,'W')}
-{nome: "SP101", lat: dmsParaDecimal(23,43,21.70,'S'), lon: dmsParaDecimal(46,43,21.70,'W')}
-{nome: "SP032", lat: dmsParaDecimal(23,38,30.00,'S'), lon: dmsParaDecimal(46,46,61.70,'W')}
-{nome: "RUSTE", lat: dmsParaDecimal(22,46,08.30,'S'), lon: dmsParaDecimal(47,30,00.00,'W')}
-{nome: "OTAGA", lat: dmsParaDecimal(22,29,40.00,'S'), lon: dmsParaDecimal(46,43,86.70,'W')}
-{nome: "NEKIG", lat: dmsParaDecimal(22,33,18.30,'S'), lon: dmsParaDecimal(46,47,66.70,'W')}
-{nome: "MAVKA", lat: dmsParaDecimal(22,40,53.30,'S'), lon: dmsParaDecimal(46,55,11.70,'W')}
-{nome: "SP031", lat: dmsParaDecimal(22,52,95.00,'S'), lon: dmsParaDecimal(47,03,58.30,'W')}
-{nome: "ORESU", lat: dmsParaDecimal(23,01,45.00,'S'), lon: dmsParaDecimal(47,09,35.00,'W')}
-{nome: "PRUMO", lat: dmsParaDecimal(23,15,16.70,'S'), lon: dmsParaDecimal(47,06,31.70,'W')}
-{nome: "IROPU", lat: dmsParaDecimal(23,25,51.70,'S'), lon: dmsParaDecimal(47,04,05.00,'W')}
-{nome: "SP098", lat: dmsParaDecimal(23,38,63.30,'S'), lon: dmsParaDecimal(46,46,40.00,'W')}
-{nome: "UTKOM", lat: dmsParaDecimal(23,52,56.70,'S'), lon: dmsParaDecimal(46,52,73.30,'W')}
-{nome: "SP104", lat: dmsParaDecimal(23,44,21.70,'S'), lon: dmsParaDecimal(46,38,86.70,'W')}
-{nome: "SP106", lat: dmsParaDecimal(23,47,36.70,'S'), lon: dmsParaDecimal(46,44,21.70,'W')}
-{nome: "MADNI", lat: dmsParaDecimal(24,36,43.30,'S'), lon: dmsParaDecimal(47,00,53.30,'W')}
-{nome: "UBSOD", lat: dmsParaDecimal(24,15,70.00,'S'), lon: dmsParaDecimal(47,08,65.00,'W')}
-{nome: "NIBGA", lat: dmsParaDecimal(24,04,71.70,'S'), lon: dmsParaDecimal(47,14,36.70,'W')}
-{nome: "UBRAM", lat: dmsParaDecimal(23,26,73.30,'S'), lon: dmsParaDecimal(47,46,15.00,'W')}
-{nome: "SP074", lat: dmsParaDecimal(23,35,88.30,'S'), lon: dmsParaDecimal(46,45,00.00,'W')}
-{nome: "SP079", lat: dmsParaDecimal(23,36,80.00,'S'), lon: dmsParaDecimal(46,51,90.00,'W')}
-{nome: "SP038", lat: dmsParaDecimal(23,37,46.70,'S'), lon: dmsParaDecimal(47,13,80.00,'W')}
-{nome: "XOGOD", lat: dmsParaDecimal(23,31,58.30,'S'), lon: dmsParaDecimal(47,28,93.30,'W')}
-{nome: "UMRAR", lat: dmsParaDecimal(23,28,05.00,'S'), lon: dmsParaDecimal(47,41,46.70,'W')}
-{nome: "SP053", lat: dmsParaDecimal(23,41,45.00,'S'), lon: dmsParaDecimal(46,40,48.30,'W')}
-{nome: "SP081", lat: dmsParaDecimal(23,43,66.70,'S'), lon: dmsParaDecimal(46,48,98.30,'W')}
-{nome: "SP066", lat: dmsParaDecimal(23,45,05.00,'S'), lon: dmsParaDecimal(46,54,21.70,'W')}
-{nome: "SP039", lat: dmsParaDecimal(23,41,93.30,'S'), lon: dmsParaDecimal(47,02,26.70,'W')}
-{nome: "SP107", lat: dmsParaDecimal(23,36,00.00,'S'), lon: dmsParaDecimal(46,36,60.00,'W')}
-{nome: "VUNVU", lat: dmsParaDecimal(23,36,78.30,'S'), lon: dmsParaDecimal(46,33,36.70,'W')}
-{nome: "SP108", lat: dmsParaDecimal(23,42,86.70,'S'), lon: dmsParaDecimal(46,26,93.30,'W')}
-{nome: "BAIAN", lat: dmsParaDecimal(23,40,11.70,'S'), lon: dmsParaDecimal(46,07,70.00,'W')}
-{nome: "SP103", lat: dmsParaDecimal(23,32,48.30,'S'), lon: dmsParaDecimal(46,03,45.00,'W')}
-{nome: "ISOXO", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(45,59,76.70,'W')}
-{nome: "ORIMU", lat: dmsParaDecimal(23,15,83.30,'S'), lon: dmsParaDecimal(45,59,41.70,'W')}
-{nome: "VUMEV", lat: dmsParaDecimal(22,53,20.00,'S'), lon: dmsParaDecimal(45,58,63.30,'W')}
-{nome: "NUXEL", lat: dmsParaDecimal(22,16,98.30,'S'), lon: dmsParaDecimal(45,49,30.00,'W')}
-{nome: "SP102", lat: dmsParaDecimal(23,43,25.00,'S'), lon: dmsParaDecimal(46,29,55.00,'W')}
-{nome: "SP082", lat: dmsParaDecimal(23,34,50.00,'S'), lon: dmsParaDecimal(46,45,43.30,'W')}
-{nome: "SP083", lat: dmsParaDecimal(23,37,65.00,'S'), lon: dmsParaDecimal(46,50,78.30,'W')}
-{nome: "SEDLO", lat: dmsParaDecimal(23,46,00.00,'S'), lon: dmsParaDecimal(46,55,13.30,'W')}
-{nome: "SP084", lat: dmsParaDecimal(23,44,46.70,'S'), lon: dmsParaDecimal(47,07,66.70,'W')}
-{nome: "SP086", lat: dmsParaDecimal(23,35,43.30,'S'), lon: dmsParaDecimal(47,09,65.00,'W')}
-{nome: "UGTIX", lat: dmsParaDecimal(23,16,86.70,'S'), lon: dmsParaDecimal(47,13,71.70,'W')}
-{nome: "LESSA", lat: dmsParaDecimal(23,10,58.30,'S'), lon: dmsParaDecimal(47,37,68.30,'W')}
-{nome: "VURDU", lat: dmsParaDecimal(23,09,70.00,'S'), lon: dmsParaDecimal(48,00,90.00,'W')}
-{nome: "SP087", lat: dmsParaDecimal(23,08,98.30,'S'), lon: dmsParaDecimal(47,15,43.30,'W')}
-{nome: "SP088", lat: dmsParaDecimal(22,40,23.30,'S'), lon: dmsParaDecimal(47,21,66.70,'W')}
-{nome: "GR283", lat: dmsParaDecimal(23,15,85.00,'S'), lon: dmsParaDecimal(46,35,36.70,'W')}
-{nome: "GR009", lat: dmsParaDecimal(23,24,55.00,'S'), lon: dmsParaDecimal(46,38,41.70,'W')}
-{nome: "GR010", lat: dmsParaDecimal(23,25,35.00,'S'), lon: dmsParaDecimal(46,35,73.30,'W')}
-{nome: "GR008", lat: dmsParaDecimal(23,27,18.30,'S'), lon: dmsParaDecimal(46,37,75.00,'W')}
-{nome: "GR007", lat: dmsParaDecimal(23,27,86.70,'S'), lon: dmsParaDecimal(46,34,93.30,'W')}
-{nome: "GR006", lat: dmsParaDecimal(23,27,30.00,'S'), lon: dmsParaDecimal(46,32,86.70,'W')}
-{nome: "RW10R", lat: dmsParaDecimal(23,26,31.70,'S'), lon: dmsParaDecimal(46,29,21.70,'W')}
-{nome: "ISIMU", lat: dmsParaDecimal(23,31,23.30,'S'), lon: dmsParaDecimal(46,20,31.70,'W')}
-{nome: "GR031", lat: dmsParaDecimal(23,21,90.00,'S'), lon: dmsParaDecimal(46,32,91.70,'W')}
-{nome: "GR029", lat: dmsParaDecimal(23,23,83.30,'S'), lon: dmsParaDecimal(46,34,48.30,'W')}
-{nome: "GR038", lat: dmsParaDecimal(23,24,18.30,'S'), lon: dmsParaDecimal(46,31,80.00,'W')}
-{nome: "GR028", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(46,31,03.30,'W')}
-{nome: "GR032", lat: dmsParaDecimal(23,24,48.30,'S'), lon: dmsParaDecimal(46,23,20.00,'W')}
-{nome: "GR044", lat: dmsParaDecimal(23,17,83.30,'S'), lon: dmsParaDecimal(46,22,51.70,'W')}
-{nome: "GR743", lat: dmsParaDecimal(23,21,03.30,'S'), lon: dmsParaDecimal(46,24,30.00,'W')}
-{nome: "GR047", lat: dmsParaDecimal(23,16,18.30,'S'), lon: dmsParaDecimal(46,25,96.70,'W')}
-{nome: "SANPA", lat: dmsParaDecimal(23,12,50.00,'S'), lon: dmsParaDecimal(46,32,98.30,'W')}
-{nome: "GR037", lat: dmsParaDecimal(23,16,45.00,'S'), lon: dmsParaDecimal(46,30,83.30,'W')}
-{nome: "GR039", lat: dmsParaDecimal(23,18,25.00,'S'), lon: dmsParaDecimal(46,34,71.70,'W')}
-{nome: "ITAVO", lat: dmsParaDecimal(23,28,70.00,'S'), lon: dmsParaDecimal(46,24,05.00,'W')}
-{nome: "GR034", lat: dmsParaDecimal(23,23,51.70,'S'), lon: dmsParaDecimal(46,27,38.30,'W')}
-{nome: "GR042", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(46,31,11.70,'W')}
-{nome: "RW10L", lat: dmsParaDecimal(23,26,03.30,'S'), lon: dmsParaDecimal(46,28,95.00,'W')}
-{nome: "LOMEN", lat: dmsParaDecimal(23,25,60.00,'S'), lon: dmsParaDecimal(46,42,28.30,'W')}
-{nome: "GR202", lat: dmsParaDecimal(23,27,08.30,'S'), lon: dmsParaDecimal(46,39,93.30,'W')}
-{nome: "LUTPO", lat: dmsParaDecimal(23,28,56.70,'S'), lon: dmsParaDecimal(46,37,56.70,'W')}
-{nome: "OPSER", lat: dmsParaDecimal(23,27,73.30,'S'), lon: dmsParaDecimal(46,34,43.30,'W')}
-{nome: "VUSMU", lat: dmsParaDecimal(23,29,56.70,'S'), lon: dmsParaDecimal(46,41,30.00,'W')}
-{nome: "GR294", lat: dmsParaDecimal(23,27,11.70,'S'), lon: dmsParaDecimal(46,32,13.30,'W')}
-{nome: "CGO", lat: dmsParaDecimal(23,37,63.30,'S'), lon: dmsParaDecimal(46,39,26.70,'W')}
-{nome: "IGH", lat: dmsParaDecimal(23,25,80.00,'S'), lon: dmsParaDecimal(46,27,31.70,'W')}
-{nome: "UTKUG", lat: dmsParaDecimal(23,18,06.70,'S'), lon: dmsParaDecimal(46,14,51.70,'W')}
-{nome: "IBC", lat: dmsParaDecimal(23,26,36.70,'S'), lon: dmsParaDecimal(46,29,40.00,'W')}
-{nome: "ETIKO", lat: dmsParaDecimal(23,23,03.30,'S'), lon: dmsParaDecimal(46,17,08.30,'W')}
-{nome: "VUSNI", lat: dmsParaDecimal(23,24,45.00,'S'), lon: dmsParaDecimal(46,22,30.00,'W')}
-{nome: "RW28L", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(46,27,51.70,'W')}
-{nome: "GR093", lat: dmsParaDecimal(23,25,01.70,'S'), lon: dmsParaDecimal(46,24,40.00,'W')}
-{nome: "EDPAM", lat: dmsParaDecimal(23,22,65.00,'S'), lon: dmsParaDecimal(46,16,40.00,'W')}
-{nome: "PUGTA", lat: dmsParaDecimal(23,24,08.30,'S'), lon: dmsParaDecimal(46,21,71.70,'W')}
-{nome: "RW28R", lat: dmsParaDecimal(23,25,50.00,'S'), lon: dmsParaDecimal(46,26,95.00,'W')}
-{nome: "IGS", lat: dmsParaDecimal(23,26,13.30,'S'), lon: dmsParaDecimal(46,29,28.30,'W')}
-{nome: "GR204", lat: dmsParaDecimal(23,28,41.70,'S'), lon: dmsParaDecimal(46,37,80.00,'W')}
-{nome: "VUGAT", lat: dmsParaDecimal(23,27,45.00,'S'), lon: dmsParaDecimal(46,34,16.70,'W')}
-{nome: "IUC", lat: dmsParaDecimal(23,25,40.00,'S'), lon: dmsParaDecimal(46,26,58.30,'W')}
-{nome: "GR738", lat: dmsParaDecimal(23,24,76.70,'S'), lon: dmsParaDecimal(46,24,23.30,'W')}
-{nome: "GR213", lat: dmsParaDecimal(23,27,03.30,'S'), lon: dmsParaDecimal(46,31,85.00,'W')}
-{nome: "GR308", lat: dmsParaDecimal(23,26,98.30,'S'), lon: dmsParaDecimal(46,31,70.00,'W')}
-{nome: "ELION", lat: dmsParaDecimal(23,22,05.00,'S'), lon: dmsParaDecimal(46,13,46.70,'W')}
-{nome: "GR206", lat: dmsParaDecimal(23,26,63.30,'S'), lon: dmsParaDecimal(46,31,18.30,'W')}
-{nome: "GR309", lat: dmsParaDecimal(23,24,93.30,'S'), lon: dmsParaDecimal(46,24,85.00,'W')}
-{nome: "OGRIX", lat: dmsParaDecimal(23,21,85.00,'S'), lon: dmsParaDecimal(46,13,51.70,'W')}
-{nome: "GR302", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(46,31,03.30,'W')}
-{nome: "ISNAP", lat: dmsParaDecimal(23,27,60.00,'S'), lon: dmsParaDecimal(46,34,68.30,'W')}
-{nome: "VUTBU", lat: dmsParaDecimal(23,29,36.70,'S'), lon: dmsParaDecimal(46,41,35.00,'W')}
-{nome: "VUNOX", lat: dmsParaDecimal(22,19,06.70,'S'), lon: dmsParaDecimal(46,12,78.30,'W')}
-{nome: "GR259", lat: dmsParaDecimal(22,32,63.30,'S'), lon: dmsParaDecimal(46,14,88.30,'W')}
-{nome: "GR262", lat: dmsParaDecimal(22,46,96.70,'S'), lon: dmsParaDecimal(46,17,11.70,'W')}
-{nome: "GR253", lat: dmsParaDecimal(23,16,11.70,'S'), lon: dmsParaDecimal(46,26,60.00,'W')}
-{nome: "GR254", lat: dmsParaDecimal(23,16,23.30,'S'), lon: dmsParaDecimal(46,18,38.30,'W')}
-{nome: "POLYP", lat: dmsParaDecimal(23,19,40.00,'S'), lon: dmsParaDecimal(45,54,38.30,'W')}
-{nome: "GR278", lat: dmsParaDecimal(23,20,71.70,'S'), lon: dmsParaDecimal(45,59,16.70,'W')}
-{nome: "GR279", lat: dmsParaDecimal(23,15,45.00,'S'), lon: dmsParaDecimal(46,00,93.30,'W')}
-{nome: "GR281", lat: dmsParaDecimal(23,10,93.30,'S'), lon: dmsParaDecimal(46,04,38.30,'W')}
-{nome: "GR282", lat: dmsParaDecimal(23,08,61.70,'S'), lon: dmsParaDecimal(46,09,25.00,'W')}
-{nome: "GR263", lat: dmsParaDecimal(22,52,63.30,'S'), lon: dmsParaDecimal(46,20,86.70,'W')}
-{nome: "GR264", lat: dmsParaDecimal(22,50,51.70,'S'), lon: dmsParaDecimal(46,25,96.70,'W')}
-{nome: "GR266", lat: dmsParaDecimal(22,49,60.00,'S'), lon: dmsParaDecimal(46,32,16.70,'W')}
-{nome: "GR267", lat: dmsParaDecimal(22,49,98.30,'S'), lon: dmsParaDecimal(46,37,56.70,'W')}
-{nome: "GR268", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(46,43,15.00,'W')}
-{nome: "GR271", lat: dmsParaDecimal(22,54,78.30,'S'), lon: dmsParaDecimal(46,48,66.70,'W')}
-{nome: "GR284", lat: dmsParaDecimal(23,26,15.00,'S'), lon: dmsParaDecimal(46,18,31.70,'W')}
-{nome: "GR286", lat: dmsParaDecimal(23,20,26.70,'S'), lon: dmsParaDecimal(46,28,08.30,'W')}
-{nome: "GR287", lat: dmsParaDecimal(23,13,96.70,'S'), lon: dmsParaDecimal(46,41,46.70,'W')}
-{nome: "GR288", lat: dmsParaDecimal(23,15,15.00,'S'), lon: dmsParaDecimal(46,47,88.30,'W')}
-{nome: "GR289", lat: dmsParaDecimal(23,19,20.00,'S'), lon: dmsParaDecimal(46,52,85.00,'W')}
-{nome: "MOLLE", lat: dmsParaDecimal(23,08,74.00,'S'), lon: dmsParaDecimal(47,10,00.10,'W')}
-{nome: "GR249", lat: dmsParaDecimal(23,04,31.70,'S'), lon: dmsParaDecimal(47,04,88.30,'W')}
-{nome: "GR076", lat: dmsParaDecimal(22,58,45.00,'S'), lon: dmsParaDecimal(46,57,98.30,'W')}
-{nome: "GR077", lat: dmsParaDecimal(22,54,18.30,'S'), lon: dmsParaDecimal(46,52,96.70,'W')}
-{nome: "GR252", lat: dmsParaDecimal(22,52,08.30,'S'), lon: dmsParaDecimal(46,50,50.00,'W')}
-{nome: "GR272", lat: dmsParaDecimal(22,48,76.70,'S'), lon: dmsParaDecimal(46,43,93.30,'W')}
-{nome: "GR273", lat: dmsParaDecimal(22,47,06.70,'S'), lon: dmsParaDecimal(46,37,70.00,'W')}
-{nome: "GR274", lat: dmsParaDecimal(22,46,70.00,'S'), lon: dmsParaDecimal(46,31,21.70,'W')}
-{nome: "GR276", lat: dmsParaDecimal(22,47,70.00,'S'), lon: dmsParaDecimal(46,24,80.00,'W')}
-{nome: "GR277", lat: dmsParaDecimal(22,50,40.00,'S'), lon: dmsParaDecimal(46,18,33.30,'W')}
-{nome: "BUXUK", lat: dmsParaDecimal(23,45,83.30,'S'), lon: dmsParaDecimal(47,48,95.00,'W')}
-{nome: "GR071", lat: dmsParaDecimal(23,39,00.00,'S'), lon: dmsParaDecimal(47,41,75.00,'W')}
-{nome: "GR072", lat: dmsParaDecimal(23,23,10.00,'S'), lon: dmsParaDecimal(47,25,06.70,'W')}
-{nome: "ZARES", lat: dmsParaDecimal(22,45,96.70,'S'), lon: dmsParaDecimal(47,57,26.70,'W')}
-{nome: "GR073", lat: dmsParaDecimal(22,49,25.00,'S'), lon: dmsParaDecimal(47,50,48.30,'W')}
-{nome: "GR327", lat: dmsParaDecimal(22,59,66.00,'S'), lon: dmsParaDecimal(47,28,92.00,'W')}
-{nome: "GR074", lat: dmsParaDecimal(23,02,35.00,'S'), lon: dmsParaDecimal(47,23,38.30,'W')}
-{nome: "AMVUL", lat: dmsParaDecimal(23,23,96.70,'S'), lon: dmsParaDecimal(46,21,73.30,'W')}
-{nome: "GR027", lat: dmsParaDecimal(23,26,28.30,'S'), lon: dmsParaDecimal(46,14,65.00,'W')}
-{nome: "GR209", lat: dmsParaDecimal(23,33,46.70,'S'), lon: dmsParaDecimal(46,16,11.70,'W')}
-{nome: "GR212", lat: dmsParaDecimal(23,36,45.00,'S'), lon: dmsParaDecimal(46,31,15.00,'W')}
-{nome: "ZORZA", lat: dmsParaDecimal(23,42,48.30,'S'), lon: dmsParaDecimal(46,47,60.00,'W')}
-{nome: "GR214", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(47,06,21.70,'W')}
-{nome: "GR216", lat: dmsParaDecimal(23,24,40.00,'S'), lon: dmsParaDecimal(47,16,06.70,'W')}
-{nome: "EVNEB", lat: dmsParaDecimal(23,27,71.70,'S'), lon: dmsParaDecimal(46,34,40.00,'W')}
-{nome: "GR237", lat: dmsParaDecimal(23,32,13.30,'S'), lon: dmsParaDecimal(46,34,05.00,'W')}
-{nome: "GR242", lat: dmsParaDecimal(23,34,90.00,'S'), lon: dmsParaDecimal(46,22,60.00,'W')}
-{nome: "GR232", lat: dmsParaDecimal(23,30,40.00,'S'), lon: dmsParaDecimal(46,02,28.30,'W')}
-{nome: "GR219", lat: dmsParaDecimal(23,36,46.70,'S'), lon: dmsParaDecimal(47,09,43.30,'W')}
-{nome: "GR317", lat: dmsParaDecimal(23,27,91.70,'S'), lon: dmsParaDecimal(46,23,40.00,'W')}
-{nome: "GR319", lat: dmsParaDecimal(23,32,01.70,'S'), lon: dmsParaDecimal(46,20,25.00,'W')}
-{nome: "GR323", lat: dmsParaDecimal(23,23,06.70,'S'), lon: dmsParaDecimal(46,41,10.00,'W')}
-{nome: "GR081", lat: dmsParaDecimal(23,14,93.30,'S'), lon: dmsParaDecimal(46,49,66.70,'W')}
-{nome: "GR082", lat: dmsParaDecimal(23,11,65.00,'S'), lon: dmsParaDecimal(46,53,10.00,'W')}
-{nome: "GR083", lat: dmsParaDecimal(23,05,06.70,'S'), lon: dmsParaDecimal(46,57,33.30,'W')}
-{nome: "GR084", lat: dmsParaDecimal(22,57,21.70,'S'), lon: dmsParaDecimal(47,02,36.70,'W')}
-{nome: "GR086", lat: dmsParaDecimal(22,52,16.70,'S'), lon: dmsParaDecimal(47,03,05.00,'W')}
-{nome: "XOLUS", lat: dmsParaDecimal(22,44,15.00,'S'), lon: dmsParaDecimal(47,04,15.00,'W')}
-{nome: "GR226", lat: dmsParaDecimal(23,22,46.70,'S'), lon: dmsParaDecimal(46,23,93.30,'W')}
-{nome: "GR227", lat: dmsParaDecimal(23,14,90.00,'S'), lon: dmsParaDecimal(46,18,73.30,'W')}
-{nome: "EDLUT", lat: dmsParaDecimal(23,06,66.70,'S'), lon: dmsParaDecimal(46,12,70.00,'W')}
-{nome: "GR324", lat: dmsParaDecimal(23,03,41.70,'S'), lon: dmsParaDecimal(46,14,06.70,'W')}
-{nome: "GR223", lat: dmsParaDecimal(22,53,95.00,'S'), lon: dmsParaDecimal(46,18,03.30,'W')}
-{nome: "GR322", lat: dmsParaDecimal(22,47,58.30,'S'), lon: dmsParaDecimal(46,32,30.00,'W')}
-{nome: "GR292", lat: dmsParaDecimal(22,44,51.70,'S'), lon: dmsParaDecimal(46,39,13.30,'W')}
-{nome: "GR021", lat: dmsParaDecimal(22,40,80.00,'S'), lon: dmsParaDecimal(46,47,41.70,'W')}
-{nome: "GR222", lat: dmsParaDecimal(22,39,05.00,'S'), lon: dmsParaDecimal(46,51,31.70,'W')}
-{nome: "ORONU", lat: dmsParaDecimal(22,37,03.30,'S'), lon: dmsParaDecimal(46,55,81.70,'W')}
-{nome: "GERKA", lat: dmsParaDecimal(22,33,06.70,'S'), lon: dmsParaDecimal(47,04,60.00,'W')}
-{nome: "REORI", lat: dmsParaDecimal(23,24,40.00,'S'), lon: dmsParaDecimal(46,22,13.30,'W')}
-{nome: "GR222", lat: dmsParaDecimal(23,22,36.70,'S'), lon: dmsParaDecimal(46,18,96.70,'W')}
-{nome: "GR217", lat: dmsParaDecimal(23,12,75.00,'S'), lon: dmsParaDecimal(46,02,38.30,'W')}
-{nome: "GR321", lat: dmsParaDecimal(23,07,51.70,'S'), lon: dmsParaDecimal(46,00,38.30,'W')}
-{nome: "GR224", lat: dmsParaDecimal(22,40,11.70,'S'), lon: dmsParaDecimal(46,48,96.70,'W')}
-{nome: "GR316", lat: dmsParaDecimal(23,20,36.70,'S'), lon: dmsParaDecimal(46,21,60.00,'W')}
-{nome: "GR306", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(46,05,48.30,'W')}
-{nome: "GR048", lat: dmsParaDecimal(23,29,23.30,'S'), lon: dmsParaDecimal(46,41,06.70,'W')}
-{nome: "AKRER", lat: dmsParaDecimal(23,33,98.30,'S'), lon: dmsParaDecimal(46,59,63.30,'W')}
-{nome: "EKOPO", lat: dmsParaDecimal(23,29,51.70,'S'), lon: dmsParaDecimal(45,55,95.00,'W')}
-{nome: "JD042", lat: dmsParaDecimal(23,05,96.70,'S'), lon: dmsParaDecimal(46,46,51.70,'W')}
-{nome: "JD043", lat: dmsParaDecimal(23,07,26.70,'S'), lon: dmsParaDecimal(46,51,76.70,'W')}
-{nome: "JD044", lat: dmsParaDecimal(23,08,03.30,'S'), lon: dmsParaDecimal(46,54,90.00,'W')}
-{nome: "JD041", lat: dmsParaDecimal(23,03,03.30,'S'), lon: dmsParaDecimal(46,42,11.70,'W')}
-{nome: "JD046", lat: dmsParaDecimal(23,11,53.30,'S'), lon: dmsParaDecimal(46,53,80.00,'W')}
-{nome: "JD047", lat: dmsParaDecimal(23,12,21.70,'S'), lon: dmsParaDecimal(46,49,05.00,'W')}
-{nome: "JD054", lat: dmsParaDecimal(23,08,08.30,'S'), lon: dmsParaDecimal(46,39,30.00,'W')}
-{nome: "JD011", lat: dmsParaDecimal(22,58,65.00,'S'), lon: dmsParaDecimal(46,52,18.30,'W')}
-{nome: "JD012", lat: dmsParaDecimal(23,02,86.70,'S'), lon: dmsParaDecimal(46,56,48.30,'W')}
-{nome: "JD014", lat: dmsParaDecimal(23,09,10.00,'S'), lon: dmsParaDecimal(46,57,43.30,'W')}
-{nome: "JD016", lat: dmsParaDecimal(23,11,33.30,'S'), lon: dmsParaDecimal(46,54,10.00,'W')}
-{nome: "JD017", lat: dmsParaDecimal(23,07,46.70,'S'), lon: dmsParaDecimal(46,47,58.30,'W')}
-{nome: "JD013", lat: dmsParaDecimal(23,06,13.30,'S'), lon: dmsParaDecimal(46,57,88.30,'W')}
-{nome: "OBLIL", lat: dmsParaDecimal(23,28,40.00,'S'), lon: dmsParaDecimal(47,17,98.30,'W')}
-{nome: "BOLAS", lat: dmsParaDecimal(23,12,33.30,'S'), lon: dmsParaDecimal(46,52,15.00,'W')}
-{nome: "JD032", lat: dmsParaDecimal(23,10,48.30,'S'), lon: dmsParaDecimal(46,56,78.30,'W')}
-{nome: "TODIM", lat: dmsParaDecimal(23,14,33.30,'S'), lon: dmsParaDecimal(47,01,00.00,'W')}
-{nome: "JD052", lat: dmsParaDecimal(23,16,81.70,'S'), lon: dmsParaDecimal(47,03,73.30,'W')}
-{nome: "JD051", lat: dmsParaDecimal(23,24,21.70,'S'), lon: dmsParaDecimal(47,11,81.70,'W')}
-{nome: "JD049", lat: dmsParaDecimal(23,41,95.00,'S'), lon: dmsParaDecimal(47,21,66.70,'W')}
-{nome: "GEMES", lat: dmsParaDecimal(23,09,96.70,'S'), lon: dmsParaDecimal(47,02,88.30,'W')}
-{nome: "PORKO", lat: dmsParaDecimal(23,13,51.70,'S'), lon: dmsParaDecimal(47,00,10.00,'W')}
-{nome: "OCASO", lat: dmsParaDecimal(23,05,03.30,'S'), lon: dmsParaDecimal(46,51,03.30,'W')}
-{nome: "JD059", lat: dmsParaDecimal(22,58,43.30,'S'), lon: dmsParaDecimal(46,50,03.30,'W')}
-{nome: "JD061", lat: dmsParaDecimal(22,45,45.00,'S'), lon: dmsParaDecimal(46,40,13.30,'W')}
-{nome: "JD062", lat: dmsParaDecimal(22,44,01.70,'S'), lon: dmsParaDecimal(46,30,33.30,'W')}
-{nome: "JD063", lat: dmsParaDecimal(23,06,76.70,'S'), lon: dmsParaDecimal(46,44,41.70,'W')}
-{nome: "JD056", lat: dmsParaDecimal(23,00,88.30,'S'), lon: dmsParaDecimal(46,19,88.30,'W')}
-{nome: "JD057", lat: dmsParaDecimal(22,58,45.00,'S'), lon: dmsParaDecimal(46,13,33.30,'W')}
-{nome: "JD053", lat: dmsParaDecimal(23,11,46.70,'S'), lon: dmsParaDecimal(46,47,55.00,'W')}
-{nome: "JD064", lat: dmsParaDecimal(23,09,08.30,'S'), lon: dmsParaDecimal(46,41,70.00,'W')}
-{nome: "JD066", lat: dmsParaDecimal(23,07,50.00,'S'), lon: dmsParaDecimal(46,37,71.70,'W')}
-{nome: "JD058", lat: dmsParaDecimal(23,03,05.00,'S'), lon: dmsParaDecimal(46,50,73.30,'W')}
-{nome: "JH036", lat: dmsParaDecimal(23,24,81.70,'S'), lon: dmsParaDecimal(47,21,10.00,'W')}
-{nome: "JH001", lat: dmsParaDecimal(23,25,25.00,'S'), lon: dmsParaDecimal(47,14,90.00,'W')}
-{nome: "JH006", lat: dmsParaDecimal(23,25,40.00,'S'), lon: dmsParaDecimal(47,12,73.30,'W')}
-{nome: "JH004", lat: dmsParaDecimal(23,20,11.70,'S'), lon: dmsParaDecimal(47,20,70.00,'W')}
-{nome: "JH003", lat: dmsParaDecimal(23,24,48.30,'S'), lon: dmsParaDecimal(47,25,75.00,'W')}
-{nome: "RWY12", lat: dmsParaDecimal(23,25,55.00,'S'), lon: dmsParaDecimal(47,10,56.70,'W')}
-{nome: "JH011", lat: dmsParaDecimal(23,31,10.00,'S'), lon: dmsParaDecimal(47,13,48.30,'W')}
-{nome: "JH012", lat: dmsParaDecimal(23,31,50.00,'S'), lon: dmsParaDecimal(47,07,61.70,'W')}
-{nome: "JH013", lat: dmsParaDecimal(23,27,41.70,'S'), lon: dmsParaDecimal(47,04,58.30,'W')}
-{nome: "JH014", lat: dmsParaDecimal(23,25,80.00,'S'), lon: dmsParaDecimal(47,07,15.00,'W')}
-{nome: "JH016", lat: dmsParaDecimal(23,25,18.30,'S'), lon: dmsParaDecimal(47,15,98.30,'W')}
-{nome: "JH017", lat: dmsParaDecimal(23,20,41.70,'S'), lon: dmsParaDecimal(47,21,70.00,'W')}
-{nome: "JH018", lat: dmsParaDecimal(23,28,65.00,'S'), lon: dmsParaDecimal(47,07,38.30,'W')}
-{nome: "RWY30", lat: dmsParaDecimal(23,25,65.00,'S'), lon: dmsParaDecimal(47,09,33.30,'W')}
-{nome: "JH019", lat: dmsParaDecimal(23,32,28.30,'S'), lon: dmsParaDecimal(47,12,51.70,'W')}
-{nome: "JH021", lat: dmsParaDecimal(23,32,66.70,'S'), lon: dmsParaDecimal(47,07,08.30,'W')}
-{nome: "JH022", lat: dmsParaDecimal(23,28,58.30,'S'), lon: dmsParaDecimal(47,03,05.00,'W')}
-{nome: "JH023", lat: dmsParaDecimal(23,29,16.70,'S'), lon: dmsParaDecimal(47,06,80.00,'W')}
-{nome: "JH024", lat: dmsParaDecimal(23,26,86.70,'S'), lon: dmsParaDecimal(47,03,91.70,'W')}
-{nome: "JH026", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(47,06,06.70,'W')}
-{nome: "JH027", lat: dmsParaDecimal(23,28,76.70,'S'), lon: dmsParaDecimal(47,06,30.00,'W')}
-{nome: "EVMOL", lat: dmsParaDecimal(22,51,25.00,'S'), lon: dmsParaDecimal(47,02,41.70,'W')}
-{nome: "JH033", lat: dmsParaDecimal(23,20,58.30,'S'), lon: dmsParaDecimal(47,08,06.70,'W')}
-{nome: "JH034", lat: dmsParaDecimal(23,20,33.30,'S'), lon: dmsParaDecimal(47,14,80.00,'W')}
-{nome: "NURSE", lat: dmsParaDecimal(23,42,56.70,'S'), lon: dmsParaDecimal(47,27,25.00,'W')}
-{nome: "JH032", lat: dmsParaDecimal(23,37,56.70,'S'), lon: dmsParaDecimal(47,26,83.30,'W')}
-{nome: "UKDAN", lat: dmsParaDecimal(23,58,98.30,'S'), lon: dmsParaDecimal(46,15,80.00,'W')}
-{nome: "JH028", lat: dmsParaDecimal(24,02,46.70,'S'), lon: dmsParaDecimal(46,32,11.70,'W')}
-{nome: "JH029", lat: dmsParaDecimal(24,05,28.30,'S'), lon: dmsParaDecimal(46,45,43.30,'W')}
-{nome: "AM008", lat: dmsParaDecimal(22,40,80.00,'S'), lon: dmsParaDecimal(47,08,15.00,'W')}
-{nome: "AM007", lat: dmsParaDecimal(22,43,13.30,'S'), lon: dmsParaDecimal(47,12,95.00,'W')}
-{nome: "AM006", lat: dmsParaDecimal(22,47,61.70,'S'), lon: dmsParaDecimal(47,10,40.00,'W')}
-{nome: "AM004", lat: dmsParaDecimal(22,49,83.30,'S'), lon: dmsParaDecimal(47,08,20.00,'W')}
-{nome: "AM009", lat: dmsParaDecimal(22,46,13.30,'S'), lon: dmsParaDecimal(47,05,13.30,'W')}
-{nome: "RWY19", lat: dmsParaDecimal(23,28,30.00,'S'), lon: dmsParaDecimal(47,29,53.30,'W')}
-{nome: "SD012", lat: dmsParaDecimal(23,25,06.70,'S'), lon: dmsParaDecimal(47,30,71.70,'W')}
-{nome: "SD016", lat: dmsParaDecimal(23,26,33.30,'S'), lon: dmsParaDecimal(47,41,18.30,'W')}
-{nome: "SD021", lat: dmsParaDecimal(23,23,50.00,'S'), lon: dmsParaDecimal(47,37,33.30,'W')}
-{nome: "SD022", lat: dmsParaDecimal(23,20,10.00,'S'), lon: dmsParaDecimal(47,35,18.30,'W')}
-{nome: "SD013", lat: dmsParaDecimal(23,21,26.70,'S'), lon: dmsParaDecimal(47,32,11.70,'W')}
-{nome: "RWY01", lat: dmsParaDecimal(23,29,05.00,'S'), lon: dmsParaDecimal(47,29,25.00,'W')}
-{nome: "SD006", lat: dmsParaDecimal(23,38,26.70,'S'), lon: dmsParaDecimal(47,31,61.70,'W')}
-{nome: "SD007", lat: dmsParaDecimal(23,36,65.00,'S'), lon: dmsParaDecimal(47,26,45.00,'W')}
-{nome: "SD008", lat: dmsParaDecimal(23,33,45.00,'S'), lon: dmsParaDecimal(47,27,63.30,'W')}
-{nome: "SD009", lat: dmsParaDecimal(23,41,40.00,'S'), lon: dmsParaDecimal(47,24,70.00,'W')}
-{nome: "SD011", lat: dmsParaDecimal(23,38,55.00,'S'), lon: dmsParaDecimal(47,25,75.00,'W')}
-{nome: "LONES", lat: dmsParaDecimal(23,01,81.70,'S'), lon: dmsParaDecimal(45,55,40.00,'W')}
-{nome: "GEMSO", lat: dmsParaDecimal(23,06,08.30,'S'), lon: dmsParaDecimal(45,59,98.30,'W')}
-{nome: "ANRAN", lat: dmsParaDecimal(23,09,63.30,'S'), lon: dmsParaDecimal(45,56,15.00,'W')}
-{nome: "RWY16", lat: dmsParaDecimal(23,13,16.70,'S'), lon: dmsParaDecimal(45,52,31.70,'W')}
-{nome: "SJ063", lat: dmsParaDecimal(22,59,70.00,'S'), lon: dmsParaDecimal(46,06,90.00,'W')}
-{nome: "SJ043", lat: dmsParaDecimal(23,01,83.30,'S'), lon: dmsParaDecimal(46,04,60.00,'W')}
-{nome: "EDMEG", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(46,00,28.30,'W')}
-{nome: "SCP13", lat: dmsParaDecimal(23,04,96.70,'S'), lon: dmsParaDecimal(46,01,20.00,'W')}
-{nome: "TESIX", lat: dmsParaDecimal(23,26,23.30,'S'), lon: dmsParaDecimal(45,38,11.70,'W')}
-{nome: "SOTPI", lat: dmsParaDecimal(23,14,71.70,'S'), lon: dmsParaDecimal(45,37,58.30,'W')}
-{nome: "SJ046", lat: dmsParaDecimal(23,21,28.30,'S'), lon: dmsParaDecimal(45,43,50.00,'W')}
-{nome: "SJ047", lat: dmsParaDecimal(23,17,73.30,'S'), lon: dmsParaDecimal(45,47,35.00,'W')}
-{nome: "SJ020", lat: dmsParaDecimal(23,16,31.70,'S'), lon: dmsParaDecimal(45,48,88.30,'W')}
-{nome: "RWY34", lat: dmsParaDecimal(23,14,20.00,'S'), lon: dmsParaDecimal(45,51,20.00,'W')}
-{nome: "ATOMI", lat: dmsParaDecimal(23,05,46.70,'S'), lon: dmsParaDecimal(45,59,83.30,'W')}
-{nome: "BOLEM", lat: dmsParaDecimal(23,09,48.30,'S'), lon: dmsParaDecimal(45,55,95.00,'W')}
-{nome: "SJ061", lat: dmsParaDecimal(23,10,45.00,'S'), lon: dmsParaDecimal(45,55,01.70,'W')}
-{nome: "SJ062", lat: dmsParaDecimal(23,13,20.00,'S'), lon: dmsParaDecimal(45,52,35.00,'W')}
-{nome: "SCP14", lat: dmsParaDecimal(23,04,55.00,'S'), lon: dmsParaDecimal(46,00,71.70,'W')}
-{nome: "SJ026", lat: dmsParaDecimal(23,08,21.70,'S'), lon: dmsParaDecimal(45,57,68.30,'W')}
-{nome: "SJ027", lat: dmsParaDecimal(23,10,33.30,'S'), lon: dmsParaDecimal(45,55,38.30,'W')}
-{nome: "SJ029", lat: dmsParaDecimal(23,17,28.30,'S'), lon: dmsParaDecimal(45,47,85.00,'W')}
-{nome: "SJ031", lat: dmsParaDecimal(23,11,46.70,'S'), lon: dmsParaDecimal(45,41,58.30,'W')}
-{nome: "SJ032", lat: dmsParaDecimal(23,14,36.70,'S'), lon: dmsParaDecimal(45,44,71.70,'W')}
-{nome: "SJ023", lat: dmsParaDecimal(23,00,45.00,'S'), lon: dmsParaDecimal(45,53,53.30,'W')}
-{nome: "SJ024", lat: dmsParaDecimal(23,01,75.00,'S'), lon: dmsParaDecimal(45,56,48.30,'W')}
-{nome: "SJ033", lat: dmsParaDecimal(23,04,86.70,'S'), lon: dmsParaDecimal(45,58,93.30,'W')}
-{nome: "SJ028", lat: dmsParaDecimal(23,05,36.70,'S'), lon: dmsParaDecimal(45,54,61.70,'W')}
-{nome: "SCP", lat: dmsParaDecimal(23,13,98.30,'S'), lon: dmsParaDecimal(45,51,60.00,'W')}
-{nome: "SCP11", lat: dmsParaDecimal(23,10,85.00,'S'), lon: dmsParaDecimal(45,54,61.70,'W')}
-{nome: "SCP12", lat: dmsParaDecimal(23,13,20.00,'S'), lon: dmsParaDecimal(45,52,35.00,'W')}
-{nome: "SJC02", lat: dmsParaDecimal(23,23,08.30,'S'), lon: dmsParaDecimal(45,41,58.30,'W')}
-{nome: "DOTBA", lat: dmsParaDecimal(23,21,38.30,'S'), lon: dmsParaDecimal(45,43,46.70,'W')}
-{nome: "DOPSO", lat: dmsParaDecimal(23,17,86.70,'S'), lon: dmsParaDecimal(45,47,33.30,'W')}
-{nome: "SJC03", lat: dmsParaDecimal(23,16,80.00,'S'), lon: dmsParaDecimal(45,48,50.00,'W')}
-{nome: "SJC04", lat: dmsParaDecimal(23,15,75.00,'S'), lon: dmsParaDecimal(45,49,65.00,'W')}
-{nome: "FTP33", lat: dmsParaDecimal(23,14,26.70,'S'), lon: dmsParaDecimal(45,51,28.30,'W')}
-{nome: "SJ022", lat: dmsParaDecimal(22,38,53.30,'S'), lon: dmsParaDecimal(46,10,18.30,'W')}
-{nome: "SUNBU", lat: dmsParaDecimal(22,58,73.30,'S'), lon: dmsParaDecimal(45,59,65.00,'W')}
-{nome: "SJ017", lat: dmsParaDecimal(23,08,83.30,'S'), lon: dmsParaDecimal(45,45,70.00,'W')}
-{nome: "UTMUR", lat: dmsParaDecimal(24,16,86.70,'S'), lon: dmsParaDecimal(46,11,30.00,'W')}
-{nome: "SJ053", lat: dmsParaDecimal(23,59,53.30,'S'), lon: dmsParaDecimal(45,49,88.30,'W')}
-{nome: "SJ057", lat: dmsParaDecimal(23,39,30.00,'S'), lon: dmsParaDecimal(45,42,71.70,'W')}
-{nome: "PORNA", lat: dmsParaDecimal(23,32,36.70,'S'), lon: dmsParaDecimal(44,15,55.00,'W')}
-{nome: "KEVUN", lat: dmsParaDecimal(23,27,76.70,'S'), lon: dmsParaDecimal(44,57,10.00,'W')}
-{nome: "SJ019", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(45,21,06.70,'W')}
-{nome: "UGTEV", lat: dmsParaDecimal(23,18,13.30,'S'), lon: dmsParaDecimal(45,32,85.00,'W')}
-{nome: "SJ006", lat: dmsParaDecimal(23,11,45.00,'S'), lon: dmsParaDecimal(45,42,10.00,'W')}
-{nome: "BOBIC", lat: dmsParaDecimal(23,11,40.00,'S'), lon: dmsParaDecimal(45,54,23.30,'W')}
-{nome: "SJ059", lat: dmsParaDecimal(23,23,65.00,'S'), lon: dmsParaDecimal(45,59,95.00,'W')}
-{nome: "VUPSA", lat: dmsParaDecimal(23,07,00.00,'S'), lon: dmsParaDecimal(45,45,08.30,'W')}
-{nome: "SJ014", lat: dmsParaDecimal(23,13,46.70,'S'), lon: dmsParaDecimal(45,32,78.30,'W')}
-{nome: "DORLU", lat: dmsParaDecimal(23,20,81.70,'S'), lon: dmsParaDecimal(45,18,93.30,'W')}
-{nome: "IMDAB", lat: dmsParaDecimal(23,11,83.30,'S'), lon: dmsParaDecimal(44,37,48.30,'W')}
-{nome: "UMBAD", lat: dmsParaDecimal(23,16,91.70,'S'), lon: dmsParaDecimal(44,08,48.30,'W')}
-{nome: "SJ003", lat: dmsParaDecimal(23,45,76.70,'S'), lon: dmsParaDecimal(45,40,18.30,'W')}
-{nome: "VARAX", lat: dmsParaDecimal(24,07,88.30,'S'), lon: dmsParaDecimal(45,20,13.30,'W')}
-{nome: "DAGUB", lat: dmsParaDecimal(22,58,26.70,'S'), lon: dmsParaDecimal(45,38,20.00,'W')}
-{nome: "ENLOV", lat: dmsParaDecimal(23,03,00.00,'S'), lon: dmsParaDecimal(45,55,03.30,'W')}
-{nome: "SJ011", lat: dmsParaDecimal(22,55,86.70,'S'), lon: dmsParaDecimal(45,55,00.00,'W')}
-{nome: "KORSA", lat: dmsParaDecimal(22,49,93.30,'S'), lon: dmsParaDecimal(45,56,08.30,'W')}
-{nome: "SJ051", lat: dmsParaDecimal(22,55,71.70,'S'), lon: dmsParaDecimal(46,14,03.30,'W')}
-{nome: "SJ052", lat: dmsParaDecimal(22,39,20.00,'S'), lon: dmsParaDecimal(46,50,98.30,'W')}
-{nome: "VUSMA", lat: dmsParaDecimal(23,16,86.70,'S'), lon: dmsParaDecimal(45,48,30.00,'W')}
-{nome: "NUXES", lat: dmsParaDecimal(22,58,65.00,'S'), lon: dmsParaDecimal(45,54,38.30,'W')}
-{nome: "SJ054", lat: dmsParaDecimal(22,57,00.00,'S'), lon: dmsParaDecimal(46,05,48.30,'W')}
-{nome: "SJ004", lat: dmsParaDecimal(23,37,50.00,'S'), lon: dmsParaDecimal(45,36,96.70,'W')}
-{nome: "SJ058", lat: dmsParaDecimal(23,24,60.00,'S'), lon: dmsParaDecimal(45,54,75.00,'W')}
-{nome: "ST022", lat: dmsParaDecimal(23,56,25.00,'S'), lon: dmsParaDecimal(46,23,21.70,'W')}
-{nome: "ST023", lat: dmsParaDecimal(23,58,55.00,'S'), lon: dmsParaDecimal(46,20,26.70,'W')}
-{nome: "UDUSU", lat: dmsParaDecimal(23,56,65.00,'S'), lon: dmsParaDecimal(46,17,36.70,'W')}
-{nome: "DADAM", lat: dmsParaDecimal(23,46,50.00,'S'), lon: dmsParaDecimal(46,25,93.30,'W')}
-{nome: "ST024", lat: dmsParaDecimal(23,51,76.70,'S'), lon: dmsParaDecimal(46,24,60.00,'W')}
-{nome: "IRAJA", lat: dmsParaDecimal(23,53,53.30,'S'), lon: dmsParaDecimal(46,33,68.30,'W')}
-{nome: "ST026", lat: dmsParaDecimal(23,55,01.70,'S'), lon: dmsParaDecimal(46,27,56.70,'W')}
-{nome: "ST027", lat: dmsParaDecimal(23,55,43.30,'S'), lon: dmsParaDecimal(46,07,11.70,'W')}
-{nome: "ST003", lat: dmsParaDecimal(24,07,23.30,'S'), lon: dmsParaDecimal(46,13,10.00,'W')}
-{nome: "ST002", lat: dmsParaDecimal(24,01,11.70,'S'), lon: dmsParaDecimal(46,15,56.70,'W')}
-{nome: "ST005", lat: dmsParaDecimal(23,58,96.70,'S'), lon: dmsParaDecimal(46,16,43.30,'W')}
-{nome: "ST006", lat: dmsParaDecimal(24,09,65.00,'S'), lon: dmsParaDecimal(46,20,28.30,'W')}
-{nome: "ST004", lat: dmsParaDecimal(24,13,81.70,'S'), lon: dmsParaDecimal(46,10,45.00,'W')}
-{nome: "ST007", lat: dmsParaDecimal(24,04,78.30,'S'), lon: dmsParaDecimal(46,05,93.30,'W')}
-{nome: "RWY35", lat: dmsParaDecimal(23,56,00.00,'S'), lon: dmsParaDecimal(46,17,78.30,'W')}
-{nome: "ST014", lat: dmsParaDecimal(23,58,80.00,'S'), lon: dmsParaDecimal(46,12,66.70,'W')}
-{nome: "ST016", lat: dmsParaDecimal(23,55,61.70,'S'), lon: dmsParaDecimal(46,08,83.30,'W')}
-{nome: "IVPUM", lat: dmsParaDecimal(23,49,38.30,'S'), lon: dmsParaDecimal(46,10,45.00,'W')}
-{nome: "ST018", lat: dmsParaDecimal(24,01,60.00,'S'), lon: dmsParaDecimal(46,21,58.30,'W')}
-{nome: "ST019", lat: dmsParaDecimal(23,59,70.00,'S'), lon: dmsParaDecimal(46,28,51.70,'W')}
-{nome: "DOMKU", lat: dmsParaDecimal(24,07,03.30,'S'), lon: dmsParaDecimal(46,10,25.00,'W')}
-{nome: "IMBID", lat: dmsParaDecimal(23,35,00.00,'S'), lon: dmsParaDecimal(46,09,50.00,'W')}
-{nome: "PUKRA", lat: dmsParaDecimal(23,33,41.70,'S'), lon: dmsParaDecimal(46,03,80.00,'W')}
-{nome: "SCB", lat: dmsParaDecimal(23,30,41.70,'S'), lon: dmsParaDecimal(47,22,68.30,'W')}
-{nome: "ST008", lat: dmsParaDecimal(24,10,76.70,'S'), lon: dmsParaDecimal(46,16,73.30,'W')}
-{nome: "ST009", lat: dmsParaDecimal(24,07,13.30,'S'), lon: dmsParaDecimal(46,51,75.00,'W')}
-{nome: "ST011", lat: dmsParaDecimal(24,03,30.00,'S'), lon: dmsParaDecimal(46,03,78.30,'W')}
-{nome: "ST012", lat: dmsParaDecimal(24,06,08.30,'S'), lon: dmsParaDecimal(47,01,60.00,'W')}
-{nome: "TOPEP", lat: dmsParaDecimal(23,02,68.30,'S'), lon: dmsParaDecimal(45,50,95.00,'W')}
-{nome: "UGPOP", lat: dmsParaDecimal(23,05,35.00,'S'), lon: dmsParaDecimal(44,56,20.00,'W')}
-{nome: "USAMO", lat: dmsParaDecimal(22,41,55.00,'S'), lon: dmsParaDecimal(45,49,53.30,'W')}
-{nome: "AKPEN", lat: dmsParaDecimal(24,30,85.00,'S'), lon: dmsParaDecimal(48,46,16.70,'W')}
-{nome: "AKVUM", lat: dmsParaDecimal(23,31,55.00,'S'), lon: dmsParaDecimal(46,03,11.70,'W')}
-{nome: "ANPIB", lat: dmsParaDecimal(23,11,45.00,'S'), lon: dmsParaDecimal(49,09,76.70,'W')}
-{nome: "ANSOK", lat: dmsParaDecimal(22,23,63.30,'S'), lon: dmsParaDecimal(49,09,68.30,'W')}
-{nome: "ASBAK", lat: dmsParaDecimal(22,48,21.70,'S'), lon: dmsParaDecimal(47,12,76.70,'W')}
-{nome: "ASGOL", lat: dmsParaDecimal(24,59,75.00,'S'), lon: dmsParaDecimal(48,32,93.30,'W')}
-{nome: "ASTOB", lat: dmsParaDecimal(20,40,80.00,'S'), lon: dmsParaDecimal(48,49,38.30,'W')}
-{nome: "ATIMA", lat: dmsParaDecimal(25,16,78.30,'S'), lon: dmsParaDecimal(48,17,91.70,'W')}
-{nome: "CERVA", lat: dmsParaDecimal(22,44,31.70,'S'), lon: dmsParaDecimal(48,03,15.00,'W')}
-{nome: "DALEK", lat: dmsParaDecimal(22,53,60.00,'S'), lon: dmsParaDecimal(47,28,21.70,'W')}
-{nome: "DOSMU", lat: dmsParaDecimal(25,13,81.70,'S'), lon: dmsParaDecimal(47,27,15.00,'W')}
-{nome: "DOSPI", lat: dmsParaDecimal(22,55,81.70,'S'), lon: dmsParaDecimal(47,10,58.30,'W')}
-{nome: "EDMOX", lat: dmsParaDecimal(22,15,31.70,'S'), lon: dmsParaDecimal(48,35,61.70,'W')}
-{nome: "EDNEL", lat: dmsParaDecimal(25,18,41.70,'S'), lon: dmsParaDecimal(47,52,56.70,'W')}
-{nome: "EDVUL", lat: dmsParaDecimal(22,07,76.70,'S'), lon: dmsParaDecimal(48,59,51.70,'W')}
-{nome: "ESAVA", lat: dmsParaDecimal(22,56,90.00,'S'), lon: dmsParaDecimal(49,09,75.00,'W')}
-{nome: "ESORU", lat: dmsParaDecimal(23,01,85.00,'S'), lon: dmsParaDecimal(44,40,58.30,'W')}
-{nome: "EVRAL", lat: dmsParaDecimal(23,13,01.70,'S'), lon: dmsParaDecimal(47,15,15.00,'W')}
-{nome: "GEDOR", lat: dmsParaDecimal(23,28,03.30,'S'), lon: dmsParaDecimal(46,34,33.30,'W')}
-{nome: "GEVGA", lat: dmsParaDecimal(22,09,76.70,'S'), lon: dmsParaDecimal(46,05,38.30,'W')}
-{nome: "GILVU", lat: dmsParaDecimal(23,02,55.00,'S'), lon: dmsParaDecimal(47,50,46.70,'W')}
-{nome: "GIMKA", lat: dmsParaDecimal(23,28,73.30,'S'), lon: dmsParaDecimal(46,38,91.70,'W')}
-{nome: "ILTAX", lat: dmsParaDecimal(23,20,35.00,'S'), lon: dmsParaDecimal(46,40,05.00,'W')}
-{nome: "IREMA", lat: dmsParaDecimal(22,41,41.70,'S'), lon: dmsParaDecimal(47,33,23.30,'W')}
-{nome: "IROXA", lat: dmsParaDecimal(22,13,83.30,'S'), lon: dmsParaDecimal(47,42,50.00,'W')}
-{nome: "ITANI", lat: dmsParaDecimal(23,12,58.30,'S'), lon: dmsParaDecimal(48,20,35.00,'W')}
-{nome: "KOPTA", lat: dmsParaDecimal(23,05,63.30,'S'), lon: dmsParaDecimal(47,17,83.30,'W')}
-{nome: "KOXAG", lat: dmsParaDecimal(25,08,58.30,'S'), lon: dmsParaDecimal(46,58,73.30,'W')}
-{nome: "LAIKA", lat: dmsParaDecimal(21,57,90.00,'S'), lon: dmsParaDecimal(46,18,06.70,'W')}
-{nome: "MAPMI", lat: dmsParaDecimal(21,29,86.70,'S'), lon: dmsParaDecimal(45,33,91.70,'W')}
-{nome: "MAVMO", lat: dmsParaDecimal(21,46,60.00,'S'), lon: dmsParaDecimal(45,28,28.30,'W')}
-{nome: "MILIL", lat: dmsParaDecimal(22,07,01.70,'S'), lon: dmsParaDecimal(46,25,23.30,'W')}
-{nome: "MOLDU", lat: dmsParaDecimal(22,17,71.70,'S'), lon: dmsParaDecimal(45,06,56.70,'W')}
-{nome: "MULAP", lat: dmsParaDecimal(22,14,90.00,'S'), lon: dmsParaDecimal(45,28,86.70,'W')}
-{nome: "NAXOP", lat: dmsParaDecimal(23,30,91.70,'S'), lon: dmsParaDecimal(44,09,41.70,'W')}
-{nome: "NAXUP", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W')}
-{nome: "NILPI", lat: dmsParaDecimal(22,04,70.00,'S'), lon: dmsParaDecimal(46,42,63.30,'W')}
-{nome: "OBMAV", lat: dmsParaDecimal(23,30,08.30,'S'), lon: dmsParaDecimal(47,36,43.30,'W')}
-{nome: "OPMAN", lat: dmsParaDecimal(23,36,51.70,'S'), lon: dmsParaDecimal(49,09,81.70,'W')}
-{nome: "PICEK", lat: dmsParaDecimal(23,27,66.70,'S'), lon: dmsParaDecimal(46,39,28.30,'W')}
-{nome: "RAXIT", lat: dmsParaDecimal(24,25,23.30,'S'), lon: dmsParaDecimal(47,41,48.30,'W')}
-{nome: "SEBKA", lat: dmsParaDecimal(22,00,83.30,'S'), lon: dmsParaDecimal(47,09,73.30,'W')}
-{nome: "SIGIL", lat: dmsParaDecimal(23,49,38.30,'S'), lon: dmsParaDecimal(46,10,45.00,'W')}
-{nome: "SIKEM", lat: dmsParaDecimal(23,07,00.00,'S'), lon: dmsParaDecimal(45,45,10.00,'W')}
-{nome: "SILOM", lat: dmsParaDecimal(22,38,03.30,'S'), lon: dmsParaDecimal(47,14,06.70,'W')}
-{nome: "SIROG", lat: dmsParaDecimal(23,29,43.30,'S'), lon: dmsParaDecimal(46,41,55.00,'W')}
-{nome: "SUMPO", lat: dmsParaDecimal(24,40,75.00,'S'), lon: dmsParaDecimal(49,23,20.00,'W')}
-{nome: "SUPTO", lat: dmsParaDecimal(22,08,36.70,'S'), lon: dmsParaDecimal(46,15,45.00,'W')}
-{nome: "TIMRU", lat: dmsParaDecimal(23,29,08.30,'S'), lon: dmsParaDecimal(48,03,96.70,'W')}
-{nome: "UBRIR", lat: dmsParaDecimal(22,12,21.70,'S'), lon: dmsParaDecimal(45,48,10.00,'W')}
-{nome: "UGADO", lat: dmsParaDecimal(22,52,88.30,'S'), lon: dmsParaDecimal(47,06,26.70,'W')}
-{nome: "UKBEV", lat: dmsParaDecimal(22,33,08.30,'S'), lon: dmsParaDecimal(47,04,60.00,'W')}
-{nome: "UKLEN", lat: dmsParaDecimal(23,19,93.30,'S'), lon: dmsParaDecimal(48,24,85.00,'W')}
-{nome: "UMRIX", lat: dmsParaDecimal(22,55,73.30,'S'), lon: dmsParaDecimal(47,03,90.00,'W')}
-{nome: "USVIG", lat: dmsParaDecimal(23,37,93.30,'S'), lon: dmsParaDecimal(49,30,28.30,'W')}
-{nome: "USVIP", lat: dmsParaDecimal(24,04,60.00,'S'), lon: dmsParaDecimal(49,37,73.30,'W')}
-{nome: "VAGID", lat: dmsParaDecimal(23,30,23.30,'S'), lon: dmsParaDecimal(46,41,13.30,'W')}
-{nome: "VAGOT", lat: dmsParaDecimal(22,06,51.70,'S'), lon: dmsParaDecimal(47,36,96.70,'W')}
-{nome: "VURAV", lat: dmsParaDecimal(22,51,08.30,'S'), lon: dmsParaDecimal(47,00,63.30,'W')}
-{nome: "VUREP", lat: dmsParaDecimal(23,10,90.00,'S'), lon: dmsParaDecimal(44,33,20.00,'W')}
-{nome: "XONUG", lat: dmsParaDecimal(24,20,88.30,'S'), lon: dmsParaDecimal(48,09,55.00,'W')}
-{nome: "BCO", lat: dmsParaDecimal(23,24,38.30,'S'), lon: dmsParaDecimal(46,23,13.30,'W')}
-{nome: "PIR", lat: dmsParaDecimal(21,59,06.70,'S'), lon: dmsParaDecimal(47,20,66.70,'W')}
-{nome: "TAU", lat: dmsParaDecimal(23,02,13.30,'S'), lon: dmsParaDecimal(45,30,75.00,'W')}
-{nome: "ANHANGUERA", lat: dmsParaDecimal(23,29,96.70,'S'), lon: dmsParaDecimal(46,45,35.00,'W')}
-{nome: "ATIBAIA", lat: dmsParaDecimal(23,06,01.70,'S'), lon: dmsParaDecimal(46,34,16.70,'W')}
-{nome: "BARRA DO UNA", lat: dmsParaDecimal(23,45,23.30,'S'), lon: dmsParaDecimal(45,46,10.00,'W')}
-{nome: "BERTIOGA", lat: dmsParaDecimal(23,52,68.30,'S'), lon: dmsParaDecimal(46,09,03.30,'W')}
-{nome: "CABREUVA", lat: dmsParaDecimal(23,18,38.30,'S'), lon: dmsParaDecimal(47,07,88.30,'W')}
-{nome: "CACAPAVA", lat: dmsParaDecimal(23,05,75.00,'S'), lon: dmsParaDecimal(45,40,66.70,'W')}
-{nome: "CAMANDUCAIA", lat: dmsParaDecimal(22,46,73.30,'S'), lon: dmsParaDecimal(46,09,86.70,'W')}
-{nome: "CAMBUI", lat: dmsParaDecimal(22,39,55.00,'S'), lon: dmsParaDecimal(46,04,51.70,'W')}
-{nome: "CAPIVARI", lat: dmsParaDecimal(22,59,76.70,'S'), lon: dmsParaDecimal(47,29,93.30,'W')}
-{nome: "CERQUILHO", lat: dmsParaDecimal(23,09,35.00,'S'), lon: dmsParaDecimal(47,45,21.70,'W')}
-{nome: "COSMOPOLIS", lat: dmsParaDecimal(22,38,28.30,'S'), lon: dmsParaDecimal(47,11,38.30,'W')}
-{nome: "DOM PEDRO", lat: dmsParaDecimal(23,00,11.70,'S'), lon: dmsParaDecimal(46,46,71.70,'W')}
-{nome: "EDEN", lat: dmsParaDecimal(23,24,60.00,'S'), lon: dmsParaDecimal(47,24,05.00,'W')}
-{nome: "ELOI", lat: dmsParaDecimal(23,11,25.00,'S'), lon: dmsParaDecimal(46,57,88.30,'W')}
-{nome: "EMBU-GUACU", lat: dmsParaDecimal(23,49,75.00,'S'), lon: dmsParaDecimal(46,48,75.00,'W')}
-{nome: "ENTRONCAMENTO", lat: dmsParaDecimal(24,02,50.00,'S'), lon: dmsParaDecimal(46,29,68.30,'W')}
-{nome: "FURNAS", lat: dmsParaDecimal(23,40,25.00,'S'), lon: dmsParaDecimal(47,06,38.30,'W')}
-{nome: "GUARAREMA", lat: dmsParaDecimal(23,24,83.30,'S'), lon: dmsParaDecimal(46,02,23.30,'W')}
-{nome: "IGARATA", lat: dmsParaDecimal(23,12,35.00,'S'), lon: dmsParaDecimal(46,09,55.00,'W')}
-{nome: "ILHA ANCHIETA", lat: dmsParaDecimal(23,31,31.70,'S'), lon: dmsParaDecimal(45,04,93.30,'W')}
-{nome: "INTERLIGACAO", lat: dmsParaDecimal(23,53,58.30,'S'), lon: dmsParaDecimal(46,33,85.00,'W')}
-{nome: "ITANHAEM", lat: dmsParaDecimal(24,11,66.70,'S'), lon: dmsParaDecimal(46,47,33.30,'W')}
-{nome: "ITAPE", lat: dmsParaDecimal(23,32,68.30,'S'), lon: dmsParaDecimal(46,55,96.70,'W')}
-{nome: "ITAQUERA", lat: dmsParaDecimal(23,32,55.00,'S'), lon: dmsParaDecimal(46,27,93.30,'W')}
-{nome: "ITU", lat: dmsParaDecimal(23,16,00.00,'S'), lon: dmsParaDecimal(47,17,88.30,'W')}
-{nome: "JAGUARIUNA", lat: dmsParaDecimal(22,42,55.00,'S'), lon: dmsParaDecimal(46,58,20.00,'W')}
-{nome: "JOANOPOLIS", lat: dmsParaDecimal(22,55,71.70,'S'), lon: dmsParaDecimal(46,16,51.70,'W')}
-{nome: "LIMEIRA", lat: dmsParaDecimal(22,35,95.00,'S'), lon: dmsParaDecimal(47,18,60.00,'W')}
-{nome: "LINDOIA", lat: dmsParaDecimal(22,29,90.00,'S'), lon: dmsParaDecimal(46,39,63.30,'W')}
-{nome: "MOGI BERTIOGA", lat: dmsParaDecimal(23,38,86.70,'S'), lon: dmsParaDecimal(46,07,03.30,'W')}
-{nome: "MORAT", lat: dmsParaDecimal(23,15,35.00,'S'), lon: dmsParaDecimal(46,44,83.30,'W')}
-{nome: "MORUNGABA", lat: dmsParaDecimal(22,52,65.00,'S'), lon: dmsParaDecimal(46,47,63.30,'W')}
-{nome: "PALME", lat: dmsParaDecimal(23,38,58.30,'S'), lon: dmsParaDecimal(46,18,65.00,'W')}
-{nome: "PARAIBUNA", lat: dmsParaDecimal(23,23,30.00,'S'), lon: dmsParaDecimal(45,39,75.00,'W')}
-{nome: "PARQUE DO CARMO", lat: dmsParaDecimal(23,35,26.70,'S'), lon: dmsParaDecimal(46,29,38.30,'W')}
-{nome: "PEDAGIO CASTELO", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(46,48,08.30,'W')}
-{nome: "PEDAGIO LEROY", lat: dmsParaDecimal(23,19,36.70,'S'), lon: dmsParaDecimal(46,49,43.30,'W')}
-{nome: "PEDRAS", lat: dmsParaDecimal(22,49,48.30,'S'), lon: dmsParaDecimal(47,34,41.70,'W')}
-{nome: "PERUS", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(46,45,10.00,'W')}
-{nome: "PIRACICABA", lat: dmsParaDecimal(22,43,15.00,'S'), lon: dmsParaDecimal(47,34,48.30,'W')}
-{nome: "PORTO FELIZ", lat: dmsParaDecimal(23,11,98.30,'S'), lon: dmsParaDecimal(47,34,38.30,'W')}
-{nome: "REDENCAO", lat: dmsParaDecimal(23,15,98.30,'S'), lon: dmsParaDecimal(45,30,28.30,'W')}
-{nome: "REGIS", lat: dmsParaDecimal(23,42,08.30,'S'), lon: dmsParaDecimal(46,52,21.70,'W')}
-{nome: "REP. ALUMINIO", lat: dmsParaDecimal(23,35,70.00,'S'), lon: dmsParaDecimal(47,14,83.30,'W')}
-{nome: "REP. PARAIBUNA", lat: dmsParaDecimal(23,31,61.70,'S'), lon: dmsParaDecimal(45,29,23.30,'W')}
-{nome: "REP. RIBEIRAO", lat: dmsParaDecimal(23,39,25.00,'S'), lon: dmsParaDecimal(45,49,40.00,'W')}
-{nome: "REP. SUZANO", lat: dmsParaDecimal(23,35,66.70,'S'), lon: dmsParaDecimal(46,15,80.00,'W')}
-{nome: "RIO GRANDE", lat: dmsParaDecimal(23,44,28.30,'S'), lon: dmsParaDecimal(46,24,43.30,'W')}
-{nome: "RIVIERA", lat: dmsParaDecimal(23,50,11.70,'S'), lon: dmsParaDecimal(46,00,70.00,'W')}
-{nome: "RODOANEL NORTE", lat: dmsParaDecimal(23,34,65.00,'S'), lon: dmsParaDecimal(46,20,80.00,'W')}
-{nome: "RODOANEL SUL", lat: dmsParaDecimal(23,37,35.00,'S'), lon: dmsParaDecimal(46,22,05.00,'W')}
-{nome: "RONDON", lat: dmsParaDecimal(23,13,86.70,'S'), lon: dmsParaDecimal(47,26,63.30,'W')}
-{nome: "SALESOPOLIS", lat: dmsParaDecimal(23,31,83.30,'S'), lon: dmsParaDecimal(45,50,76.70,'W')}
-{nome: "SANTA", lat: dmsParaDecimal(23,26,68.30,'S'), lon: dmsParaDecimal(46,55,08.30,'W')}
-{nome: "SERRA NEGRA", lat: dmsParaDecimal(22,34,80.00,'S'), lon: dmsParaDecimal(46,41,33.30,'W')}
-{nome: "TAPIRAI", lat: dmsParaDecimal(23,51,08.30,'S'), lon: dmsParaDecimal(47,21,13.30,'W')}
-{nome: "TAUBATE", lat: dmsParaDecimal(23,01,30.00,'S'), lon: dmsParaDecimal(45,32,13.30,'W')}
-{nome: "TOBIAS", lat: dmsParaDecimal(23,31,56.70,'S'), lon: dmsParaDecimal(47,22,46.70,'W')}
-{nome: "TRAVE AMERICANA", lat: dmsParaDecimal(22,39,81.70,'S'), lon: dmsParaDecimal(47,19,06.70,'W')}
-{nome: "TRAVES AMPARO", lat: dmsParaDecimal(22,43,10.00,'S'), lon: dmsParaDecimal(46,44,23.30,'W')}
-{nome: "PEDREIRA", lat: dmsParaDecimal(23,27,70.00,'S'), lon: dmsParaDecimal(46,42,66.60,'W')}
-{nome: "ESCOLAPM", lat: dmsParaDecimal(23,28,21.60,'S'), lon: dmsParaDecimal(46,44,50.00,'W')}
-{nome: " JARIN", lat: dmsParaDecimal(23,07,78.30,'S'), lon: dmsParaDecimal(46,45,76.70,'W')}
-{nome: "TRAVE N IGARATA", lat: dmsParaDecimal(23,07,46.70,'S'), lon: dmsParaDecimal(46,09,38.30,'W')}
-{nome: "TRAVE N S JOSE", lat: dmsParaDecimal(23,04,90.00,'S'), lon: dmsParaDecimal(45,54,08.30,'W')}
-{nome: "TRAVE S ITUPEVA", lat: dmsParaDecimal(23,12,13.30,'S'), lon: dmsParaDecimal(47,02,70.00,'W')}
-{nome: "TREVO", lat: dmsParaDecimal(23,14,48.30,'S'), lon: dmsParaDecimal(46,52,83.30,'W')}
-{nome: "TREVO C PINTO", lat: dmsParaDecimal(23,03,76.70,'S'), lon: dmsParaDecimal(45,36,86.70,'W')}
-{nome: "USINA CARAGUA", lat: dmsParaDecimal(23,39,65.00,'S'), lon: dmsParaDecimal(45,29,50.00,'W')}
-{nome: "VGRAN", lat: dmsParaDecimal(23,36,33.30,'S'), lon: dmsParaDecimal(47,00,98.30,'W')}
-{nome: "P. ABRIL", lat: dmsParaDecimal(23,30,13.30,'S'), lon: dmsParaDecimal(46,41,91.70,'W')}
-{nome: "P. ANHANGUERA", lat: dmsParaDecimal(22,57,40.00,'S'), lon: dmsParaDecimal(47,03,40.00,'W')}
-{nome: "P. BERTIOGA", lat: dmsParaDecimal(23,52,68.30,'S'), lon: dmsParaDecimal(46,09,03.30,'W')}
-{nome: "P. BOCAINA", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(46,34,55.00,'W')}
-{nome: "CABRE", lat: dmsParaDecimal(23,18,38.30,'S'), lon: dmsParaDecimal(47,07,88.30,'W')}
-{nome: "P. CACAPAVA", lat: dmsParaDecimal(23,07,10.00,'S'), lon: dmsParaDecimal(45,43,23.30,'W')}
-{nome: "P. CACHOEIRA", lat: dmsParaDecimal(22,40,51.70,'S'), lon: dmsParaDecimal(44,59,88.30,'W')}
-{nome: "P. COMETA", lat: dmsParaDecimal(23,31,06.70,'S'), lon: dmsParaDecimal(46,34,66.70,'W')}
-{nome: "P. DUTRA", lat: dmsParaDecimal(23,31,75.00,'S'), lon: dmsParaDecimal(46,35,45.00,'W')}
-{nome: "P ENTRONCAMENTO", lat: dmsParaDecimal(24,02,50.00,'S'), lon: dmsParaDecimal(46,29,68.30,'W')}
-{nome: "P. ESTADIO", lat: dmsParaDecimal(23,11,05.00,'S'), lon: dmsParaDecimal(46,51,70.00,'W')}
-{nome: "P. FERNAO DIAS", lat: dmsParaDecimal(23,01,73.30,'S'), lon: dmsParaDecimal(46,32,40.00,'W')}
-{nome: "P. GUARIPOCABA", lat: dmsParaDecimal(22,56,91.70,'S'), lon: dmsParaDecimal(46,29,78.30,'W')}
-{nome: "P. HOSPITAL", lat: dmsParaDecimal(23,32,23.30,'S'), lon: dmsParaDecimal(47,31,68.30,'W')}
-{nome: "P. IGARATA", lat: dmsParaDecimal(23,13,00.00,'S'), lon: dmsParaDecimal(46,05,16.70,'W')}
-{nome: "P. INDAIATUBA", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(47,12,70.00,'W')}
-{nome: "P. INDUSTRIAL", lat: dmsParaDecimal(23,26,48.30,'S'), lon: dmsParaDecimal(47,25,85.00,'W')}
-{nome: "P. INSTRUCAO", lat: dmsParaDecimal(22,56,10.00,'S'), lon: dmsParaDecimal(46,33,71.70,'W')}
-{nome: "P. INTERLIGACAO", lat: dmsParaDecimal(23,54,43.30,'S'), lon: dmsParaDecimal(46,29,13.30,'W')}
-{nome: "P. IPANEMA", lat: dmsParaDecimal(23,26,90.00,'S'), lon: dmsParaDecimal(47,32,86.70,'W')}
-{nome: "P. ITAQUERA", lat: dmsParaDecimal(23,32,55.00,'S'), lon: dmsParaDecimal(46,27,93.30,'W')}
-{nome: "P. JACAREI", lat: dmsParaDecimal(23,20,65.00,'S'), lon: dmsParaDecimal(45,57,96.70,'W')}
-{nome: "P. JAPI", lat: dmsParaDecimal(23,13,25.00,'S'), lon: dmsParaDecimal(47,07,41.70,'W')}
-{nome: "P. LAGOA", lat: dmsParaDecimal(23,08,73.30,'S'), lon: dmsParaDecimal(46,51,70.00,'W')}
-{nome: "P. MAILASQUI", lat: dmsParaDecimal(23,34,01.70,'S'), lon: dmsParaDecimal(47,04,33.30,'W')}
-{nome: "P. NOVA ODESSA", lat: dmsParaDecimal(22,47,03.30,'S'), lon: dmsParaDecimal(47,17,98.30,'W')}
-{nome: "P PARANAPIACABA", lat: dmsParaDecimal(23,45,26.70,'S'), lon: dmsParaDecimal(46,18,45.00,'W')}
-{nome: "P. PAULINIA", lat: dmsParaDecimal(22,47,48.30,'S'), lon: dmsParaDecimal(47,09,63.30,'W')}
-{nome: "P. PED. DUTRA", lat: dmsParaDecimal(22,55,81.70,'S'), lon: dmsParaDecimal(45,21,65.00,'W')}
-{nome: "P. PENTEADO", lat: dmsParaDecimal(23,29,36.70,'S'), lon: dmsParaDecimal(46,41,48.30,'W')}
-{nome: "P. RAPOSO", lat: dmsParaDecimal(23,30,23.30,'S'), lon: dmsParaDecimal(47,25,08.30,'W')}
-{nome: "P. REDENCAO", lat: dmsParaDecimal(23,15,66.70,'S'), lon: dmsParaDecimal(45,33,96.70,'W')}
-{nome: "P. REPRESA", lat: dmsParaDecimal(22,42,90.00,'S'), lon: dmsParaDecimal(47,15,46.70,'W')}
-{nome: "P. SHOPPING", lat: dmsParaDecimal(22,52,03.30,'S'), lon: dmsParaDecimal(47,01,06.70,'W')}
-{nome: "P. SUL BASILICA", lat: dmsParaDecimal(22,57,28.30,'S'), lon: dmsParaDecimal(45,12,23.30,'W')}
-{nome: "P. TREVO", lat: dmsParaDecimal(23,14,48.30,'S'), lon: dmsParaDecimal(46,52,83.30,'W')}
-{nome: "P. UNICAMP", lat: dmsParaDecimal(22,47,55.00,'S'), lon: dmsParaDecimal(47,03,21.70,'W')}
-{nome: "R10RGR", lat: dmsParaDecimal(23,26,36.60,'S'), lon: dmsParaDecimal(46,29,21.60,'W')}
-{nome: "R10LGR", lat: dmsParaDecimal(23,26,05.00,'S'), lon: dmsParaDecimal(46,28,95.00,'W')}
-{nome: "R28LGR", lat: dmsParaDecimal(23,25,95.00,'S'), lon: dmsParaDecimal(46,27,45.00,'W')}
-{nome: "R28RGR", lat: dmsParaDecimal(23,25,60.00,'S'), lon: dmsParaDecimal(46,26,95.00,'W')}
-{nome: "R17RSP", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,63.30,'W')}
-{nome: "R17LSP", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,48.30,'W')}
-{nome: "R35LSP", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,39,06.70,'W')}
-{nome: "R35RSP", lat: dmsParaDecimal(23,37,90.00,'S'), lon: dmsParaDecimal(46,39,03.30,'W')}
-{nome: "R15KP", lat: dmsParaDecimal(23,00,16.60,'S'), lon: dmsParaDecimal(47,08,70.00,'W')}
-{nome: "R33KP", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(47,07,35.00,'W')}
-{nome: "R16SJ", lat: dmsParaDecimal(23,13,18.30,'S'), lon: dmsParaDecimal(45,52,21.70,'W')}
-{nome: "R34SJ", lat: dmsParaDecimal(23,14,20.00,'S'), lon: dmsParaDecimal(45,51,20.00,'W')}
-{nome: "R12MT", lat: dmsParaDecimal(23,30,46.70,'S'), lon: dmsParaDecimal(46,38,71.70,'W')}
-{nome: "R30MT", lat: dmsParaDecimal(23,30,61.70,'S'), lon: dmsParaDecimal(46,37,80.00,'W')}
-{nome: "R18JD", lat: dmsParaDecimal(23,10,50.00,'S'), lon: dmsParaDecimal(46,56,80.00,'W')}
-{nome: "R36JD", lat: dmsParaDecimal(23,11,20.00,'S'), lon: dmsParaDecimal(46,56,48.30,'W')}
-{nome: "R12JH", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(47,10,58.30,'W')}
-{nome: "R30JH", lat: dmsParaDecimal(23,25,65.00,'S'), lon: dmsParaDecimal(47,09,33.30,'W')}
-{nome: "R18CO", lat: dmsParaDecimal(23,28,30.00,'S'), lon: dmsParaDecimal(47,29,53.30,'W')}
-{nome: "R36CO", lat: dmsParaDecimal(23,29,06.70,'S'), lon: dmsParaDecimal(47,29,26.70,'W')}
-{nome: "R17ST", lat: dmsParaDecimal(23,56,00.00,'S'), lon: dmsParaDecimal(46,17,80.00,'W')}
-{nome: "R35ST", lat: dmsParaDecimal(23,55,36.70,'S'), lon: dmsParaDecimal(46,18,23.30,'W')}
-{nome: "R12AI", lat: dmsParaDecimal(22,45,33.30,'S'), lon: dmsParaDecimal(47,16,48.30,'W')}
-{nome: "R30AI", lat: dmsParaDecimal(22,45,36.70,'S'), lon: dmsParaDecimal(47,15,85.00,'W')}
-{nome: "R16AM", lat: dmsParaDecimal(22,51,31.70,'S'), lon: dmsParaDecimal(47,06,73.30,'W')}
-{nome: "R34AM", lat: dmsParaDecimal(22,51,78.30,'S'), lon: dmsParaDecimal(47,06,26.70,'W')}
-{nome: "R16BP", lat: dmsParaDecimal(22,58,38.30,'S'), lon: dmsParaDecimal(46,32,43.30,'W')}
-{nome: "R34BP", lat: dmsParaDecimal(22,59,00.00,'S'), lon: dmsParaDecimal(46,32,03.30,'W')}
-{nome: "R06OI", lat: dmsParaDecimal(23,18,08.30,'S'), lon: dmsParaDecimal(47,41,73.30,'W')}
-{nome: "R24OI", lat: dmsParaDecimal(23,17,73.30,'S'), lon: dmsParaDecimal(47,41,38.30,'W')}
-{nome: "R15IM", lat: dmsParaDecimal(24,09,36.70,'S'), lon: dmsParaDecimal(46,47,75.00,'W')}
-{nome: "R33IM", lat: dmsParaDecimal(24,09,80.00,'S'), lon: dmsParaDecimal(46,47,13.30,'W')}
-{nome: "R02TB", lat: dmsParaDecimal(23,07,98.30,'S'), lon: dmsParaDecimal(46,34,51.70,'W')}
-{nome: "R20TB", lat: dmsParaDecimal(23,07,38.30,'S'), lon: dmsParaDecimal(46,34,45.00,'W')}
-{nome: "R02ET", lat: dmsParaDecimal(23,06,56.70,'S'), lon: dmsParaDecimal(47,43,41.70,'W')}
-{nome: "R20ET", lat: dmsParaDecimal(23,06,03.30,'S'), lon: dmsParaDecimal(47,43,43.30,'W')}
-{nome: "UNIP", lat: dmsParaDecimal(23,15,46.70,'S'), lon: dmsParaDecimal(45,56,85.00,'W')}
-{nome: "ERICSSON", lat: dmsParaDecimal(23,08,96.70,'S'), lon: dmsParaDecimal(45,46,83.30,'W')}
-{nome: "CAPELA DO ALTO", lat: dmsParaDecimal(23,28,58.30,'S'), lon: dmsParaDecimal(47,45,63.30,'W')}
-{nome: "TRAVES PIRAPORA", lat: dmsParaDecimal(23,39,73.30,'S'), lon: dmsParaDecimal(47,40,63.30,'W')}
-{nome: "TMA1", lat: dmsParaDecimal(22,27,66.70,'S'), lon: dmsParaDecimal(46,59,10.00,'W')}
-{nome: "TMA2", lat: dmsParaDecimal(22,30,16.70,'S'), lon: dmsParaDecimal(46,37,16.70,'W')}
-{nome: "TMA3", lat: dmsParaDecimal(22,33,46.70,'S'), lon: dmsParaDecimal(46,07,36.70,'W')}
-{nome: "TMA4", lat: dmsParaDecimal(22,49,20.00,'S'), lon: dmsParaDecimal(45,59,95.00,'W')}
-{nome: "TMA5", lat: dmsParaDecimal(22,58,48.30,'S'), lon: dmsParaDecimal(45,55,55.00,'W')}
-{nome: "TMA6", lat: dmsParaDecimal(23,03,13.30,'S'), lon: dmsParaDecimal(45,40,01.70,'W')}
-{nome: "TMA7", lat: dmsParaDecimal(23,02,31.70,'S'), lon: dmsParaDecimal(45,36,33.30,'W')}
-{nome: "TMA8", lat: dmsParaDecimal(23,14,86.70,'S'), lon: dmsParaDecimal(45,33,26.70,'W')}
-{nome: "TMA9", lat: dmsParaDecimal(23,18,53.30,'S'), lon: dmsParaDecimal(45,32,36.70,'W')}
-{nome: "TMA10", lat: dmsParaDecimal(23,42,73.30,'S'), lon: dmsParaDecimal(45,25,68.30,'W')}
-{nome: "TMA11", lat: dmsParaDecimal(23,54,61.70,'S'), lon: dmsParaDecimal(45,22,38.30,'W')}
-{nome: "TMA12", lat: dmsParaDecimal(24,04,53.30,'S'), lon: dmsParaDecimal(46,04,30.00,'W')}
-{nome: "TMA13", lat: dmsParaDecimal(24,18,45.00,'S'), lon: dmsParaDecimal(46,10,01.70,'W')}
-{nome: "TMA14", lat: dmsParaDecimal(24,24,40.00,'S'), lon: dmsParaDecimal(46,41,48.30,'W')}
-{nome: "TMA15", lat: dmsParaDecimal(24,19,71.70,'S'), lon: dmsParaDecimal(46,47,76.70,'W')}
-{nome: "TMA16", lat: dmsParaDecimal(23,53,85.00,'S'), lon: dmsParaDecimal(47,22,16.70,'W')}
-{nome: "TMA17", lat: dmsParaDecimal(23,40,33.30,'S'), lon: dmsParaDecimal(47,40,01.70,'W')}
-{nome: "TMA18", lat: dmsParaDecimal(23,39,00.00,'S'), lon: dmsParaDecimal(47,41,76.70,'W')}
-{nome: "TMA19", lat: dmsParaDecimal(23,16,10.00,'S'), lon: dmsParaDecimal(47,48,33.30,'W')}
-{nome: "TMA20", lat: dmsParaDecimal(23,04,03.30,'S'), lon: dmsParaDecimal(47,43,63.30,'W')}
-{nome: "TMA21", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(47,38,73.30,'W')}
-{nome: "TMA22", lat: dmsParaDecimal(22,42,26.70,'S'), lon: dmsParaDecimal(47,35,10.00,'W')}
-{nome: "TMA23", lat: dmsParaDecimal(22,38,78.30,'S'), lon: dmsParaDecimal(47,26,43.30,'W')}
-{nome: "MT027", lat: dmsParaDecimal(23,33,82.00,'S'), lon: dmsParaDecimal(46,33,70.00,'W')}
-{nome: "MT029", lat: dmsParaDecimal(23,37,69.00,'S'), lon: dmsParaDecimal(46,28,05.00,'W')}
-{nome: "NMT20", lat: dmsParaDecimal(23,37,79.00,'S'), lon: dmsParaDecimal(46,23,50.00,'W')}
-{nome: "VARUM", lat: dmsParaDecimal(23,37,90.00,'S'), lon: dmsParaDecimal(46,18,24.00,'W')}
-{nome: "MT031", lat: dmsParaDecimal(23,46,36.00,'S'), lon: dmsParaDecimal(46,17,62.00,'W')}
-{nome: "MT032", lat: dmsParaDecimal(23,53,55.00,'S'), lon: dmsParaDecimal(46,23,78.00,'W')}
-{nome: "MT033", lat: dmsParaDecimal(24,00,63.00,'S'), lon: dmsParaDecimal(46,54,05.00,'W')}
-{nome: "MT036", lat: dmsParaDecimal(23,55,17.00,'S'), lon: dmsParaDecimal(47,04,12.00,'W')}
-{nome: "KOKMI", lat: dmsParaDecimal(23,44,47.00,'S'), lon: dmsParaDecimal(47,07,69.00,'W')}
-{nome: "NMT23", lat: dmsParaDecimal(23,31,25.00,'S'), lon: dmsParaDecimal(46,34,01.70,'W')}
-{nome: "NMT24", lat: dmsParaDecimal(23,31,68.30,'S'), lon: dmsParaDecimal(46,31,25.00,'W')}
-{nome: "MT014", lat: dmsParaDecimal(23,28,23.30,'S'), lon: dmsParaDecimal(46,53,60.00,'W')}
-{nome: "MT039", lat: dmsParaDecimal(23,29,81.70,'S'), lon: dmsParaDecimal(46,45,75.00,'W')}
-{nome: "MT037", lat: dmsParaDecimal(23,30,33.30,'S'), lon: dmsParaDecimal(46,40,30.00,'W')}
-{nome: "MT038", lat: dmsParaDecimal(23,32,30.00,'S'), lon: dmsParaDecimal(46,36,56.70,'W')}
-{nome: "MT028", lat: dmsParaDecimal(23,36,40.00,'S'), lon: dmsParaDecimal(46,29,90.00,'W')}
-{nome: "NMT21", lat: dmsParaDecimal(23,38,73.30,'S'), lon: dmsParaDecimal(46,26,86.70,'W')}
-{nome: "NMT22", lat: dmsParaDecimal(23,44,63.30,'S'), lon: dmsParaDecimal(46,19,36.70,'W')}
-{nome: "CSIRIO", lat: dmsParaDecimal(23,36,46.70,'S'), lon: dmsParaDecimal(46,39,11.70,'W')}
-{nome: "CEBOL", lat: dmsParaDecimal(23,35,48.30,'S'), lon: dmsParaDecimal(46,39,05.00,'W')}
-{nome: "B2222", lat: dmsParaDecimal(23,34,63.30,'S'), lon: dmsParaDecimal(46,39,16.70,'W')}
-{nome: "B4444", lat: dmsParaDecimal(23,33,35.00,'S'), lon: dmsParaDecimal(46,40,71.70,'W')}
-{nome: "MEMORIAL", lat: dmsParaDecimal(23,31,60.00,'S'), lon: dmsParaDecimal(46,39,88.30,'W')}
-{nome: "ACLIMACAO", lat: dmsParaDecimal(23,34,86.70,'S'), lon: dmsParaDecimal(46,38,33.30,'W')}
-{nome: "PBRAS", lat: dmsParaDecimal(23,32,80.00,'S'), lon: dmsParaDecimal(46,37,06.70,'W')}
-{nome: "STATU", lat: dmsParaDecimal(23,32,35.00,'S'), lon: dmsParaDecimal(46,34,56.70,'W')}
-{nome: "PARIC", lat: dmsParaDecimal(23,31,35.00,'S'), lon: dmsParaDecimal(46,33,38.30,'W')}
-{nome: "JARAG", lat: dmsParaDecimal(23,27,15.00,'S'), lon: dmsParaDecimal(46,47,20.00,'W')}
-{nome: "PACUC", lat: dmsParaDecimal(23,29,15.00,'S'), lon: dmsParaDecimal(46,46,15.00,'W')}
-{nome: "MZERO", lat: dmsParaDecimal(23,30,90.00,'S'), lon: dmsParaDecimal(46,43,50.00,'W')}
-{nome: "ESTAD", lat: dmsParaDecimal(23,31,31.70,'S'), lon: dmsParaDecimal(46,41,46.70,'W')}
-{nome: "CEBOLAO", lat: dmsParaDecimal(23,31,58.30,'S'), lon: dmsParaDecimal(46,45,01.70,'W')}
-{nome: "BTIETE", lat: dmsParaDecimal(23,30,15.00,'S'), lon: dmsParaDecimal(46,32,53.30,'W')}
-{nome: "ANI10", lat: dmsParaDecimal(24,44,93.00,'S'), lon: dmsParaDecimal(46,43,03.30,'W')}
-{nome: "ANI20", lat: dmsParaDecimal(24,53,85.00,'S'), lon: dmsParaDecimal(46,43,70.00,'W')}
-{nome: "IBD10", lat: dmsParaDecimal(23,40,68.30,'S'), lon: dmsParaDecimal(44,52,40.00,'W')}
-{nome: "IBD20", lat: dmsParaDecimal(23,40,86.60,'S'), lon: dmsParaDecimal(44,52,51.60,'W')}
-{nome: "EDM10", lat: dmsParaDecimal(23,08,98.30,'S'), lon: dmsParaDecimal(45,12,45.00,'W')}
-{nome: "EDM20", lat: dmsParaDecimal(23,06,48.30,'S'), lon: dmsParaDecimal(45,01,91.60,'W')}
-{nome: "VUN10", lat: dmsParaDecimal(22,10,76.00,'S'), lon: dmsParaDecimal(46,06,56.60,'W')}
-{nome: "VUN20", lat: dmsParaDecimal(22,02,68.30,'S'), lon: dmsParaDecimal(45,59,73.30,'W')}
+{nome: "KP209", lat: dmsParaDecimal(23,01,13.30,'S'), lon: dmsParaDecimal(46,56,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP191", lat: dmsParaDecimal(23,09,56.70,'S'), lon: dmsParaDecimal(46,55,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP192", lat: dmsParaDecimal(23,07,71.70,'S'), lon: dmsParaDecimal(46,57,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP702", lat: dmsParaDecimal(23,02,35.00,'S'), lon: dmsParaDecimal(47,05,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UBKUP", lat: dmsParaDecimal(23,10,63.30,'S'), lon: dmsParaDecimal(47,04,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP107", lat: dmsParaDecimal(23,05,88.30,'S'), lon: dmsParaDecimal(47,00,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ARNIV", lat: dmsParaDecimal(23,04,05.00,'S'), lon: dmsParaDecimal(47,03,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY33", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(47,07,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP034", lat: dmsParaDecimal(23,06,40.00,'S'), lon: dmsParaDecimal(47,05,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP036", lat: dmsParaDecimal(23,08,23.30,'S'), lon: dmsParaDecimal(47,02,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP037", lat: dmsParaDecimal(22,59,85.00,'S'), lon: dmsParaDecimal(47,08,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP038", lat: dmsParaDecimal(23,02,28.30,'S'), lon: dmsParaDecimal(47,16,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP039", lat: dmsParaDecimal(22,59,83.30,'S'), lon: dmsParaDecimal(47,14,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP103", lat: dmsParaDecimal(22,57,40.00,'S'), lon: dmsParaDecimal(47,12,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ATARA", lat: dmsParaDecimal(22,53,76.70,'S'), lon: dmsParaDecimal(47,17,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SEBSU", lat: dmsParaDecimal(22,56,83.30,'S'), lon: dmsParaDecimal(47,13,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP002", lat: dmsParaDecimal(22,58,48.30,'S'), lon: dmsParaDecimal(47,10,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY15", lat: dmsParaDecimal(22,59,90.00,'S'), lon: dmsParaDecimal(47,08,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NILKA", lat: dmsParaDecimal(22,58,53.30,'S'), lon: dmsParaDecimal(47,21,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NOBRE", lat: dmsParaDecimal(22,50,78.30,'S'), lon: dmsParaDecimal(47,21,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITEDI", lat: dmsParaDecimal(22,48,88.30,'S'), lon: dmsParaDecimal(47,13,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP014", lat: dmsParaDecimal(22,59,83.30,'S'), lon: dmsParaDecimal(47,08,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP113", lat: dmsParaDecimal(22,52,81.70,'S'), lon: dmsParaDecimal(47,18,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP013", lat: dmsParaDecimal(22,52,81.70,'S'), lon: dmsParaDecimal(47,18,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP273", lat: dmsParaDecimal(22,58,46.70,'S'), lon: dmsParaDecimal(47,10,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VCP", lat: dmsParaDecimal(23,00,51.70,'S'), lon: dmsParaDecimal(47,07,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RENUM", lat: dmsParaDecimal(23,06,36.70,'S'), lon: dmsParaDecimal(47,00,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ALDEG", lat: dmsParaDecimal(23,04,31.70,'S'), lon: dmsParaDecimal(47,03,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP059", lat: dmsParaDecimal(23,02,55.00,'S'), lon: dmsParaDecimal(47,05,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP071", lat: dmsParaDecimal(23,00,93.30,'S'), lon: dmsParaDecimal(47,07,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP044", lat: dmsParaDecimal(23,07,68.30,'S'), lon: dmsParaDecimal(46,59,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP194", lat: dmsParaDecimal(22,50,86.70,'S'), lon: dmsParaDecimal(47,10,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP186", lat: dmsParaDecimal(22,55,03.30,'S'), lon: dmsParaDecimal(47,14,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP193", lat: dmsParaDecimal(22,54,36.70,'S'), lon: dmsParaDecimal(47,10,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP188", lat: dmsParaDecimal(22,57,15.00,'S'), lon: dmsParaDecimal(47,12,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP183", lat: dmsParaDecimal(22,51,58.30,'S'), lon: dmsParaDecimal(47,08,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP063", lat: dmsParaDecimal(23,04,05.00,'S'), lon: dmsParaDecimal(47,03,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP182", lat: dmsParaDecimal(23,09,81.70,'S'), lon: dmsParaDecimal(47,07,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP181", lat: dmsParaDecimal(23,06,93.30,'S'), lon: dmsParaDecimal(47,05,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KOVGA", lat: dmsParaDecimal(22,59,80.00,'S'), lon: dmsParaDecimal(47,21,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LOLED", lat: dmsParaDecimal(22,54,73.30,'S'), lon: dmsParaDecimal(47,03,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MUPIP", lat: dmsParaDecimal(22,49,95.00,'S'), lon: dmsParaDecimal(47,22,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP030", lat: dmsParaDecimal(22,58,66.70,'S'), lon: dmsParaDecimal(47,10,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ASUTI", lat: dmsParaDecimal(22,52,31.70,'S'), lon: dmsParaDecimal(47,19,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDRAT", lat: dmsParaDecimal(23,50,35.00,'S'), lon: dmsParaDecimal(48,18,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GNOME", lat: dmsParaDecimal(23,13,38.30,'S'), lon: dmsParaDecimal(47,58,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP217", lat: dmsParaDecimal(23,10,08.30,'S'), lon: dmsParaDecimal(47,44,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP216", lat: dmsParaDecimal(23,06,26.70,'S'), lon: dmsParaDecimal(47,37,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP214", lat: dmsParaDecimal(23,02,63.30,'S'), lon: dmsParaDecimal(47,29,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UTLOT", lat: dmsParaDecimal(22,28,43.30,'S'), lon: dmsParaDecimal(47,53,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP201", lat: dmsParaDecimal(22,42,28.30,'S'), lon: dmsParaDecimal(47,35,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP219", lat: dmsParaDecimal(23,17,71.70,'S'), lon: dmsParaDecimal(47,53,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VERME", lat: dmsParaDecimal(23,12,53.30,'S'), lon: dmsParaDecimal(47,49,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP224", lat: dmsParaDecimal(23,26,81.70,'S'), lon: dmsParaDecimal(47,34,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP223", lat: dmsParaDecimal(23,21,65.00,'S'), lon: dmsParaDecimal(47,24,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP271", lat: dmsParaDecimal(23,15,48.30,'S'), lon: dmsParaDecimal(47,13,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP221", lat: dmsParaDecimal(23,04,86.70,'S'), lon: dmsParaDecimal(47,12,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP222", lat: dmsParaDecimal(23,07,93.30,'S'), lon: dmsParaDecimal(47,08,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDMUS", lat: dmsParaDecimal(23,11,35.00,'S'), lon: dmsParaDecimal(45,23,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NIBVO", lat: dmsParaDecimal(23,13,60.00,'S'), lon: dmsParaDecimal(45,33,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP153", lat: dmsParaDecimal(23,22,35.00,'S'), lon: dmsParaDecimal(46,04,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP154", lat: dmsParaDecimal(23,27,46.70,'S'), lon: dmsParaDecimal(46,22,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP213", lat: dmsParaDecimal(23,17,43.30,'S'), lon: dmsParaDecimal(46,38,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP231", lat: dmsParaDecimal(23,11,86.70,'S'), lon: dmsParaDecimal(46,43,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP269", lat: dmsParaDecimal(23,06,96.70,'S'), lon: dmsParaDecimal(46,47,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ENTIT", lat: dmsParaDecimal(22,25,05.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP204", lat: dmsParaDecimal(22,38,80.00,'S'), lon: dmsParaDecimal(46,58,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP226", lat: dmsParaDecimal(22,41,96.70,'S'), lon: dmsParaDecimal(47,00,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP227", lat: dmsParaDecimal(22,53,70.00,'S'), lon: dmsParaDecimal(47,06,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP228", lat: dmsParaDecimal(22,58,03.30,'S'), lon: dmsParaDecimal(47,00,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP212", lat: dmsParaDecimal(23,14,31.70,'S'), lon: dmsParaDecimal(46,41,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP211", lat: dmsParaDecimal(23,11,20.00,'S'), lon: dmsParaDecimal(46,43,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP208", lat: dmsParaDecimal(23,01,81.70,'S'), lon: dmsParaDecimal(46,52,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP207", lat: dmsParaDecimal(22,55,58.30,'S'), lon: dmsParaDecimal(47,04,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP203", lat: dmsParaDecimal(22,33,93.30,'S'), lon: dmsParaDecimal(46,52,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP266", lat: dmsParaDecimal(22,52,78.30,'S'), lon: dmsParaDecimal(47,30,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP268", lat: dmsParaDecimal(22,43,85.00,'S'), lon: dmsParaDecimal(48,01,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OBLUG", lat: dmsParaDecimal(22,36,56.70,'S'), lon: dmsParaDecimal(48,27,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OSUDO", lat: dmsParaDecimal(23,06,50.00,'S'), lon: dmsParaDecimal(47,08,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP263", lat: dmsParaDecimal(23,07,38.30,'S'), lon: dmsParaDecimal(47,44,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EGEVA", lat: dmsParaDecimal(23,08,38.30,'S'), lon: dmsParaDecimal(48,33,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP241", lat: dmsParaDecimal(23,00,31.70,'S'), lon: dmsParaDecimal(47,01,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EGBEN", lat: dmsParaDecimal(22,54,23.30,'S'), lon: dmsParaDecimal(46,56,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DEXIB", lat: dmsParaDecimal(22,45,93.30,'S'), lon: dmsParaDecimal(47,01,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP237", lat: dmsParaDecimal(22,39,13.30,'S'), lon: dmsParaDecimal(47,05,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ISMOB", lat: dmsParaDecimal(21,47,35.00,'S'), lon: dmsParaDecimal(47,11,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP179", lat: dmsParaDecimal(22,17,10.00,'S'), lon: dmsParaDecimal(47,17,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP242", lat: dmsParaDecimal(22,46,45.00,'S'), lon: dmsParaDecimal(46,48,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP243", lat: dmsParaDecimal(22,44,31.70,'S'), lon: dmsParaDecimal(46,46,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "URRAO", lat: dmsParaDecimal(22,40,81.70,'S'), lon: dmsParaDecimal(46,42,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP244", lat: dmsParaDecimal(22,40,98.30,'S'), lon: dmsParaDecimal(46,23,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KONVI", lat: dmsParaDecimal(22,41,06.70,'S'), lon: dmsParaDecimal(46,10,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUPOG", lat: dmsParaDecimal(20,44,53.30,'S'), lon: dmsParaDecimal(48,49,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GERTU", lat: dmsParaDecimal(22,25,80.00,'S'), lon: dmsParaDecimal(47,33,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP251", lat: dmsParaDecimal(23,07,91.70,'S'), lon: dmsParaDecimal(47,02,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP127", lat: dmsParaDecimal(23,12,20.00,'S'), lon: dmsParaDecimal(46,59,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MUDET", lat: dmsParaDecimal(23,19,60.00,'S'), lon: dmsParaDecimal(46,55,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GUABO", lat: dmsParaDecimal(23,32,05.00,'S'), lon: dmsParaDecimal(46,32,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UGIKI", lat: dmsParaDecimal(23,35,60.00,'S'), lon: dmsParaDecimal(46,25,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NIBRU", lat: dmsParaDecimal(23,34,38.30,'S'), lon: dmsParaDecimal(45,28,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UREMI", lat: dmsParaDecimal(23,23,33.30,'S'), lon: dmsParaDecimal(45,30,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP258", lat: dmsParaDecimal(23,01,11.70,'S'), lon: dmsParaDecimal(47,14,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP259", lat: dmsParaDecimal(23,08,11.70,'S'), lon: dmsParaDecimal(47,20,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP262", lat: dmsParaDecimal(23,12,20.00,'S'), lon: dmsParaDecimal(47,14,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OPGUN", lat: dmsParaDecimal(22,54,41.70,'S'), lon: dmsParaDecimal(47,12,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP264", lat: dmsParaDecimal(22,46,10.00,'S'), lon: dmsParaDecimal(48,02,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP238", lat: dmsParaDecimal(23,02,15.00,'S'), lon: dmsParaDecimal(47,19,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP239", lat: dmsParaDecimal(23,07,10.00,'S'), lon: dmsParaDecimal(47,32,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OPNOB", lat: dmsParaDecimal(23,07,53.30,'S'), lon: dmsParaDecimal(47,51,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ASETA", lat: dmsParaDecimal(23,17,13.30,'S'), lon: dmsParaDecimal(48,05,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP246", lat: dmsParaDecimal(23,12,16.70,'S'), lon: dmsParaDecimal(47,13,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP247", lat: dmsParaDecimal(23,17,30.00,'S'), lon: dmsParaDecimal(47,14,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP248", lat: dmsParaDecimal(23,32,10.00,'S'), lon: dmsParaDecimal(47,18,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SOVSI", lat: dmsParaDecimal(24,06,31.70,'S'), lon: dmsParaDecimal(47,28,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP257", lat: dmsParaDecimal(22,57,70.00,'S'), lon: dmsParaDecimal(47,26,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EKAGO", lat: dmsParaDecimal(22,56,28.30,'S'), lon: dmsParaDecimal(47,50,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP261", lat: dmsParaDecimal(23,14,08.30,'S'), lon: dmsParaDecimal(47,20,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP136", lat: dmsParaDecimal(23,20,35.00,'S'), lon: dmsParaDecimal(47,20,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP254", lat: dmsParaDecimal(22,55,00.00,'S'), lon: dmsParaDecimal(47,08,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP267", lat: dmsParaDecimal(22,53,60.00,'S'), lon: dmsParaDecimal(47,05,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP256", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(47,01,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KP249", lat: dmsParaDecimal(22,38,68.30,'S'), lon: dmsParaDecimal(46,40,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP003", lat: dmsParaDecimal(23,39,85.00,'S'), lon: dmsParaDecimal(46,45,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP131", lat: dmsParaDecimal(23,37,93.30,'S'), lon: dmsParaDecimal(46,46,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP132", lat: dmsParaDecimal(23,33,48.30,'S'), lon: dmsParaDecimal(46,43,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP138", lat: dmsParaDecimal(23,36,31.70,'S'), lon: dmsParaDecimal(46,44,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP078", lat: dmsParaDecimal(23,34,71.70,'S'), lon: dmsParaDecimal(46,41,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW17R", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP137", lat: dmsParaDecimal(23,45,70.00,'S'), lon: dmsParaDecimal(46,33,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RDE", lat: dmsParaDecimal(23,53,45.00,'S'), lon: dmsParaDecimal(46,31,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP121", lat: dmsParaDecimal(23,41,96.70,'S'), lon: dmsParaDecimal(46,44,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP124", lat: dmsParaDecimal(23,43,81.70,'S'), lon: dmsParaDecimal(46,42,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP128", lat: dmsParaDecimal(23,42,50.00,'S'), lon: dmsParaDecimal(46,36,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP129", lat: dmsParaDecimal(23,40,58.30,'S'), lon: dmsParaDecimal(46,37,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP127", lat: dmsParaDecimal(23,42,20.00,'S'), lon: dmsParaDecimal(46,40,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW35L", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,39,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RENIT", lat: dmsParaDecimal(23,32,96.70,'S'), lon: dmsParaDecimal(46,42,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP126", lat: dmsParaDecimal(23,31,61.70,'S'), lon: dmsParaDecimal(46,47,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP123", lat: dmsParaDecimal(23,34,80.00,'S'), lon: dmsParaDecimal(46,51,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OGTAL", lat: dmsParaDecimal(23,51,38.30,'S'), lon: dmsParaDecimal(46,37,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ESUNI", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "USITO", lat: dmsParaDecimal(23,47,65.00,'S'), lon: dmsParaDecimal(46,32,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SURBU", lat: dmsParaDecimal(23,42,30.00,'S'), lon: dmsParaDecimal(46,36,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP005", lat: dmsParaDecimal(23,40,00.00,'S'), lon: dmsParaDecimal(46,37,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KOMGU", lat: dmsParaDecimal(23,33,90.00,'S'), lon: dmsParaDecimal(46,49,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LUVDI", lat: dmsParaDecimal(23,29,58.30,'S'), lon: dmsParaDecimal(46,48,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GERSU", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(46,44,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "URUTA", lat: dmsParaDecimal(23,33,46.70,'S'), lon: dmsParaDecimal(46,42,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP048", lat: dmsParaDecimal(23,30,71.70,'S'), lon: dmsParaDecimal(46,43,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP049", lat: dmsParaDecimal(23,33,51.70,'S'), lon: dmsParaDecimal(46,42,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP052", lat: dmsParaDecimal(23,35,21.70,'S'), lon: dmsParaDecimal(46,40,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW17L", lat: dmsParaDecimal(23,37,23.30,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP044", lat: dmsParaDecimal(23,47,31.70,'S'), lon: dmsParaDecimal(46,32,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP046", lat: dmsParaDecimal(23,42,13.30,'S'), lon: dmsParaDecimal(46,36,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP047", lat: dmsParaDecimal(23,40,10.00,'S'), lon: dmsParaDecimal(46,37,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW35R", lat: dmsParaDecimal(23,37,86.70,'S'), lon: dmsParaDecimal(46,39,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUGVI", lat: dmsParaDecimal(23,46,60.00,'S'), lon: dmsParaDecimal(46,33,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP118", lat: dmsParaDecimal(23,49,33.30,'S'), lon: dmsParaDecimal(46,31,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP112", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,38,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP139", lat: dmsParaDecimal(23,34,71.70,'S'), lon: dmsParaDecimal(46,41,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP017", lat: dmsParaDecimal(23,35,46.70,'S'), lon: dmsParaDecimal(46,40,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP023", lat: dmsParaDecimal(23,39,73.30,'S'), lon: dmsParaDecimal(46,37,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "STN", lat: dmsParaDecimal(23,29,25.00,'S'), lon: dmsParaDecimal(46,55,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "STN01", lat: dmsParaDecimal(23,29,98.30,'S'), lon: dmsParaDecimal(46,49,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "STN02", lat: dmsParaDecimal(23,30,46.70,'S'), lon: dmsParaDecimal(46,45,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ISP01", lat: dmsParaDecimal(23,34,48.30,'S'), lon: dmsParaDecimal(46,41,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AKRUB", lat: dmsParaDecimal(23,34,50.00,'S'), lon: dmsParaDecimal(46,50,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP008", lat: dmsParaDecimal(23,34,53.30,'S'), lon: dmsParaDecimal(46,41,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP004", lat: dmsParaDecimal(23,37,21.70,'S'), lon: dmsParaDecimal(46,39,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANISE", lat: dmsParaDecimal(24,36,13.30,'S'), lon: dmsParaDecimal(46,37,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP091", lat: dmsParaDecimal(24,23,66.70,'S'), lon: dmsParaDecimal(46,37,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP111", lat: dmsParaDecimal(24,13,63.30,'S'), lon: dmsParaDecimal(46,37,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IBDAL", lat: dmsParaDecimal(23,45,48.30,'S'), lon: dmsParaDecimal(45,13,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MANLO", lat: dmsParaDecimal(23,47,81.70,'S'), lon: dmsParaDecimal(45,24,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP033", lat: dmsParaDecimal(23,50,20.00,'S'), lon: dmsParaDecimal(46,12,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP099", lat: dmsParaDecimal(23,46,60.00,'S'), lon: dmsParaDecimal(46,40,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP101", lat: dmsParaDecimal(23,43,21.70,'S'), lon: dmsParaDecimal(46,43,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP032", lat: dmsParaDecimal(23,38,30.00,'S'), lon: dmsParaDecimal(46,46,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RUSTE", lat: dmsParaDecimal(22,46,08.30,'S'), lon: dmsParaDecimal(47,30,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OTAGA", lat: dmsParaDecimal(22,29,40.00,'S'), lon: dmsParaDecimal(46,43,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NEKIG", lat: dmsParaDecimal(22,33,18.30,'S'), lon: dmsParaDecimal(46,47,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MAVKA", lat: dmsParaDecimal(22,40,53.30,'S'), lon: dmsParaDecimal(46,55,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP031", lat: dmsParaDecimal(22,52,95.00,'S'), lon: dmsParaDecimal(47,03,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ORESU", lat: dmsParaDecimal(23,01,45.00,'S'), lon: dmsParaDecimal(47,09,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PRUMO", lat: dmsParaDecimal(23,15,16.70,'S'), lon: dmsParaDecimal(47,06,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IROPU", lat: dmsParaDecimal(23,25,51.70,'S'), lon: dmsParaDecimal(47,04,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP098", lat: dmsParaDecimal(23,38,63.30,'S'), lon: dmsParaDecimal(46,46,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UTKOM", lat: dmsParaDecimal(23,52,56.70,'S'), lon: dmsParaDecimal(46,52,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP104", lat: dmsParaDecimal(23,44,21.70,'S'), lon: dmsParaDecimal(46,38,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP106", lat: dmsParaDecimal(23,47,36.70,'S'), lon: dmsParaDecimal(46,44,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MADNI", lat: dmsParaDecimal(24,36,43.30,'S'), lon: dmsParaDecimal(47,00,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UBSOD", lat: dmsParaDecimal(24,15,70.00,'S'), lon: dmsParaDecimal(47,08,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NIBGA", lat: dmsParaDecimal(24,04,71.70,'S'), lon: dmsParaDecimal(47,14,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UBRAM", lat: dmsParaDecimal(23,26,73.30,'S'), lon: dmsParaDecimal(47,46,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP074", lat: dmsParaDecimal(23,35,88.30,'S'), lon: dmsParaDecimal(46,45,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP079", lat: dmsParaDecimal(23,36,80.00,'S'), lon: dmsParaDecimal(46,51,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP038", lat: dmsParaDecimal(23,37,46.70,'S'), lon: dmsParaDecimal(47,13,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "XOGOD", lat: dmsParaDecimal(23,31,58.30,'S'), lon: dmsParaDecimal(47,28,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UMRAR", lat: dmsParaDecimal(23,28,05.00,'S'), lon: dmsParaDecimal(47,41,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP053", lat: dmsParaDecimal(23,41,45.00,'S'), lon: dmsParaDecimal(46,40,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP081", lat: dmsParaDecimal(23,43,66.70,'S'), lon: dmsParaDecimal(46,48,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP066", lat: dmsParaDecimal(23,45,05.00,'S'), lon: dmsParaDecimal(46,54,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP039", lat: dmsParaDecimal(23,41,93.30,'S'), lon: dmsParaDecimal(47,02,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP107", lat: dmsParaDecimal(23,36,00.00,'S'), lon: dmsParaDecimal(46,36,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUNVU", lat: dmsParaDecimal(23,36,78.30,'S'), lon: dmsParaDecimal(46,33,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP108", lat: dmsParaDecimal(23,42,86.70,'S'), lon: dmsParaDecimal(46,26,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BAIAN", lat: dmsParaDecimal(23,40,11.70,'S'), lon: dmsParaDecimal(46,07,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP103", lat: dmsParaDecimal(23,32,48.30,'S'), lon: dmsParaDecimal(46,03,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ISOXO", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(45,59,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ORIMU", lat: dmsParaDecimal(23,15,83.30,'S'), lon: dmsParaDecimal(45,59,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUMEV", lat: dmsParaDecimal(22,53,20.00,'S'), lon: dmsParaDecimal(45,58,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NUXEL", lat: dmsParaDecimal(22,16,98.30,'S'), lon: dmsParaDecimal(45,49,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP102", lat: dmsParaDecimal(23,43,25.00,'S'), lon: dmsParaDecimal(46,29,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP082", lat: dmsParaDecimal(23,34,50.00,'S'), lon: dmsParaDecimal(46,45,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP083", lat: dmsParaDecimal(23,37,65.00,'S'), lon: dmsParaDecimal(46,50,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SEDLO", lat: dmsParaDecimal(23,46,00.00,'S'), lon: dmsParaDecimal(46,55,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP084", lat: dmsParaDecimal(23,44,46.70,'S'), lon: dmsParaDecimal(47,07,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP086", lat: dmsParaDecimal(23,35,43.30,'S'), lon: dmsParaDecimal(47,09,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UGTIX", lat: dmsParaDecimal(23,16,86.70,'S'), lon: dmsParaDecimal(47,13,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LESSA", lat: dmsParaDecimal(23,10,58.30,'S'), lon: dmsParaDecimal(47,37,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VURDU", lat: dmsParaDecimal(23,09,70.00,'S'), lon: dmsParaDecimal(48,00,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP087", lat: dmsParaDecimal(23,08,98.30,'S'), lon: dmsParaDecimal(47,15,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SP088", lat: dmsParaDecimal(22,40,23.30,'S'), lon: dmsParaDecimal(47,21,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR283", lat: dmsParaDecimal(23,15,85.00,'S'), lon: dmsParaDecimal(46,35,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR009", lat: dmsParaDecimal(23,24,55.00,'S'), lon: dmsParaDecimal(46,38,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR010", lat: dmsParaDecimal(23,25,35.00,'S'), lon: dmsParaDecimal(46,35,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR008", lat: dmsParaDecimal(23,27,18.30,'S'), lon: dmsParaDecimal(46,37,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR007", lat: dmsParaDecimal(23,27,86.70,'S'), lon: dmsParaDecimal(46,34,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR006", lat: dmsParaDecimal(23,27,30.00,'S'), lon: dmsParaDecimal(46,32,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW10R", lat: dmsParaDecimal(23,26,31.70,'S'), lon: dmsParaDecimal(46,29,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ISIMU", lat: dmsParaDecimal(23,31,23.30,'S'), lon: dmsParaDecimal(46,20,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR031", lat: dmsParaDecimal(23,21,90.00,'S'), lon: dmsParaDecimal(46,32,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR029", lat: dmsParaDecimal(23,23,83.30,'S'), lon: dmsParaDecimal(46,34,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR038", lat: dmsParaDecimal(23,24,18.30,'S'), lon: dmsParaDecimal(46,31,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR028", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(46,31,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR032", lat: dmsParaDecimal(23,24,48.30,'S'), lon: dmsParaDecimal(46,23,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR044", lat: dmsParaDecimal(23,17,83.30,'S'), lon: dmsParaDecimal(46,22,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR743", lat: dmsParaDecimal(23,21,03.30,'S'), lon: dmsParaDecimal(46,24,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR047", lat: dmsParaDecimal(23,16,18.30,'S'), lon: dmsParaDecimal(46,25,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SANPA", lat: dmsParaDecimal(23,12,50.00,'S'), lon: dmsParaDecimal(46,32,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR037", lat: dmsParaDecimal(23,16,45.00,'S'), lon: dmsParaDecimal(46,30,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR039", lat: dmsParaDecimal(23,18,25.00,'S'), lon: dmsParaDecimal(46,34,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITAVO", lat: dmsParaDecimal(23,28,70.00,'S'), lon: dmsParaDecimal(46,24,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR034", lat: dmsParaDecimal(23,23,51.70,'S'), lon: dmsParaDecimal(46,27,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR042", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(46,31,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW10L", lat: dmsParaDecimal(23,26,03.30,'S'), lon: dmsParaDecimal(46,28,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LOMEN", lat: dmsParaDecimal(23,25,60.00,'S'), lon: dmsParaDecimal(46,42,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR202", lat: dmsParaDecimal(23,27,08.30,'S'), lon: dmsParaDecimal(46,39,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LUTPO", lat: dmsParaDecimal(23,28,56.70,'S'), lon: dmsParaDecimal(46,37,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OPSER", lat: dmsParaDecimal(23,27,73.30,'S'), lon: dmsParaDecimal(46,34,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUSMU", lat: dmsParaDecimal(23,29,56.70,'S'), lon: dmsParaDecimal(46,41,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR294", lat: dmsParaDecimal(23,27,11.70,'S'), lon: dmsParaDecimal(46,32,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CGO", lat: dmsParaDecimal(23,37,63.30,'S'), lon: dmsParaDecimal(46,39,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IGH", lat: dmsParaDecimal(23,25,80.00,'S'), lon: dmsParaDecimal(46,27,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UTKUG", lat: dmsParaDecimal(23,18,06.70,'S'), lon: dmsParaDecimal(46,14,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IBC", lat: dmsParaDecimal(23,26,36.70,'S'), lon: dmsParaDecimal(46,29,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ETIKO", lat: dmsParaDecimal(23,23,03.30,'S'), lon: dmsParaDecimal(46,17,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUSNI", lat: dmsParaDecimal(23,24,45.00,'S'), lon: dmsParaDecimal(46,22,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW28L", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(46,27,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR093", lat: dmsParaDecimal(23,25,01.70,'S'), lon: dmsParaDecimal(46,24,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDPAM", lat: dmsParaDecimal(23,22,65.00,'S'), lon: dmsParaDecimal(46,16,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PUGTA", lat: dmsParaDecimal(23,24,08.30,'S'), lon: dmsParaDecimal(46,21,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RW28R", lat: dmsParaDecimal(23,25,50.00,'S'), lon: dmsParaDecimal(46,26,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IGS", lat: dmsParaDecimal(23,26,13.30,'S'), lon: dmsParaDecimal(46,29,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR204", lat: dmsParaDecimal(23,28,41.70,'S'), lon: dmsParaDecimal(46,37,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUGAT", lat: dmsParaDecimal(23,27,45.00,'S'), lon: dmsParaDecimal(46,34,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IUC", lat: dmsParaDecimal(23,25,40.00,'S'), lon: dmsParaDecimal(46,26,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR738", lat: dmsParaDecimal(23,24,76.70,'S'), lon: dmsParaDecimal(46,24,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR213", lat: dmsParaDecimal(23,27,03.30,'S'), lon: dmsParaDecimal(46,31,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR308", lat: dmsParaDecimal(23,26,98.30,'S'), lon: dmsParaDecimal(46,31,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ELION", lat: dmsParaDecimal(23,22,05.00,'S'), lon: dmsParaDecimal(46,13,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR206", lat: dmsParaDecimal(23,26,63.30,'S'), lon: dmsParaDecimal(46,31,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR309", lat: dmsParaDecimal(23,24,93.30,'S'), lon: dmsParaDecimal(46,24,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OGRIX", lat: dmsParaDecimal(23,21,85.00,'S'), lon: dmsParaDecimal(46,13,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR302", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(46,31,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ISNAP", lat: dmsParaDecimal(23,27,60.00,'S'), lon: dmsParaDecimal(46,34,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUTBU", lat: dmsParaDecimal(23,29,36.70,'S'), lon: dmsParaDecimal(46,41,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUNOX", lat: dmsParaDecimal(22,19,06.70,'S'), lon: dmsParaDecimal(46,12,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR259", lat: dmsParaDecimal(22,32,63.30,'S'), lon: dmsParaDecimal(46,14,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR262", lat: dmsParaDecimal(22,46,96.70,'S'), lon: dmsParaDecimal(46,17,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR253", lat: dmsParaDecimal(23,16,11.70,'S'), lon: dmsParaDecimal(46,26,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR254", lat: dmsParaDecimal(23,16,23.30,'S'), lon: dmsParaDecimal(46,18,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "POLYP", lat: dmsParaDecimal(23,19,40.00,'S'), lon: dmsParaDecimal(45,54,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR278", lat: dmsParaDecimal(23,20,71.70,'S'), lon: dmsParaDecimal(45,59,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR279", lat: dmsParaDecimal(23,15,45.00,'S'), lon: dmsParaDecimal(46,00,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR281", lat: dmsParaDecimal(23,10,93.30,'S'), lon: dmsParaDecimal(46,04,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR282", lat: dmsParaDecimal(23,08,61.70,'S'), lon: dmsParaDecimal(46,09,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR263", lat: dmsParaDecimal(22,52,63.30,'S'), lon: dmsParaDecimal(46,20,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR264", lat: dmsParaDecimal(22,50,51.70,'S'), lon: dmsParaDecimal(46,25,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR266", lat: dmsParaDecimal(22,49,60.00,'S'), lon: dmsParaDecimal(46,32,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR267", lat: dmsParaDecimal(22,49,98.30,'S'), lon: dmsParaDecimal(46,37,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR268", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(46,43,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR271", lat: dmsParaDecimal(22,54,78.30,'S'), lon: dmsParaDecimal(46,48,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR284", lat: dmsParaDecimal(23,26,15.00,'S'), lon: dmsParaDecimal(46,18,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR286", lat: dmsParaDecimal(23,20,26.70,'S'), lon: dmsParaDecimal(46,28,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR287", lat: dmsParaDecimal(23,13,96.70,'S'), lon: dmsParaDecimal(46,41,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR288", lat: dmsParaDecimal(23,15,15.00,'S'), lon: dmsParaDecimal(46,47,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR289", lat: dmsParaDecimal(23,19,20.00,'S'), lon: dmsParaDecimal(46,52,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MOLLE", lat: dmsParaDecimal(23,08,74.00,'S'), lon: dmsParaDecimal(47,10,00.10,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR249", lat: dmsParaDecimal(23,04,31.70,'S'), lon: dmsParaDecimal(47,04,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR076", lat: dmsParaDecimal(22,58,45.00,'S'), lon: dmsParaDecimal(46,57,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR077", lat: dmsParaDecimal(22,54,18.30,'S'), lon: dmsParaDecimal(46,52,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR252", lat: dmsParaDecimal(22,52,08.30,'S'), lon: dmsParaDecimal(46,50,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR272", lat: dmsParaDecimal(22,48,76.70,'S'), lon: dmsParaDecimal(46,43,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR273", lat: dmsParaDecimal(22,47,06.70,'S'), lon: dmsParaDecimal(46,37,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR274", lat: dmsParaDecimal(22,46,70.00,'S'), lon: dmsParaDecimal(46,31,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR276", lat: dmsParaDecimal(22,47,70.00,'S'), lon: dmsParaDecimal(46,24,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR277", lat: dmsParaDecimal(22,50,40.00,'S'), lon: dmsParaDecimal(46,18,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BUXUK", lat: dmsParaDecimal(23,45,83.30,'S'), lon: dmsParaDecimal(47,48,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR071", lat: dmsParaDecimal(23,39,00.00,'S'), lon: dmsParaDecimal(47,41,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR072", lat: dmsParaDecimal(23,23,10.00,'S'), lon: dmsParaDecimal(47,25,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ZARES", lat: dmsParaDecimal(22,45,96.70,'S'), lon: dmsParaDecimal(47,57,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR073", lat: dmsParaDecimal(22,49,25.00,'S'), lon: dmsParaDecimal(47,50,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR327", lat: dmsParaDecimal(22,59,66.00,'S'), lon: dmsParaDecimal(47,28,92.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR074", lat: dmsParaDecimal(23,02,35.00,'S'), lon: dmsParaDecimal(47,23,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AMVUL", lat: dmsParaDecimal(23,23,96.70,'S'), lon: dmsParaDecimal(46,21,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR027", lat: dmsParaDecimal(23,26,28.30,'S'), lon: dmsParaDecimal(46,14,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR209", lat: dmsParaDecimal(23,33,46.70,'S'), lon: dmsParaDecimal(46,16,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR212", lat: dmsParaDecimal(23,36,45.00,'S'), lon: dmsParaDecimal(46,31,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ZORZA", lat: dmsParaDecimal(23,42,48.30,'S'), lon: dmsParaDecimal(46,47,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR214", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(47,06,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR216", lat: dmsParaDecimal(23,24,40.00,'S'), lon: dmsParaDecimal(47,16,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EVNEB", lat: dmsParaDecimal(23,27,71.70,'S'), lon: dmsParaDecimal(46,34,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR237", lat: dmsParaDecimal(23,32,13.30,'S'), lon: dmsParaDecimal(46,34,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR242", lat: dmsParaDecimal(23,34,90.00,'S'), lon: dmsParaDecimal(46,22,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR232", lat: dmsParaDecimal(23,30,40.00,'S'), lon: dmsParaDecimal(46,02,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR219", lat: dmsParaDecimal(23,36,46.70,'S'), lon: dmsParaDecimal(47,09,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR317", lat: dmsParaDecimal(23,27,91.70,'S'), lon: dmsParaDecimal(46,23,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR319", lat: dmsParaDecimal(23,32,01.70,'S'), lon: dmsParaDecimal(46,20,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR323", lat: dmsParaDecimal(23,23,06.70,'S'), lon: dmsParaDecimal(46,41,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR081", lat: dmsParaDecimal(23,14,93.30,'S'), lon: dmsParaDecimal(46,49,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR082", lat: dmsParaDecimal(23,11,65.00,'S'), lon: dmsParaDecimal(46,53,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR083", lat: dmsParaDecimal(23,05,06.70,'S'), lon: dmsParaDecimal(46,57,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR084", lat: dmsParaDecimal(22,57,21.70,'S'), lon: dmsParaDecimal(47,02,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR086", lat: dmsParaDecimal(22,52,16.70,'S'), lon: dmsParaDecimal(47,03,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "XOLUS", lat: dmsParaDecimal(22,44,15.00,'S'), lon: dmsParaDecimal(47,04,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR226", lat: dmsParaDecimal(23,22,46.70,'S'), lon: dmsParaDecimal(46,23,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR227", lat: dmsParaDecimal(23,14,90.00,'S'), lon: dmsParaDecimal(46,18,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDLUT", lat: dmsParaDecimal(23,06,66.70,'S'), lon: dmsParaDecimal(46,12,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR324", lat: dmsParaDecimal(23,03,41.70,'S'), lon: dmsParaDecimal(46,14,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR223", lat: dmsParaDecimal(22,53,95.00,'S'), lon: dmsParaDecimal(46,18,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR322", lat: dmsParaDecimal(22,47,58.30,'S'), lon: dmsParaDecimal(46,32,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR292", lat: dmsParaDecimal(22,44,51.70,'S'), lon: dmsParaDecimal(46,39,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR021", lat: dmsParaDecimal(22,40,80.00,'S'), lon: dmsParaDecimal(46,47,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR222", lat: dmsParaDecimal(22,39,05.00,'S'), lon: dmsParaDecimal(46,51,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ORONU", lat: dmsParaDecimal(22,37,03.30,'S'), lon: dmsParaDecimal(46,55,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GERKA", lat: dmsParaDecimal(22,33,06.70,'S'), lon: dmsParaDecimal(47,04,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REORI", lat: dmsParaDecimal(23,24,40.00,'S'), lon: dmsParaDecimal(46,22,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR222", lat: dmsParaDecimal(23,22,36.70,'S'), lon: dmsParaDecimal(46,18,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR217", lat: dmsParaDecimal(23,12,75.00,'S'), lon: dmsParaDecimal(46,02,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR321", lat: dmsParaDecimal(23,07,51.70,'S'), lon: dmsParaDecimal(46,00,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR224", lat: dmsParaDecimal(22,40,11.70,'S'), lon: dmsParaDecimal(46,48,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR316", lat: dmsParaDecimal(23,20,36.70,'S'), lon: dmsParaDecimal(46,21,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR306", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(46,05,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GR048", lat: dmsParaDecimal(23,29,23.30,'S'), lon: dmsParaDecimal(46,41,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AKRER", lat: dmsParaDecimal(23,33,98.30,'S'), lon: dmsParaDecimal(46,59,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EKOPO", lat: dmsParaDecimal(23,29,51.70,'S'), lon: dmsParaDecimal(45,55,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD042", lat: dmsParaDecimal(23,05,96.70,'S'), lon: dmsParaDecimal(46,46,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD043", lat: dmsParaDecimal(23,07,26.70,'S'), lon: dmsParaDecimal(46,51,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD044", lat: dmsParaDecimal(23,08,03.30,'S'), lon: dmsParaDecimal(46,54,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD041", lat: dmsParaDecimal(23,03,03.30,'S'), lon: dmsParaDecimal(46,42,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD046", lat: dmsParaDecimal(23,11,53.30,'S'), lon: dmsParaDecimal(46,53,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD047", lat: dmsParaDecimal(23,12,21.70,'S'), lon: dmsParaDecimal(46,49,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD054", lat: dmsParaDecimal(23,08,08.30,'S'), lon: dmsParaDecimal(46,39,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD011", lat: dmsParaDecimal(22,58,65.00,'S'), lon: dmsParaDecimal(46,52,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD012", lat: dmsParaDecimal(23,02,86.70,'S'), lon: dmsParaDecimal(46,56,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD014", lat: dmsParaDecimal(23,09,10.00,'S'), lon: dmsParaDecimal(46,57,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD016", lat: dmsParaDecimal(23,11,33.30,'S'), lon: dmsParaDecimal(46,54,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD017", lat: dmsParaDecimal(23,07,46.70,'S'), lon: dmsParaDecimal(46,47,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD013", lat: dmsParaDecimal(23,06,13.30,'S'), lon: dmsParaDecimal(46,57,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OBLIL", lat: dmsParaDecimal(23,28,40.00,'S'), lon: dmsParaDecimal(47,17,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BOLAS", lat: dmsParaDecimal(23,12,33.30,'S'), lon: dmsParaDecimal(46,52,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD032", lat: dmsParaDecimal(23,10,48.30,'S'), lon: dmsParaDecimal(46,56,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TODIM", lat: dmsParaDecimal(23,14,33.30,'S'), lon: dmsParaDecimal(47,01,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD052", lat: dmsParaDecimal(23,16,81.70,'S'), lon: dmsParaDecimal(47,03,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD051", lat: dmsParaDecimal(23,24,21.70,'S'), lon: dmsParaDecimal(47,11,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD049", lat: dmsParaDecimal(23,41,95.00,'S'), lon: dmsParaDecimal(47,21,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GEMES", lat: dmsParaDecimal(23,09,96.70,'S'), lon: dmsParaDecimal(47,02,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PORKO", lat: dmsParaDecimal(23,13,51.70,'S'), lon: dmsParaDecimal(47,00,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OCASO", lat: dmsParaDecimal(23,05,03.30,'S'), lon: dmsParaDecimal(46,51,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD059", lat: dmsParaDecimal(22,58,43.30,'S'), lon: dmsParaDecimal(46,50,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD061", lat: dmsParaDecimal(22,45,45.00,'S'), lon: dmsParaDecimal(46,40,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD062", lat: dmsParaDecimal(22,44,01.70,'S'), lon: dmsParaDecimal(46,30,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD063", lat: dmsParaDecimal(23,06,76.70,'S'), lon: dmsParaDecimal(46,44,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD056", lat: dmsParaDecimal(23,00,88.30,'S'), lon: dmsParaDecimal(46,19,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD057", lat: dmsParaDecimal(22,58,45.00,'S'), lon: dmsParaDecimal(46,13,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD053", lat: dmsParaDecimal(23,11,46.70,'S'), lon: dmsParaDecimal(46,47,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD064", lat: dmsParaDecimal(23,09,08.30,'S'), lon: dmsParaDecimal(46,41,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD066", lat: dmsParaDecimal(23,07,50.00,'S'), lon: dmsParaDecimal(46,37,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JD058", lat: dmsParaDecimal(23,03,05.00,'S'), lon: dmsParaDecimal(46,50,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH036", lat: dmsParaDecimal(23,24,81.70,'S'), lon: dmsParaDecimal(47,21,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH001", lat: dmsParaDecimal(23,25,25.00,'S'), lon: dmsParaDecimal(47,14,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH006", lat: dmsParaDecimal(23,25,40.00,'S'), lon: dmsParaDecimal(47,12,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH004", lat: dmsParaDecimal(23,20,11.70,'S'), lon: dmsParaDecimal(47,20,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH003", lat: dmsParaDecimal(23,24,48.30,'S'), lon: dmsParaDecimal(47,25,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY12", lat: dmsParaDecimal(23,25,55.00,'S'), lon: dmsParaDecimal(47,10,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH011", lat: dmsParaDecimal(23,31,10.00,'S'), lon: dmsParaDecimal(47,13,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH012", lat: dmsParaDecimal(23,31,50.00,'S'), lon: dmsParaDecimal(47,07,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH013", lat: dmsParaDecimal(23,27,41.70,'S'), lon: dmsParaDecimal(47,04,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH014", lat: dmsParaDecimal(23,25,80.00,'S'), lon: dmsParaDecimal(47,07,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH016", lat: dmsParaDecimal(23,25,18.30,'S'), lon: dmsParaDecimal(47,15,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH017", lat: dmsParaDecimal(23,20,41.70,'S'), lon: dmsParaDecimal(47,21,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH018", lat: dmsParaDecimal(23,28,65.00,'S'), lon: dmsParaDecimal(47,07,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY30", lat: dmsParaDecimal(23,25,65.00,'S'), lon: dmsParaDecimal(47,09,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH019", lat: dmsParaDecimal(23,32,28.30,'S'), lon: dmsParaDecimal(47,12,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH021", lat: dmsParaDecimal(23,32,66.70,'S'), lon: dmsParaDecimal(47,07,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH022", lat: dmsParaDecimal(23,28,58.30,'S'), lon: dmsParaDecimal(47,03,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH023", lat: dmsParaDecimal(23,29,16.70,'S'), lon: dmsParaDecimal(47,06,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH024", lat: dmsParaDecimal(23,26,86.70,'S'), lon: dmsParaDecimal(47,03,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH026", lat: dmsParaDecimal(23,25,86.70,'S'), lon: dmsParaDecimal(47,06,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH027", lat: dmsParaDecimal(23,28,76.70,'S'), lon: dmsParaDecimal(47,06,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EVMOL", lat: dmsParaDecimal(22,51,25.00,'S'), lon: dmsParaDecimal(47,02,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH033", lat: dmsParaDecimal(23,20,58.30,'S'), lon: dmsParaDecimal(47,08,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH034", lat: dmsParaDecimal(23,20,33.30,'S'), lon: dmsParaDecimal(47,14,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NURSE", lat: dmsParaDecimal(23,42,56.70,'S'), lon: dmsParaDecimal(47,27,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH032", lat: dmsParaDecimal(23,37,56.70,'S'), lon: dmsParaDecimal(47,26,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UKDAN", lat: dmsParaDecimal(23,58,98.30,'S'), lon: dmsParaDecimal(46,15,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH028", lat: dmsParaDecimal(24,02,46.70,'S'), lon: dmsParaDecimal(46,32,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JH029", lat: dmsParaDecimal(24,05,28.30,'S'), lon: dmsParaDecimal(46,45,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AM008", lat: dmsParaDecimal(22,40,80.00,'S'), lon: dmsParaDecimal(47,08,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AM007", lat: dmsParaDecimal(22,43,13.30,'S'), lon: dmsParaDecimal(47,12,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AM006", lat: dmsParaDecimal(22,47,61.70,'S'), lon: dmsParaDecimal(47,10,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AM004", lat: dmsParaDecimal(22,49,83.30,'S'), lon: dmsParaDecimal(47,08,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AM009", lat: dmsParaDecimal(22,46,13.30,'S'), lon: dmsParaDecimal(47,05,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY19", lat: dmsParaDecimal(23,28,30.00,'S'), lon: dmsParaDecimal(47,29,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD012", lat: dmsParaDecimal(23,25,06.70,'S'), lon: dmsParaDecimal(47,30,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD016", lat: dmsParaDecimal(23,26,33.30,'S'), lon: dmsParaDecimal(47,41,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD021", lat: dmsParaDecimal(23,23,50.00,'S'), lon: dmsParaDecimal(47,37,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD022", lat: dmsParaDecimal(23,20,10.00,'S'), lon: dmsParaDecimal(47,35,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD013", lat: dmsParaDecimal(23,21,26.70,'S'), lon: dmsParaDecimal(47,32,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY01", lat: dmsParaDecimal(23,29,05.00,'S'), lon: dmsParaDecimal(47,29,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD006", lat: dmsParaDecimal(23,38,26.70,'S'), lon: dmsParaDecimal(47,31,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD007", lat: dmsParaDecimal(23,36,65.00,'S'), lon: dmsParaDecimal(47,26,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD008", lat: dmsParaDecimal(23,33,45.00,'S'), lon: dmsParaDecimal(47,27,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD009", lat: dmsParaDecimal(23,41,40.00,'S'), lon: dmsParaDecimal(47,24,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SD011", lat: dmsParaDecimal(23,38,55.00,'S'), lon: dmsParaDecimal(47,25,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LONES", lat: dmsParaDecimal(23,01,81.70,'S'), lon: dmsParaDecimal(45,55,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GEMSO", lat: dmsParaDecimal(23,06,08.30,'S'), lon: dmsParaDecimal(45,59,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANRAN", lat: dmsParaDecimal(23,09,63.30,'S'), lon: dmsParaDecimal(45,56,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY16", lat: dmsParaDecimal(23,13,16.70,'S'), lon: dmsParaDecimal(45,52,31.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ063", lat: dmsParaDecimal(22,59,70.00,'S'), lon: dmsParaDecimal(46,06,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ043", lat: dmsParaDecimal(23,01,83.30,'S'), lon: dmsParaDecimal(46,04,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDMEG", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(46,00,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCP13", lat: dmsParaDecimal(23,04,96.70,'S'), lon: dmsParaDecimal(46,01,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TESIX", lat: dmsParaDecimal(23,26,23.30,'S'), lon: dmsParaDecimal(45,38,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SOTPI", lat: dmsParaDecimal(23,14,71.70,'S'), lon: dmsParaDecimal(45,37,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ046", lat: dmsParaDecimal(23,21,28.30,'S'), lon: dmsParaDecimal(45,43,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ047", lat: dmsParaDecimal(23,17,73.30,'S'), lon: dmsParaDecimal(45,47,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ020", lat: dmsParaDecimal(23,16,31.70,'S'), lon: dmsParaDecimal(45,48,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY34", lat: dmsParaDecimal(23,14,20.00,'S'), lon: dmsParaDecimal(45,51,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ATOMI", lat: dmsParaDecimal(23,05,46.70,'S'), lon: dmsParaDecimal(45,59,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BOLEM", lat: dmsParaDecimal(23,09,48.30,'S'), lon: dmsParaDecimal(45,55,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ061", lat: dmsParaDecimal(23,10,45.00,'S'), lon: dmsParaDecimal(45,55,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ062", lat: dmsParaDecimal(23,13,20.00,'S'), lon: dmsParaDecimal(45,52,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCP14", lat: dmsParaDecimal(23,04,55.00,'S'), lon: dmsParaDecimal(46,00,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ026", lat: dmsParaDecimal(23,08,21.70,'S'), lon: dmsParaDecimal(45,57,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ027", lat: dmsParaDecimal(23,10,33.30,'S'), lon: dmsParaDecimal(45,55,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ029", lat: dmsParaDecimal(23,17,28.30,'S'), lon: dmsParaDecimal(45,47,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ031", lat: dmsParaDecimal(23,11,46.70,'S'), lon: dmsParaDecimal(45,41,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ032", lat: dmsParaDecimal(23,14,36.70,'S'), lon: dmsParaDecimal(45,44,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ023", lat: dmsParaDecimal(23,00,45.00,'S'), lon: dmsParaDecimal(45,53,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ024", lat: dmsParaDecimal(23,01,75.00,'S'), lon: dmsParaDecimal(45,56,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ033", lat: dmsParaDecimal(23,04,86.70,'S'), lon: dmsParaDecimal(45,58,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ028", lat: dmsParaDecimal(23,05,36.70,'S'), lon: dmsParaDecimal(45,54,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCP", lat: dmsParaDecimal(23,13,98.30,'S'), lon: dmsParaDecimal(45,51,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCP11", lat: dmsParaDecimal(23,10,85.00,'S'), lon: dmsParaDecimal(45,54,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCP12", lat: dmsParaDecimal(23,13,20.00,'S'), lon: dmsParaDecimal(45,52,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJC02", lat: dmsParaDecimal(23,23,08.30,'S'), lon: dmsParaDecimal(45,41,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOTBA", lat: dmsParaDecimal(23,21,38.30,'S'), lon: dmsParaDecimal(45,43,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOPSO", lat: dmsParaDecimal(23,17,86.70,'S'), lon: dmsParaDecimal(45,47,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJC03", lat: dmsParaDecimal(23,16,80.00,'S'), lon: dmsParaDecimal(45,48,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJC04", lat: dmsParaDecimal(23,15,75.00,'S'), lon: dmsParaDecimal(45,49,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "FTP33", lat: dmsParaDecimal(23,14,26.70,'S'), lon: dmsParaDecimal(45,51,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ022", lat: dmsParaDecimal(22,38,53.30,'S'), lon: dmsParaDecimal(46,10,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SUNBU", lat: dmsParaDecimal(22,58,73.30,'S'), lon: dmsParaDecimal(45,59,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ017", lat: dmsParaDecimal(23,08,83.30,'S'), lon: dmsParaDecimal(45,45,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UTMUR", lat: dmsParaDecimal(24,16,86.70,'S'), lon: dmsParaDecimal(46,11,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ053", lat: dmsParaDecimal(23,59,53.30,'S'), lon: dmsParaDecimal(45,49,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ057", lat: dmsParaDecimal(23,39,30.00,'S'), lon: dmsParaDecimal(45,42,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PORNA", lat: dmsParaDecimal(23,32,36.70,'S'), lon: dmsParaDecimal(44,15,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KEVUN", lat: dmsParaDecimal(23,27,76.70,'S'), lon: dmsParaDecimal(44,57,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ019", lat: dmsParaDecimal(23,26,60.00,'S'), lon: dmsParaDecimal(45,21,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UGTEV", lat: dmsParaDecimal(23,18,13.30,'S'), lon: dmsParaDecimal(45,32,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ006", lat: dmsParaDecimal(23,11,45.00,'S'), lon: dmsParaDecimal(45,42,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BOBIC", lat: dmsParaDecimal(23,11,40.00,'S'), lon: dmsParaDecimal(45,54,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ059", lat: dmsParaDecimal(23,23,65.00,'S'), lon: dmsParaDecimal(45,59,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUPSA", lat: dmsParaDecimal(23,07,00.00,'S'), lon: dmsParaDecimal(45,45,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ014", lat: dmsParaDecimal(23,13,46.70,'S'), lon: dmsParaDecimal(45,32,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DORLU", lat: dmsParaDecimal(23,20,81.70,'S'), lon: dmsParaDecimal(45,18,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IMDAB", lat: dmsParaDecimal(23,11,83.30,'S'), lon: dmsParaDecimal(44,37,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UMBAD", lat: dmsParaDecimal(23,16,91.70,'S'), lon: dmsParaDecimal(44,08,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ003", lat: dmsParaDecimal(23,45,76.70,'S'), lon: dmsParaDecimal(45,40,18.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VARAX", lat: dmsParaDecimal(24,07,88.30,'S'), lon: dmsParaDecimal(45,20,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DAGUB", lat: dmsParaDecimal(22,58,26.70,'S'), lon: dmsParaDecimal(45,38,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ENLOV", lat: dmsParaDecimal(23,03,00.00,'S'), lon: dmsParaDecimal(45,55,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ011", lat: dmsParaDecimal(22,55,86.70,'S'), lon: dmsParaDecimal(45,55,00.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KORSA", lat: dmsParaDecimal(22,49,93.30,'S'), lon: dmsParaDecimal(45,56,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ051", lat: dmsParaDecimal(22,55,71.70,'S'), lon: dmsParaDecimal(46,14,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ052", lat: dmsParaDecimal(22,39,20.00,'S'), lon: dmsParaDecimal(46,50,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUSMA", lat: dmsParaDecimal(23,16,86.70,'S'), lon: dmsParaDecimal(45,48,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NUXES", lat: dmsParaDecimal(22,58,65.00,'S'), lon: dmsParaDecimal(45,54,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ054", lat: dmsParaDecimal(22,57,00.00,'S'), lon: dmsParaDecimal(46,05,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ004", lat: dmsParaDecimal(23,37,50.00,'S'), lon: dmsParaDecimal(45,36,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SJ058", lat: dmsParaDecimal(23,24,60.00,'S'), lon: dmsParaDecimal(45,54,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST022", lat: dmsParaDecimal(23,56,25.00,'S'), lon: dmsParaDecimal(46,23,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST023", lat: dmsParaDecimal(23,58,55.00,'S'), lon: dmsParaDecimal(46,20,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UDUSU", lat: dmsParaDecimal(23,56,65.00,'S'), lon: dmsParaDecimal(46,17,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DADAM", lat: dmsParaDecimal(23,46,50.00,'S'), lon: dmsParaDecimal(46,25,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST024", lat: dmsParaDecimal(23,51,76.70,'S'), lon: dmsParaDecimal(46,24,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IRAJA", lat: dmsParaDecimal(23,53,53.30,'S'), lon: dmsParaDecimal(46,33,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST026", lat: dmsParaDecimal(23,55,01.70,'S'), lon: dmsParaDecimal(46,27,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST027", lat: dmsParaDecimal(23,55,43.30,'S'), lon: dmsParaDecimal(46,07,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST003", lat: dmsParaDecimal(24,07,23.30,'S'), lon: dmsParaDecimal(46,13,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST002", lat: dmsParaDecimal(24,01,11.70,'S'), lon: dmsParaDecimal(46,15,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST005", lat: dmsParaDecimal(23,58,96.70,'S'), lon: dmsParaDecimal(46,16,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST006", lat: dmsParaDecimal(24,09,65.00,'S'), lon: dmsParaDecimal(46,20,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST004", lat: dmsParaDecimal(24,13,81.70,'S'), lon: dmsParaDecimal(46,10,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST007", lat: dmsParaDecimal(24,04,78.30,'S'), lon: dmsParaDecimal(46,05,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RWY35", lat: dmsParaDecimal(23,56,00.00,'S'), lon: dmsParaDecimal(46,17,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST014", lat: dmsParaDecimal(23,58,80.00,'S'), lon: dmsParaDecimal(46,12,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST016", lat: dmsParaDecimal(23,55,61.70,'S'), lon: dmsParaDecimal(46,08,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IVPUM", lat: dmsParaDecimal(23,49,38.30,'S'), lon: dmsParaDecimal(46,10,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST018", lat: dmsParaDecimal(24,01,60.00,'S'), lon: dmsParaDecimal(46,21,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST019", lat: dmsParaDecimal(23,59,70.00,'S'), lon: dmsParaDecimal(46,28,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOMKU", lat: dmsParaDecimal(24,07,03.30,'S'), lon: dmsParaDecimal(46,10,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IMBID", lat: dmsParaDecimal(23,35,00.00,'S'), lon: dmsParaDecimal(46,09,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PUKRA", lat: dmsParaDecimal(23,33,41.70,'S'), lon: dmsParaDecimal(46,03,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SCB", lat: dmsParaDecimal(23,30,41.70,'S'), lon: dmsParaDecimal(47,22,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST008", lat: dmsParaDecimal(24,10,76.70,'S'), lon: dmsParaDecimal(46,16,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST009", lat: dmsParaDecimal(24,07,13.30,'S'), lon: dmsParaDecimal(46,51,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST011", lat: dmsParaDecimal(24,03,30.00,'S'), lon: dmsParaDecimal(46,03,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ST012", lat: dmsParaDecimal(24,06,08.30,'S'), lon: dmsParaDecimal(47,01,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TOPEP", lat: dmsParaDecimal(23,02,68.30,'S'), lon: dmsParaDecimal(45,50,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UGPOP", lat: dmsParaDecimal(23,05,35.00,'S'), lon: dmsParaDecimal(44,56,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "USAMO", lat: dmsParaDecimal(22,41,55.00,'S'), lon: dmsParaDecimal(45,49,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AKPEN", lat: dmsParaDecimal(24,30,85.00,'S'), lon: dmsParaDecimal(48,46,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "AKVUM", lat: dmsParaDecimal(23,31,55.00,'S'), lon: dmsParaDecimal(46,03,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANPIB", lat: dmsParaDecimal(23,11,45.00,'S'), lon: dmsParaDecimal(49,09,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANSOK", lat: dmsParaDecimal(22,23,63.30,'S'), lon: dmsParaDecimal(49,09,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ASBAK", lat: dmsParaDecimal(22,48,21.70,'S'), lon: dmsParaDecimal(47,12,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ASGOL", lat: dmsParaDecimal(24,59,75.00,'S'), lon: dmsParaDecimal(48,32,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ASTOB", lat: dmsParaDecimal(20,40,80.00,'S'), lon: dmsParaDecimal(48,49,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ATIMA", lat: dmsParaDecimal(25,16,78.30,'S'), lon: dmsParaDecimal(48,17,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CERVA", lat: dmsParaDecimal(22,44,31.70,'S'), lon: dmsParaDecimal(48,03,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DALEK", lat: dmsParaDecimal(22,53,60.00,'S'), lon: dmsParaDecimal(47,28,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOSMU", lat: dmsParaDecimal(25,13,81.70,'S'), lon: dmsParaDecimal(47,27,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOSPI", lat: dmsParaDecimal(22,55,81.70,'S'), lon: dmsParaDecimal(47,10,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDMOX", lat: dmsParaDecimal(22,15,31.70,'S'), lon: dmsParaDecimal(48,35,61.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDNEL", lat: dmsParaDecimal(25,18,41.70,'S'), lon: dmsParaDecimal(47,52,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDVUL", lat: dmsParaDecimal(22,07,76.70,'S'), lon: dmsParaDecimal(48,59,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ESAVA", lat: dmsParaDecimal(22,56,90.00,'S'), lon: dmsParaDecimal(49,09,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ESORU", lat: dmsParaDecimal(23,01,85.00,'S'), lon: dmsParaDecimal(44,40,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EVRAL", lat: dmsParaDecimal(23,13,01.70,'S'), lon: dmsParaDecimal(47,15,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GEDOR", lat: dmsParaDecimal(23,28,03.30,'S'), lon: dmsParaDecimal(46,34,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GEVGA", lat: dmsParaDecimal(22,09,76.70,'S'), lon: dmsParaDecimal(46,05,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GILVU", lat: dmsParaDecimal(23,02,55.00,'S'), lon: dmsParaDecimal(47,50,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GIMKA", lat: dmsParaDecimal(23,28,73.30,'S'), lon: dmsParaDecimal(46,38,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ILTAX", lat: dmsParaDecimal(23,20,35.00,'S'), lon: dmsParaDecimal(46,40,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IREMA", lat: dmsParaDecimal(22,41,41.70,'S'), lon: dmsParaDecimal(47,33,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IROXA", lat: dmsParaDecimal(22,13,83.30,'S'), lon: dmsParaDecimal(47,42,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITANI", lat: dmsParaDecimal(23,12,58.30,'S'), lon: dmsParaDecimal(48,20,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KOPTA", lat: dmsParaDecimal(23,05,63.30,'S'), lon: dmsParaDecimal(47,17,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KOXAG", lat: dmsParaDecimal(25,08,58.30,'S'), lon: dmsParaDecimal(46,58,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LAIKA", lat: dmsParaDecimal(21,57,90.00,'S'), lon: dmsParaDecimal(46,18,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MAPMI", lat: dmsParaDecimal(21,29,86.70,'S'), lon: dmsParaDecimal(45,33,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MAVMO", lat: dmsParaDecimal(21,46,60.00,'S'), lon: dmsParaDecimal(45,28,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MILIL", lat: dmsParaDecimal(22,07,01.70,'S'), lon: dmsParaDecimal(46,25,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MOLDU", lat: dmsParaDecimal(22,17,71.70,'S'), lon: dmsParaDecimal(45,06,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MULAP", lat: dmsParaDecimal(22,14,90.00,'S'), lon: dmsParaDecimal(45,28,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NAXOP", lat: dmsParaDecimal(23,30,91.70,'S'), lon: dmsParaDecimal(44,09,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NAXUP", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NILPI", lat: dmsParaDecimal(22,04,70.00,'S'), lon: dmsParaDecimal(46,42,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OBMAV", lat: dmsParaDecimal(23,30,08.30,'S'), lon: dmsParaDecimal(47,36,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "OPMAN", lat: dmsParaDecimal(23,36,51.70,'S'), lon: dmsParaDecimal(49,09,81.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PICEK", lat: dmsParaDecimal(23,27,66.70,'S'), lon: dmsParaDecimal(46,39,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RAXIT", lat: dmsParaDecimal(24,25,23.30,'S'), lon: dmsParaDecimal(47,41,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SEBKA", lat: dmsParaDecimal(22,00,83.30,'S'), lon: dmsParaDecimal(47,09,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SIGIL", lat: dmsParaDecimal(23,49,38.30,'S'), lon: dmsParaDecimal(46,10,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SIKEM", lat: dmsParaDecimal(23,07,00.00,'S'), lon: dmsParaDecimal(45,45,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SILOM", lat: dmsParaDecimal(22,38,03.30,'S'), lon: dmsParaDecimal(47,14,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SIROG", lat: dmsParaDecimal(23,29,43.30,'S'), lon: dmsParaDecimal(46,41,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SUMPO", lat: dmsParaDecimal(24,40,75.00,'S'), lon: dmsParaDecimal(49,23,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SUPTO", lat: dmsParaDecimal(22,08,36.70,'S'), lon: dmsParaDecimal(46,15,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TIMRU", lat: dmsParaDecimal(23,29,08.30,'S'), lon: dmsParaDecimal(48,03,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UBRIR", lat: dmsParaDecimal(22,12,21.70,'S'), lon: dmsParaDecimal(45,48,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UGADO", lat: dmsParaDecimal(22,52,88.30,'S'), lon: dmsParaDecimal(47,06,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UKBEV", lat: dmsParaDecimal(22,33,08.30,'S'), lon: dmsParaDecimal(47,04,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UKLEN", lat: dmsParaDecimal(23,19,93.30,'S'), lon: dmsParaDecimal(48,24,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UMRIX", lat: dmsParaDecimal(22,55,73.30,'S'), lon: dmsParaDecimal(47,03,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "USVIG", lat: dmsParaDecimal(23,37,93.30,'S'), lon: dmsParaDecimal(49,30,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "USVIP", lat: dmsParaDecimal(24,04,60.00,'S'), lon: dmsParaDecimal(49,37,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VAGID", lat: dmsParaDecimal(23,30,23.30,'S'), lon: dmsParaDecimal(46,41,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VAGOT", lat: dmsParaDecimal(22,06,51.70,'S'), lon: dmsParaDecimal(47,36,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VURAV", lat: dmsParaDecimal(22,51,08.30,'S'), lon: dmsParaDecimal(47,00,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUREP", lat: dmsParaDecimal(23,10,90.00,'S'), lon: dmsParaDecimal(44,33,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "XONUG", lat: dmsParaDecimal(24,20,88.30,'S'), lon: dmsParaDecimal(48,09,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BCO", lat: dmsParaDecimal(23,24,38.30,'S'), lon: dmsParaDecimal(46,23,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PIR", lat: dmsParaDecimal(21,59,06.70,'S'), lon: dmsParaDecimal(47,20,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TAU", lat: dmsParaDecimal(23,02,13.30,'S'), lon: dmsParaDecimal(45,30,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANHANGUERA", lat: dmsParaDecimal(23,29,96.70,'S'), lon: dmsParaDecimal(46,45,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ATIBAIA", lat: dmsParaDecimal(23,06,01.70,'S'), lon: dmsParaDecimal(46,34,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BARRA DO UNA", lat: dmsParaDecimal(23,45,23.30,'S'), lon: dmsParaDecimal(45,46,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BERTIOGA", lat: dmsParaDecimal(23,52,68.30,'S'), lon: dmsParaDecimal(46,09,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CABREUVA", lat: dmsParaDecimal(23,18,38.30,'S'), lon: dmsParaDecimal(47,07,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CACAPAVA", lat: dmsParaDecimal(23,05,75.00,'S'), lon: dmsParaDecimal(45,40,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CAMANDUCAIA", lat: dmsParaDecimal(22,46,73.30,'S'), lon: dmsParaDecimal(46,09,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CAMBUI", lat: dmsParaDecimal(22,39,55.00,'S'), lon: dmsParaDecimal(46,04,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CAPIVARI", lat: dmsParaDecimal(22,59,76.70,'S'), lon: dmsParaDecimal(47,29,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CERQUILHO", lat: dmsParaDecimal(23,09,35.00,'S'), lon: dmsParaDecimal(47,45,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "COSMOPOLIS", lat: dmsParaDecimal(22,38,28.30,'S'), lon: dmsParaDecimal(47,11,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "DOM PEDRO", lat: dmsParaDecimal(23,00,11.70,'S'), lon: dmsParaDecimal(46,46,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDEN", lat: dmsParaDecimal(23,24,60.00,'S'), lon: dmsParaDecimal(47,24,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ELOI", lat: dmsParaDecimal(23,11,25.00,'S'), lon: dmsParaDecimal(46,57,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EMBU-GUACU", lat: dmsParaDecimal(23,49,75.00,'S'), lon: dmsParaDecimal(46,48,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ENTRONCAMENTO", lat: dmsParaDecimal(24,02,50.00,'S'), lon: dmsParaDecimal(46,29,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "FURNAS", lat: dmsParaDecimal(23,40,25.00,'S'), lon: dmsParaDecimal(47,06,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "GUARAREMA", lat: dmsParaDecimal(23,24,83.30,'S'), lon: dmsParaDecimal(46,02,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IGARATA", lat: dmsParaDecimal(23,12,35.00,'S'), lon: dmsParaDecimal(46,09,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ILHA ANCHIETA", lat: dmsParaDecimal(23,31,31.70,'S'), lon: dmsParaDecimal(45,04,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "INTERLIGACAO", lat: dmsParaDecimal(23,53,58.30,'S'), lon: dmsParaDecimal(46,33,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITANHAEM", lat: dmsParaDecimal(24,11,66.70,'S'), lon: dmsParaDecimal(46,47,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITAPE", lat: dmsParaDecimal(23,32,68.30,'S'), lon: dmsParaDecimal(46,55,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITAQUERA", lat: dmsParaDecimal(23,32,55.00,'S'), lon: dmsParaDecimal(46,27,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ITU", lat: dmsParaDecimal(23,16,00.00,'S'), lon: dmsParaDecimal(47,17,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JAGUARIUNA", lat: dmsParaDecimal(22,42,55.00,'S'), lon: dmsParaDecimal(46,58,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JOANOPOLIS", lat: dmsParaDecimal(22,55,71.70,'S'), lon: dmsParaDecimal(46,16,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LIMEIRA", lat: dmsParaDecimal(22,35,95.00,'S'), lon: dmsParaDecimal(47,18,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "LINDOIA", lat: dmsParaDecimal(22,29,90.00,'S'), lon: dmsParaDecimal(46,39,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MOGI BERTIOGA", lat: dmsParaDecimal(23,38,86.70,'S'), lon: dmsParaDecimal(46,07,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MORAT", lat: dmsParaDecimal(23,15,35.00,'S'), lon: dmsParaDecimal(46,44,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MORUNGABA", lat: dmsParaDecimal(22,52,65.00,'S'), lon: dmsParaDecimal(46,47,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PALME", lat: dmsParaDecimal(23,38,58.30,'S'), lon: dmsParaDecimal(46,18,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PARAIBUNA", lat: dmsParaDecimal(23,23,30.00,'S'), lon: dmsParaDecimal(45,39,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PARQUE DO CARMO", lat: dmsParaDecimal(23,35,26.70,'S'), lon: dmsParaDecimal(46,29,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PEDAGIO CASTELO", lat: dmsParaDecimal(23,30,68.30,'S'), lon: dmsParaDecimal(46,48,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PEDAGIO LEROY", lat: dmsParaDecimal(23,19,36.70,'S'), lon: dmsParaDecimal(46,49,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PEDRAS", lat: dmsParaDecimal(22,49,48.30,'S'), lon: dmsParaDecimal(47,34,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PERUS", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(46,45,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PIRACICABA", lat: dmsParaDecimal(22,43,15.00,'S'), lon: dmsParaDecimal(47,34,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PORTO FELIZ", lat: dmsParaDecimal(23,11,98.30,'S'), lon: dmsParaDecimal(47,34,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REDENCAO", lat: dmsParaDecimal(23,15,98.30,'S'), lon: dmsParaDecimal(45,30,28.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REGIS", lat: dmsParaDecimal(23,42,08.30,'S'), lon: dmsParaDecimal(46,52,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REP. ALUMINIO", lat: dmsParaDecimal(23,35,70.00,'S'), lon: dmsParaDecimal(47,14,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REP. PARAIBUNA", lat: dmsParaDecimal(23,31,61.70,'S'), lon: dmsParaDecimal(45,29,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REP. RIBEIRAO", lat: dmsParaDecimal(23,39,25.00,'S'), lon: dmsParaDecimal(45,49,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "REP. SUZANO", lat: dmsParaDecimal(23,35,66.70,'S'), lon: dmsParaDecimal(46,15,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RIO GRANDE", lat: dmsParaDecimal(23,44,28.30,'S'), lon: dmsParaDecimal(46,24,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RIVIERA", lat: dmsParaDecimal(23,50,11.70,'S'), lon: dmsParaDecimal(46,00,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RODOANEL NORTE", lat: dmsParaDecimal(23,34,65.00,'S'), lon: dmsParaDecimal(46,20,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RODOANEL SUL", lat: dmsParaDecimal(23,37,35.00,'S'), lon: dmsParaDecimal(46,22,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "RONDON", lat: dmsParaDecimal(23,13,86.70,'S'), lon: dmsParaDecimal(47,26,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SALESOPOLIS", lat: dmsParaDecimal(23,31,83.30,'S'), lon: dmsParaDecimal(45,50,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SANTA", lat: dmsParaDecimal(23,26,68.30,'S'), lon: dmsParaDecimal(46,55,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "SERRA NEGRA", lat: dmsParaDecimal(22,34,80.00,'S'), lon: dmsParaDecimal(46,41,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TAPIRAI", lat: dmsParaDecimal(23,51,08.30,'S'), lon: dmsParaDecimal(47,21,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TAUBATE", lat: dmsParaDecimal(23,01,30.00,'S'), lon: dmsParaDecimal(45,32,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TOBIAS", lat: dmsParaDecimal(23,31,56.70,'S'), lon: dmsParaDecimal(47,22,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVE AMERICANA", lat: dmsParaDecimal(22,39,81.70,'S'), lon: dmsParaDecimal(47,19,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVES AMPARO", lat: dmsParaDecimal(22,43,10.00,'S'), lon: dmsParaDecimal(46,44,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PEDREIRA", lat: dmsParaDecimal(23,27,70.00,'S'), lon: dmsParaDecimal(46,42,66.60,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ESCOLAPM", lat: dmsParaDecimal(23,28,21.60,'S'), lon: dmsParaDecimal(46,44,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: " JARIN", lat: dmsParaDecimal(23,07,78.30,'S'), lon: dmsParaDecimal(46,45,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVE N IGARATA", lat: dmsParaDecimal(23,07,46.70,'S'), lon: dmsParaDecimal(46,09,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVE N S JOSE", lat: dmsParaDecimal(23,04,90.00,'S'), lon: dmsParaDecimal(45,54,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVE S ITUPEVA", lat: dmsParaDecimal(23,12,13.30,'S'), lon: dmsParaDecimal(47,02,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TREVO", lat: dmsParaDecimal(23,14,48.30,'S'), lon: dmsParaDecimal(46,52,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TREVO C PINTO", lat: dmsParaDecimal(23,03,76.70,'S'), lon: dmsParaDecimal(45,36,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "USINA CARAGUA", lat: dmsParaDecimal(23,39,65.00,'S'), lon: dmsParaDecimal(45,29,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VGRAN", lat: dmsParaDecimal(23,36,33.30,'S'), lon: dmsParaDecimal(47,00,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. ABRIL", lat: dmsParaDecimal(23,30,13.30,'S'), lon: dmsParaDecimal(46,41,91.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. ANHANGUERA", lat: dmsParaDecimal(22,57,40.00,'S'), lon: dmsParaDecimal(47,03,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. BERTIOGA", lat: dmsParaDecimal(23,52,68.30,'S'), lon: dmsParaDecimal(46,09,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. BOCAINA", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(46,34,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CABRE", lat: dmsParaDecimal(23,18,38.30,'S'), lon: dmsParaDecimal(47,07,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. CACAPAVA", lat: dmsParaDecimal(23,07,10.00,'S'), lon: dmsParaDecimal(45,43,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. CACHOEIRA", lat: dmsParaDecimal(22,40,51.70,'S'), lon: dmsParaDecimal(44,59,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. COMETA", lat: dmsParaDecimal(23,31,06.70,'S'), lon: dmsParaDecimal(46,34,66.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. DUTRA", lat: dmsParaDecimal(23,31,75.00,'S'), lon: dmsParaDecimal(46,35,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P ENTRONCAMENTO", lat: dmsParaDecimal(24,02,50.00,'S'), lon: dmsParaDecimal(46,29,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. ESTADIO", lat: dmsParaDecimal(23,11,05.00,'S'), lon: dmsParaDecimal(46,51,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. FERNAO DIAS", lat: dmsParaDecimal(23,01,73.30,'S'), lon: dmsParaDecimal(46,32,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. GUARIPOCABA", lat: dmsParaDecimal(22,56,91.70,'S'), lon: dmsParaDecimal(46,29,78.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. HOSPITAL", lat: dmsParaDecimal(23,32,23.30,'S'), lon: dmsParaDecimal(47,31,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. IGARATA", lat: dmsParaDecimal(23,13,00.00,'S'), lon: dmsParaDecimal(46,05,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. INDAIATUBA", lat: dmsParaDecimal(23,05,83.30,'S'), lon: dmsParaDecimal(47,12,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. INDUSTRIAL", lat: dmsParaDecimal(23,26,48.30,'S'), lon: dmsParaDecimal(47,25,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. INSTRUCAO", lat: dmsParaDecimal(22,56,10.00,'S'), lon: dmsParaDecimal(46,33,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. INTERLIGACAO", lat: dmsParaDecimal(23,54,43.30,'S'), lon: dmsParaDecimal(46,29,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. IPANEMA", lat: dmsParaDecimal(23,26,90.00,'S'), lon: dmsParaDecimal(47,32,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. ITAQUERA", lat: dmsParaDecimal(23,32,55.00,'S'), lon: dmsParaDecimal(46,27,93.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. JACAREI", lat: dmsParaDecimal(23,20,65.00,'S'), lon: dmsParaDecimal(45,57,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. JAPI", lat: dmsParaDecimal(23,13,25.00,'S'), lon: dmsParaDecimal(47,07,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. LAGOA", lat: dmsParaDecimal(23,08,73.30,'S'), lon: dmsParaDecimal(46,51,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. MAILASQUI", lat: dmsParaDecimal(23,34,01.70,'S'), lon: dmsParaDecimal(47,04,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. NOVA ODESSA", lat: dmsParaDecimal(22,47,03.30,'S'), lon: dmsParaDecimal(47,17,98.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P PARANAPIACABA", lat: dmsParaDecimal(23,45,26.70,'S'), lon: dmsParaDecimal(46,18,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. PAULINIA", lat: dmsParaDecimal(22,47,48.30,'S'), lon: dmsParaDecimal(47,09,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. PED. DUTRA", lat: dmsParaDecimal(22,55,81.70,'S'), lon: dmsParaDecimal(45,21,65.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. PENTEADO", lat: dmsParaDecimal(23,29,36.70,'S'), lon: dmsParaDecimal(46,41,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. RAPOSO", lat: dmsParaDecimal(23,30,23.30,'S'), lon: dmsParaDecimal(47,25,08.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. REDENCAO", lat: dmsParaDecimal(23,15,66.70,'S'), lon: dmsParaDecimal(45,33,96.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. REPRESA", lat: dmsParaDecimal(22,42,90.00,'S'), lon: dmsParaDecimal(47,15,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. SHOPPING", lat: dmsParaDecimal(22,52,03.30,'S'), lon: dmsParaDecimal(47,01,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. SUL BASILICA", lat: dmsParaDecimal(22,57,28.30,'S'), lon: dmsParaDecimal(45,12,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. TREVO", lat: dmsParaDecimal(23,14,48.30,'S'), lon: dmsParaDecimal(46,52,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "P. UNICAMP", lat: dmsParaDecimal(22,47,55.00,'S'), lon: dmsParaDecimal(47,03,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R10RGR", lat: dmsParaDecimal(23,26,36.60,'S'), lon: dmsParaDecimal(46,29,21.60,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R10LGR", lat: dmsParaDecimal(23,26,05.00,'S'), lon: dmsParaDecimal(46,28,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R28LGR", lat: dmsParaDecimal(23,25,95.00,'S'), lon: dmsParaDecimal(46,27,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R28RGR", lat: dmsParaDecimal(23,25,60.00,'S'), lon: dmsParaDecimal(46,26,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R17RSP", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R17LSP", lat: dmsParaDecimal(23,37,25.00,'S'), lon: dmsParaDecimal(46,39,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R35LSP", lat: dmsParaDecimal(23,38,05.00,'S'), lon: dmsParaDecimal(46,39,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R35RSP", lat: dmsParaDecimal(23,37,90.00,'S'), lon: dmsParaDecimal(46,39,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R15KP", lat: dmsParaDecimal(23,00,16.60,'S'), lon: dmsParaDecimal(47,08,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R33KP", lat: dmsParaDecimal(23,00,95.00,'S'), lon: dmsParaDecimal(47,07,35.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R16SJ", lat: dmsParaDecimal(23,13,18.30,'S'), lon: dmsParaDecimal(45,52,21.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R34SJ", lat: dmsParaDecimal(23,14,20.00,'S'), lon: dmsParaDecimal(45,51,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R12MT", lat: dmsParaDecimal(23,30,46.70,'S'), lon: dmsParaDecimal(46,38,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R30MT", lat: dmsParaDecimal(23,30,61.70,'S'), lon: dmsParaDecimal(46,37,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R18JD", lat: dmsParaDecimal(23,10,50.00,'S'), lon: dmsParaDecimal(46,56,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R36JD", lat: dmsParaDecimal(23,11,20.00,'S'), lon: dmsParaDecimal(46,56,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R12JH", lat: dmsParaDecimal(23,25,56.70,'S'), lon: dmsParaDecimal(47,10,58.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R30JH", lat: dmsParaDecimal(23,25,65.00,'S'), lon: dmsParaDecimal(47,09,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R18CO", lat: dmsParaDecimal(23,28,30.00,'S'), lon: dmsParaDecimal(47,29,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R36CO", lat: dmsParaDecimal(23,29,06.70,'S'), lon: dmsParaDecimal(47,29,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R17ST", lat: dmsParaDecimal(23,56,00.00,'S'), lon: dmsParaDecimal(46,17,80.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R35ST", lat: dmsParaDecimal(23,55,36.70,'S'), lon: dmsParaDecimal(46,18,23.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R12AI", lat: dmsParaDecimal(22,45,33.30,'S'), lon: dmsParaDecimal(47,16,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R30AI", lat: dmsParaDecimal(22,45,36.70,'S'), lon: dmsParaDecimal(47,15,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R16AM", lat: dmsParaDecimal(22,51,31.70,'S'), lon: dmsParaDecimal(47,06,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R34AM", lat: dmsParaDecimal(22,51,78.30,'S'), lon: dmsParaDecimal(47,06,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R16BP", lat: dmsParaDecimal(22,58,38.30,'S'), lon: dmsParaDecimal(46,32,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R34BP", lat: dmsParaDecimal(22,59,00.00,'S'), lon: dmsParaDecimal(46,32,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R06OI", lat: dmsParaDecimal(23,18,08.30,'S'), lon: dmsParaDecimal(47,41,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R24OI", lat: dmsParaDecimal(23,17,73.30,'S'), lon: dmsParaDecimal(47,41,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R15IM", lat: dmsParaDecimal(24,09,36.70,'S'), lon: dmsParaDecimal(46,47,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R33IM", lat: dmsParaDecimal(24,09,80.00,'S'), lon: dmsParaDecimal(46,47,13.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R02TB", lat: dmsParaDecimal(23,07,98.30,'S'), lon: dmsParaDecimal(46,34,51.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R20TB", lat: dmsParaDecimal(23,07,38.30,'S'), lon: dmsParaDecimal(46,34,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R02ET", lat: dmsParaDecimal(23,06,56.70,'S'), lon: dmsParaDecimal(47,43,41.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "R20ET", lat: dmsParaDecimal(23,06,03.30,'S'), lon: dmsParaDecimal(47,43,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "UNIP", lat: dmsParaDecimal(23,15,46.70,'S'), lon: dmsParaDecimal(45,56,85.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ERICSSON", lat: dmsParaDecimal(23,08,96.70,'S'), lon: dmsParaDecimal(45,46,83.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CAPELA DO ALTO", lat: dmsParaDecimal(23,28,58.30,'S'), lon: dmsParaDecimal(47,45,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TRAVES PIRAPORA", lat: dmsParaDecimal(23,39,73.30,'S'), lon: dmsParaDecimal(47,40,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA1", lat: dmsParaDecimal(22,27,66.70,'S'), lon: dmsParaDecimal(46,59,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA2", lat: dmsParaDecimal(22,30,16.70,'S'), lon: dmsParaDecimal(46,37,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA3", lat: dmsParaDecimal(22,33,46.70,'S'), lon: dmsParaDecimal(46,07,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA4", lat: dmsParaDecimal(22,49,20.00,'S'), lon: dmsParaDecimal(45,59,95.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA5", lat: dmsParaDecimal(22,58,48.30,'S'), lon: dmsParaDecimal(45,55,55.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA6", lat: dmsParaDecimal(23,03,13.30,'S'), lon: dmsParaDecimal(45,40,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA7", lat: dmsParaDecimal(23,02,31.70,'S'), lon: dmsParaDecimal(45,36,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA8", lat: dmsParaDecimal(23,14,86.70,'S'), lon: dmsParaDecimal(45,33,26.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA9", lat: dmsParaDecimal(23,18,53.30,'S'), lon: dmsParaDecimal(45,32,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA10", lat: dmsParaDecimal(23,42,73.30,'S'), lon: dmsParaDecimal(45,25,68.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA11", lat: dmsParaDecimal(23,54,61.70,'S'), lon: dmsParaDecimal(45,22,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA12", lat: dmsParaDecimal(24,04,53.30,'S'), lon: dmsParaDecimal(46,04,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA13", lat: dmsParaDecimal(24,18,45.00,'S'), lon: dmsParaDecimal(46,10,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA14", lat: dmsParaDecimal(24,24,40.00,'S'), lon: dmsParaDecimal(46,41,48.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA15", lat: dmsParaDecimal(24,19,71.70,'S'), lon: dmsParaDecimal(46,47,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA16", lat: dmsParaDecimal(23,53,85.00,'S'), lon: dmsParaDecimal(47,22,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA17", lat: dmsParaDecimal(23,40,33.30,'S'), lon: dmsParaDecimal(47,40,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA18", lat: dmsParaDecimal(23,39,00.00,'S'), lon: dmsParaDecimal(47,41,76.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA19", lat: dmsParaDecimal(23,16,10.00,'S'), lon: dmsParaDecimal(47,48,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA20", lat: dmsParaDecimal(23,04,03.30,'S'), lon: dmsParaDecimal(47,43,63.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA21", lat: dmsParaDecimal(22,51,60.00,'S'), lon: dmsParaDecimal(47,38,73.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA22", lat: dmsParaDecimal(22,42,26.70,'S'), lon: dmsParaDecimal(47,35,10.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "TMA23", lat: dmsParaDecimal(22,38,78.30,'S'), lon: dmsParaDecimal(47,26,43.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT027", lat: dmsParaDecimal(23,33,82.00,'S'), lon: dmsParaDecimal(46,33,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT029", lat: dmsParaDecimal(23,37,69.00,'S'), lon: dmsParaDecimal(46,28,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NMT20", lat: dmsParaDecimal(23,37,79.00,'S'), lon: dmsParaDecimal(46,23,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VARUM", lat: dmsParaDecimal(23,37,90.00,'S'), lon: dmsParaDecimal(46,18,24.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT031", lat: dmsParaDecimal(23,46,36.00,'S'), lon: dmsParaDecimal(46,17,62.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT032", lat: dmsParaDecimal(23,53,55.00,'S'), lon: dmsParaDecimal(46,23,78.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT033", lat: dmsParaDecimal(24,00,63.00,'S'), lon: dmsParaDecimal(46,54,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT036", lat: dmsParaDecimal(23,55,17.00,'S'), lon: dmsParaDecimal(47,04,12.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "KOKMI", lat: dmsParaDecimal(23,44,47.00,'S'), lon: dmsParaDecimal(47,07,69.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NMT23", lat: dmsParaDecimal(23,31,25.00,'S'), lon: dmsParaDecimal(46,34,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NMT24", lat: dmsParaDecimal(23,31,68.30,'S'), lon: dmsParaDecimal(46,31,25.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT014", lat: dmsParaDecimal(23,28,23.30,'S'), lon: dmsParaDecimal(46,53,60.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT039", lat: dmsParaDecimal(23,29,81.70,'S'), lon: dmsParaDecimal(46,45,75.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT037", lat: dmsParaDecimal(23,30,33.30,'S'), lon: dmsParaDecimal(46,40,30.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT038", lat: dmsParaDecimal(23,32,30.00,'S'), lon: dmsParaDecimal(46,36,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MT028", lat: dmsParaDecimal(23,36,40.00,'S'), lon: dmsParaDecimal(46,29,90.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NMT21", lat: dmsParaDecimal(23,38,73.30,'S'), lon: dmsParaDecimal(46,26,86.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "NMT22", lat: dmsParaDecimal(23,44,63.30,'S'), lon: dmsParaDecimal(46,19,36.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CSIRIO", lat: dmsParaDecimal(23,36,46.70,'S'), lon: dmsParaDecimal(46,39,11.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CEBOL", lat: dmsParaDecimal(23,35,48.30,'S'), lon: dmsParaDecimal(46,39,05.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "B2222", lat: dmsParaDecimal(23,34,63.30,'S'), lon: dmsParaDecimal(46,39,16.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "B4444", lat: dmsParaDecimal(23,33,35.00,'S'), lon: dmsParaDecimal(46,40,71.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MEMORIAL", lat: dmsParaDecimal(23,31,60.00,'S'), lon: dmsParaDecimal(46,39,88.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ACLIMACAO", lat: dmsParaDecimal(23,34,86.70,'S'), lon: dmsParaDecimal(46,38,33.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PBRAS", lat: dmsParaDecimal(23,32,80.00,'S'), lon: dmsParaDecimal(46,37,06.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "STATU", lat: dmsParaDecimal(23,32,35.00,'S'), lon: dmsParaDecimal(46,34,56.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PARIC", lat: dmsParaDecimal(23,31,35.00,'S'), lon: dmsParaDecimal(46,33,38.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "JARAG", lat: dmsParaDecimal(23,27,15.00,'S'), lon: dmsParaDecimal(46,47,20.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "PACUC", lat: dmsParaDecimal(23,29,15.00,'S'), lon: dmsParaDecimal(46,46,15.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "MZERO", lat: dmsParaDecimal(23,30,90.00,'S'), lon: dmsParaDecimal(46,43,50.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ESTAD", lat: dmsParaDecimal(23,31,31.70,'S'), lon: dmsParaDecimal(46,41,46.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "CEBOLAO", lat: dmsParaDecimal(23,31,58.30,'S'), lon: dmsParaDecimal(46,45,01.70,'W'), restricao: { fl: , tipo: ""}}
+{nome: "BTIETE", lat: dmsParaDecimal(23,30,15.00,'S'), lon: dmsParaDecimal(46,32,53.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANI10", lat: dmsParaDecimal(24,44,93.00,'S'), lon: dmsParaDecimal(46,43,03.30,'W'), restricao: { fl: , tipo: ""}}
+{nome: "ANI20", lat: dmsParaDecimal(24,53,85.00,'S'), lon: dmsParaDecimal(46,43,70.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IBD10", lat: dmsParaDecimal(23,40,68.30,'S'), lon: dmsParaDecimal(44,52,40.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "IBD20", lat: dmsParaDecimal(23,40,86.60,'S'), lon: dmsParaDecimal(44,52,51.60,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDM10", lat: dmsParaDecimal(23,08,98.30,'S'), lon: dmsParaDecimal(45,12,45.00,'W'), restricao: { fl: , tipo: ""}}
+{nome: "EDM20", lat: dmsParaDecimal(23,06,48.30,'S'), lon: dmsParaDecimal(45,01,91.60,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUN10", lat: dmsParaDecimal(22,10,76.00,'S'), lon: dmsParaDecimal(46,06,56.60,'W'), restricao: { fl: , tipo: ""}}
+{nome: "VUN20", lat: dmsParaDecimal(22,02,68.30,'S'), lon: dmsParaDecimal(45,59,73.30,'W'), restricao: { fl: , tipo: ""}}
