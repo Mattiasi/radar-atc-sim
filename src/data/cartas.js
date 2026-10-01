@@ -13,7 +13,12 @@ export const cartasNavegacao = {
             ],
             linhas: [
                 ["OGTAL", "SP099", "SP101", "SP032", "KOMGU"]
-            ]
+            ],
+            marcasMilhagem: {
+                pontoZero: "GERSU",
+                distancias: [10, 20, 30, 40, 50],
+                rota: ["OGTAL", "SP099", "SP101", "SP032", "KOMGU", "GERSU"]
+            }
         },
         "ORESU_1A": {
             nome: "ORESU 1A",
@@ -24,7 +29,12 @@ export const cartasNavegacao = {
             ],
             linhas: [
                 ["PRUMO", "IROPU", "LUVDI"]
-            ]
+            ],
+            marcasMilhagem: {
+                pontoZero: "GERSU",
+                distancias: [10, 20, 30, 40, 50],
+                rota: ["PRUMO", "IROPU", "LUVDI", "GERSU", "URUTA", "SP139", "SP017"]
+            }
         }
     },
     AIC: {

@@ -249,14 +249,14 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor) {
                 let telaUltimo = deltaParaTela(pProximo);
                 
                 // Desenha linha prolongada tracejada
-                state.ctx.strokeStyle = cor; 
-                state.ctx.lineWidth = 1; 
-                state.ctx.setLineDash([5, 5]); 
-                state.ctx.beginPath(); 
-                state.ctx.moveTo(telaUltimo.x, telaUltimo.y); 
-                state.ctx.lineTo(telaExt.x, telaExt.y); 
-                state.ctx.stroke(); 
-                state.ctx.setLineDash([]); 
+                //state.ctx.strokeStyle = cor; 
+                //state.ctx.lineWidth = 1; 
+                //state.ctx.setLineDash([5, 5]); 
+                //state.ctx.beginPath(); 
+                //state.ctx.moveTo(telaUltimo.x, telaUltimo.y); 
+                //state.ctx.lineTo(telaExt.x, telaExt.y); 
+                //state.ctx.stroke(); 
+                //state.ctx.setLineDash([]); 
 
                 while (alvoIndex < alvosNM.length) {
                     let propExt = (alvosNM[alvoIndex] - (accDist + distSeg)) / distSeg;
@@ -348,11 +348,21 @@ export function desenharMapaBase() {
         }
     });
 
-    // 5. Marcas de milhagem
-    const corOresu = cartasNavegacao?.STAR?.ORESU_1A?.cor || '#ff9900';
-    const corOgtal = cartasNavegacao?.STAR?.OGTAL_2A?.cor || '#ff9900';
-    desenharMarcasMilhagem(["PRUMO", "IROPU", "LUVDI", "GERSU", "URUTA", "SP139", "SP017"], "GERSU", [10, 20, 30, 40, 50], corOresu);
-    desenharMarcasMilhagem(["OGTAL", "SP099", "SP101", "SP032", "KOMGU", "GERSU"], "GERSU", [10, 20, 30, 40, 50], corOgtal);
+    // 5. Marcas de milhagem (Data-Driven: lido dinamicamente das cartas)
+    if (cartasNavegacao) {
+        Object.values(cartasNavegacao).forEach(categoria => {
+            Object.values(categoria).forEach(carta => {
+                if (carta.marcasMilhagem) {
+                    desenharMarcasMilhagem(
+                        carta.marcasMilhagem.rota, 
+                        carta.marcasMilhagem.pontoZero, 
+                        carta.marcasMilhagem.distancias, 
+                        carta.cor || '#ff9900'
+                    );
+                }
+            });
+        });
+    }
 
     // 6. Desenho exclusivo dos fixos de navegação (sem poluição com pontos PT_xx)
     fixosNavegacao.forEach(fixoObj => {

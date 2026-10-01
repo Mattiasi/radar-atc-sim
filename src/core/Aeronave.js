@@ -11,7 +11,7 @@ import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_ver
 import { updateLNAV, updateLateralPhysics, updateFlyByProtection } from '../controllers/LNAVController.js';
 import { updateVNAV } from '../controllers/VNAVController.js';
 import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from '../controllers/ILSController.js';
-import { flightCommandService } from '../agents/FlightCommandService.js';
+import { commandParser } from '../agents/CommandParser.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -940,7 +940,7 @@ export class Aeronave {
      *      ela recupera automaticamente a rota completa (ROTA_PRUMO ou ROTA_OGTAL) e reengaja o LNAV.
      */
     analisarComandosTexto() {
-        flightCommandService.parseAndExecuteScratchpad(this, this.textoLivre);
+        commandParser.parseAndExecuteScratchpad(this, this.textoLivre);
     }
 }
 
