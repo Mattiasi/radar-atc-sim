@@ -160,7 +160,16 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
                         if (rest.tipo !== "BELOW") {
                             highestRestriction = Math.max(highestRestriction, flAlvoFixo);
                         }
-                        let deltaAltFt = (aero.flAtualNum - flAlvoFixo) * 100;
+
+                        let flObrigatorioParaDescer = flAlvoFixo;
+                        if (rest.tipo === "ABOVE") {
+                            flObrigatorioParaDescer = aero.flAtualNum;
+                        } else if (rest.tipo === "WINDOW") {
+                            let flMax = rest.flMax || limitFL;
+                            flObrigatorioParaDescer = Math.min(aero.flAtualNum, flMax);
+                        }
+                        
+                        let deltaAltFt = (aero.flAtualNum - flObrigatorioParaDescer) * 100;
                         let distTOD = (aero.flAtualNum - flAlvoFixo) * 0.3;
 
                         let distEfetiva = distAcumulada;
@@ -195,7 +204,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
                                 alvoValido = Math.max(alvoValido, pisoFlyBy);
                             }
 
-                            if (alvoValido < flAlvoFinal) {
+                            if (alvoValido <= flAlvoFinal) {
                                 flAlvoFinal = alvoValido;
                                 maiorRazaoNecessaria = Math.max(maiorRazaoNecessaria, rAjustada);
                                 encontrouDescida = true;
