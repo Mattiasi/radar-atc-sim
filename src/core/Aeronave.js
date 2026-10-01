@@ -181,8 +181,7 @@ export class Aeronave {
 
             // 2. Fallback se estiver no waypoint 0 e possuir restrição
             if (!fixoSobAero && spawnWpIndex === 0 && restricoesFixos[rota[0]] && restricoesFixos[rota[0]].fl !== undefined) {
-                fixoSobAero = rota[0];
-                idxFixoSobAero = 0;
+                // NÃO definir fixoSobAero para evitar avanço prematuro do waypoint
             }
         }
 

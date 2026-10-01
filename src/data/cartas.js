@@ -49,7 +49,7 @@ export const cartasNavegacao = {
                         {nome: "ORESU", lat: dmsParaDecimal(23,1 ,45.00,'S'), lon: dmsParaDecimal(47,9,35.00,'W'), restricao: { fl: 130, flMax: 170, tipo: "WINDOW" }},
                         {nome: "PRUMO", lat: dmsParaDecimal(23, 15, 10.10, 'S'), lon: dmsParaDecimal(47,  6, 19.99, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
                         {nome: "IROPU", lat: dmsParaDecimal(23, 25, 31.05, 'S'), lon: dmsParaDecimal(47,  4,  3.91, 'W'), restricao: { fl: 80, flMax: 90, tipo: "WINDOW" } },
-                        {nome: "ENTIT", lat: dmsParaDecimal(22,25,5.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: 270, tipo: "BELOW"}}
+                        {nome: "ENTIT", lat: dmsParaDecimal(22,25,5.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: 270, tipo: "AT"}}
                     ],
                     linhas: [
                         ["UTLOT","RUSTE", "ORESU", "PRUMO", "IROPU", "LUVDI", "GERSU"],
@@ -76,15 +76,14 @@ export const cartasNavegacao = {
                     fixos: [
                         { nome: "LUVDI", lat: dmsParaDecimal(23, 29, 35.90, 'S'), lon: dmsParaDecimal(46, 48, 21.77, 'W'), restricao: { fl:  55, tipo: "AT" } },
                         { nome: "KOMGU", lat: dmsParaDecimal(23, 33, 54.89, 'S'), lon: dmsParaDecimal(46, 49, 40.64, 'W'), restricao: { fl:  55, tipo: "AT" } },
-                        { nome: "GERSU", lat: dmsParaDecimal(23, 30, 41.00, 'S'), lon: dmsParaDecimal(46, 44, 10.10, 'W'), restricao: { fl:  47, tipo: "ABOVE" } },
+                        { nome: "GERSU", lat: dmsParaDecimal(23, 30, 41.00, 'S'), lon: dmsParaDecimal(46, 44, 10.10, 'W'), restricao: { fl:  47, tipo: "AT" } },
                         { nome: "URUTA", lat: dmsParaDecimal(23, 33, 28.57, 'S'), lon: dmsParaDecimal(46, 42, 14.37, 'W'), restricao: { fl:  40, tipo: "AT" } },
                         { nome: "SP139", lat: dmsParaDecimal(23, 34, 59.83, 'S'), lon: dmsParaDecimal(46, 41, 11.34, 'W'), restricao: { fl:  36, tipo: "AT" } },
                         { nome: "SP017", lat: dmsParaDecimal(23, 36, 15.89, 'S'), lon: dmsParaDecimal(46, 40, 18.81, 'W'), restricao: { fl:  32, tipo: "AT" } }
                     ],
                     linhas: [
                         ["LUVDI", "GERSU"],
-                        ["KOMGU", "GERSU"],
-                        ["GERSU", "URUTA", "SP139", "SP017"]
+                        ["KOMGU", "GERSU"]
                     ]
                 }
             },

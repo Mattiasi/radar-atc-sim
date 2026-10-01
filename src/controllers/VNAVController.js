@@ -196,7 +196,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
                             let rAjustada = Math.min(rMax, Math.max(rMin, rNec));
 
                             let alvoValido = flAlvoFixo;
-                            if (i > 0 && restAtual && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE")) {
+                            if (i > 0 && restAtual && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE" || restAtual.tipo === "WINDOW")) {
                                 alvoValido = Math.max(alvoValido, pisoAtual);
                             }
                             if (aero.flyByProtegido && isVia) {
