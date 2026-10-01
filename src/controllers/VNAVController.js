@@ -1,10 +1,13 @@
 import { calcularRumoDistancia, correcaoLon } from '../utils/utils.js';
 import { DESCENT_MODES, update_approach_vertical_profile } from './ApproachProfileManager.js';
 import { ILS_VERTICAL_MODES } from './ILSController.js';
+import { isFixoIAC } from '../data/data.js';
+import { getAircraftPerformance } from '../data/PerformanceDB.js';
 
 export function updateVNAV(aero, dtSec, state, restricoesFixos) {
     let targetFL = aero.flAtualNum;
-    let razaoNominal = Math.round(aero.vel * 5); 
+    let velBase = aero.gs || aero.tas || aero.vel;
+    let razaoNominal = Math.round(velBase * 5.2); 
     let razaoEfetiva = razaoNominal;
 
     const isVia = (aero.nivAutorizadoFisico === "VIA" || aero.nivAutorizadoFisico === "---");
@@ -122,12 +125,13 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
             let encontrouDescida = false;
             let temRestricaoAtivaFutura = false;
             let flAlvoFinal = aero.flAtualNum;
-            let maiorRazaoNecessaria = razaoNominal;
+            let maiorRazaoNecessaria = 300; // Começa no mínimo para permitir descidas bem suaves
             let highestRestriction = isVia ? 0 : altClearence;
 
             if (!aero.desceuParaWp) aero.desceuParaWp = {};
 
-            for (let i = 0; i < 1; i++) {
+            let lookaheadLimit = (iterWpNome && isFixoIAC(iterWpNome)) ? 1 : 2;
+            for (let i = 0; i < lookaheadLimit; i++) {
                 if (!iterWpNome) break;
 
                 let rest = restricoesFixos[iterWpNome];
@@ -166,19 +170,20 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
                         }
 
                         let jaIniciou = (i === 0 && Boolean(aero.desceuParaWp[iterWpNome]));
-                        let noTOD = (distAcumulada <= distTOD + 1.5);
+                        let noTOD = true; // Inicia a descida imediatamente após o fixo
 
                         if (jaIniciou || noTOD) {
                             if (i === 0 && (!aero.flyByProtegido || (aero.rota && iterWpNome !== aero.rota[aero.wpIndex]))) {
                                 aero.desceuParaWp[iterWpNome] = true;
                             }
 
-                            let velEfetiva = Math.max(aero.vel, 100);
+                            let velEfetiva = Math.max(aero.gs || aero.tas || aero.vel, 100);
                             let tempoMin = (distEfetiva / velEfetiva) * 60;
                             let rNec = tempoMin > 0 ? (deltaAltFt / tempoMin) : razaoNominal;
 
-                            let rMin = Math.max(500, razaoNominal - 500);
-                            let rMax = Math.max(razaoNominal + 700, 1800);
+                            const perf = getAircraftPerformance(aero.tipo);
+                            let rMin = 300; // Permite uma razão bem suave para descidas contínuas longas
+                            let rMax = Math.abs(perf.rates.descentStructuralMax);
                             let rAjustada = Math.min(rMax, Math.max(rMin, rNec));
 
                             let alvoValido = flAlvoFixo;

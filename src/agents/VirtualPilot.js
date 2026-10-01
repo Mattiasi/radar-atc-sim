@@ -127,7 +127,7 @@ export class VirtualPilot {
                     const nominalDescent = (aero.razaoEfetiva !== undefined && aero.razaoEfetiva > 0)
                         ? -aero.razaoEfetiva
                         : ((altDiff / dtg) * (gs / 60));
-                    vsRequired = Math.max(nominalDescent, perf.rates.descentNormal);
+                    vsRequired = Math.max(nominalDescent, perf.rates.descentStructuralMax);
                     // Suavização da captura de altitude (flare de chegada ao nível alvo para evitar overshoot)
                     if (altDiff > -150) {
                         vsRequired = Math.max(vsRequired, (altDiff / 150) * Math.abs(nominalDescent));

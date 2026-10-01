@@ -49,7 +49,7 @@ export const cartasNavegacao = {
                         {nome: "ORESU", lat: dmsParaDecimal(23,1 ,45.00,'S'), lon: dmsParaDecimal(47,9,35.00,'W'), restricao: { fl: 130, flMax: 170, tipo: "WINDOW" }},
                         {nome: "PRUMO", lat: dmsParaDecimal(23, 15, 10.10, 'S'), lon: dmsParaDecimal(47,  6, 19.99, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
                         {nome: "IROPU", lat: dmsParaDecimal(23, 25, 31.05, 'S'), lon: dmsParaDecimal(47,  4,  3.91, 'W'), restricao: { fl: 80, flMax: 90, tipo: "WINDOW" } },
-                        {nome: "ENTIT", lat: dmsParaDecimal(22,25,5.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: 270, tipo: "BELOW"}}
+                        {nome: "ENTIT", lat: dmsParaDecimal(22,25,5.00,'S'), lon: dmsParaDecimal(46,39,46.70,'W'), restricao: { fl: 270, tipo: "AT"}}
                     ],
                     linhas: [
                         ["UTLOT","RUSTE", "ORESU", "PRUMO", "IROPU", "LUVDI", "GERSU"],
