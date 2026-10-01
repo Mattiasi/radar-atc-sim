@@ -1,6 +1,7 @@
 import { flightCommandService } from './FlightCommandService.js';
 import { authorize_approach, cancel_approach, DESCENT_MODES, findFirstIACFix } from '../controllers/ApproachProfileManager.js';
 import { fixosNavegacao } from '../data/data.js';
+import { AircraftStateMutator } from '../core/AircraftStateMutator.js';
 
 export const DIC_FIXOS_PADRAO = {
     "PRU": "PRUMO", "IRP": "IROPU", "LVD": "LUVDI", "GRS": "GERSU",
@@ -53,21 +54,10 @@ export class CommandParser {
 
         const matchSR = /\bSR\b/.test(texto);
         if (matchSR) {
-            aero.semRestricoes = true;
-            if (!aero.cleared_approach) {
-                aero.descent_mode = DESCENT_MODES.OPEN_DESCENT;
-                aero.verticalMode = 'OP-D';
-            }
-            if (aero.nivAutorizado === "VIA" || aero.cleared_approach) {
-                const iacFix = findFirstIACFix(aero);
-                if (iacFix) aero.srAteFixoIAC = iacFix;
-            }
+            const iacFix = (aero.nivAutorizado === "VIA" || aero.cleared_approach) ? findFirstIACFix(aero) : null;
+            AircraftStateMutator.definirRestricaoVelocidadeVertical(aero, true, iacFix);
         } else if (aero.semRestricoes && !matchSR) {
-            aero.semRestricoes = false;
-            if (!aero.cleared_approach) {
-                aero.descent_mode = DESCENT_MODES.RESTRICTED_DESCENT;
-                aero.verticalMode = 'AUTO';
-            }
+            AircraftStateMutator.definirRestricaoVelocidadeVertical(aero, false);
         }
 
         const matchApp = /\b(APX|APP|RNP|IAC|ILS|AUT|PROC)\b/.test(texto);
@@ -88,14 +78,11 @@ export class CommandParser {
         const matchSB = /\b(SB|SPB|BRK)\b/.test(texto);
         const matchNoSB = /\b(NOSB|NOBRK|SBOFF)\b/.test(texto);
         if (matchNoSB) {
-            aero.speedbrakes = false;
-            aero.speedbrakesComando = false;
+            AircraftStateMutator.definirSpeedbrakes(aero, false);
         } else if (matchSB) {
-            aero.speedbrakes = true;
-            aero.speedbrakesComando = true;
+            AircraftStateMutator.definirSpeedbrakes(aero, true);
         } else if (aero.speedbrakesComando && !matchSB) {
-            aero.speedbrakes = false;
-            aero.speedbrakesComando = false;
+            AircraftStateMutator.definirSpeedbrakes(aero, false);
         }
 
         const dicFixos = { ...DIC_FIXOS_PADRAO };

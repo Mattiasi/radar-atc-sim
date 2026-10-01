@@ -18,6 +18,7 @@ import { TASK_TYPES } from './pilotEngine.js';
 import { authorize_approach, cancel_approach, DESCENT_MODES, findFirstIACFix } from '../controllers/ApproachProfileManager.js';
 import { VERTICAL_MODES } from './VirtualPilot.js';
 import { DIC_FIXOS_PADRAO } from './CommandParser.js';
+import { AircraftStateMutator } from '../core/AircraftStateMutator.js';
 
 export class FlightCommandService {
     /**
@@ -32,20 +33,7 @@ export class FlightCommandService {
         const cmd = String(level).toUpperCase().trim();
 
         if (cmd === "ILS") {
-            const currentAlt = aero.alt || (aero.flAtualNum * 100);
-            const flPrev = parseInt(aero.nivAutorizado, 10);
-            // Trava a altitude de plataforma sem nunca permitir subida
-            aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0)
-                ? Math.min(currentAlt, flPrev * 100)
-                : currentAlt;
-
-            aero.nivAutorizado = "ILS";
-            aero.cleared_level = "ILS";
-            aero.ils_authorized = true;
-            aero.cleared_approach = true;
-            aero.autorizadoProcedimento = true;
-            aero.nivAutorizadoFisico = "ILS";
-            if (aero.autopilot) aero.autopilot.ils_authorized = true;
+            AircraftStateMutator.ativarAutorizacaoILS(aero);
 
             // Despacha no canal VERTICAL do piloto virtual
             if (aero.pilot) {
@@ -60,37 +48,20 @@ export class FlightCommandService {
                 }
             }
         } else if (cmd === "VIA") {
-    if (!aero.altitude_before_ils) {
-        const flPrev = parseInt(aero.nivAutorizado, 10);
-        aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
-    }
-    if (aero.semRestricoes) {
-        const nextIacFix = findFirstIACFix(aero);
-        if (nextIacFix) aero.srAteFixoIAC = nextIacFix;
-    }
-    aero.nivAutorizado = "VIA";
-    aero.cleared_level = "VIA";
-    aero.ils_authorized = false;
-    aero.nivAutorizadoFisico = "VIA";
-    if (aero.autopilot) aero.autopilot.ils_authorized = false;
-    if (aero.pilot) aero.pilot.dispatch("VERTICAL", "ALTITUDE", { level: "VIA" });
-} else if (cmd === "APP") {
-            // Qualquer seleção ou comando APP é estritamente atribuído a VIA
-            if (!aero.altitude_before_ils) {
-                const flPrev = parseInt(aero.nivAutorizado, 10);
-                aero.altitude_before_ils = (!isNaN(flPrev) && flPrev > 0) ? (flPrev * 100) : (aero.alt || aero.flAtualNum * 100);
-            }
+            AircraftStateMutator.ativarAutorizacaoVIA(aero);
             if (aero.semRestricoes) {
                 const nextIacFix = findFirstIACFix(aero);
                 if (nextIacFix) aero.srAteFixoIAC = nextIacFix;
             }
-            aero.nivAutorizado = "VIA";
-            aero.cleared_level = "VIA";
+            if (aero.pilot) aero.pilot.dispatch("VERTICAL", "ALTITUDE", { level: "VIA" });
+        } else if (cmd === "APP") {
+            AircraftStateMutator.ativarAutorizacaoVIA(aero);
+            if (aero.semRestricoes) {
+                const nextIacFix = findFirstIACFix(aero);
+                if (nextIacFix) aero.srAteFixoIAC = nextIacFix;
+            }
             aero.cleared_approach = true;
             aero.autorizadoProcedimento = true;
-            aero.ils_authorized = false;
-            aero.nivAutorizadoFisico = "VIA";
-            if (aero.autopilot) aero.autopilot.ils_authorized = false;
 
             authorize_approach(aero);
 
@@ -106,19 +77,10 @@ export class FlightCommandService {
                 }
             }
         } else if (cmd === "---") {
-            aero.nivAutorizado = "---";
-            aero.cleared_level = "---";
-            aero.nivAutorizadoFisico = "---";
+            AircraftStateMutator.definirNivelVoo(aero, "---");
         } else {
-            // Nível numérico (ex: "070", "040", "120")
             const nvStr = cmd.replace(/^FL/, '').padStart(3, '0');
-            aero.nivAutorizado = nvStr;
-            aero.cleared_level = nvStr;
-            aero.nivAutorizadoFisico = nvStr;
-            aero.ils_authorized = false;
-            aero.cleared_approach = false;
-            aero.autorizadoProcedimento = false;
-            if (aero.autopilot) aero.autopilot.ils_authorized = false;
+            AircraftStateMutator.definirNivelVoo(aero, nvStr);
 
             if (aero.pilot) {
                 aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: nvStr });
@@ -141,9 +103,7 @@ export class FlightCommandService {
         if (aero.pilot) {
             aero.pilot.dispatch('LATERAL', 'HEADING', { heading: proaNum, maior: Boolean(ladoMaior) });
         } else {
-            aero.modoLNAV = false;
-            aero.proaDestino = proaNum;
-            aero.curvaForcada = Boolean(ladoMaior);
+            AircraftStateMutator.ativarModoProa(aero, proaNum, Boolean(ladoMaior));
         }
     }
 
@@ -157,24 +117,19 @@ export class FlightCommandService {
         const modoStr = String(speedOrMode).toUpperCase().trim();
 
         if (modoStr === "MIN") {
-            aero.velocidadeMinima = true;
-            aero.velManual = false;
+            AircraftStateMutator.definirModoVelocidade(aero, "MIN");
         } else if (["AUTO", "NORM", "FREE", "FREEV", "RSM", "RSV", "RESUME", "VFREE"].includes(modoStr)) {
-            aero.velocidadeMinima = false;
-            aero.velManual = false;
+            AircraftStateMutator.definirModoVelocidade(aero, "AUTO");
             if (aero.pilot) {
                 aero.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
             }
         } else {
             const velNum = parseInt(speedOrMode, 10);
             if (!isNaN(velNum) && velNum >= 40 && velNum <= 600) {
-                aero.velocidadeMinima = false;
                 if (aero.pilot) {
                     aero.pilot.dispatch('LONGITUDINAL', 'SPEED', { speed: velNum });
                 } else {
-                    aero.velManual = true;
-                    aero.velComando = velNum;
-                    aero.velDestino = velNum;
+                    AircraftStateMutator.definirModoVelocidade(aero, "MANUAL", velNum);
                 }
             }
         }
@@ -219,17 +174,7 @@ export class FlightCommandService {
                 novaRota: novaRotaCalculada
             });
         } else {
-            if (novaRotaCalculada) aero.rota = novaRotaCalculada;
-            if (typeof novoWpPendente === 'number') {
-                aero.wpIndex = novoWpPendente;
-                aero.wpOffRoute = null;
-            } else {
-                aero.wpOffRoute = novoWpPendente;
-            }
-            aero.modoLNAV = true;
-            aero.velManual = false;
-            aero.flyByProtegido = null;
-            aero.desceuParaWp = {};
+            AircraftStateMutator.ativarModoDiretoFixo(aero, novoWpPendente, typeof novoWpPendente === 'number', novaRotaCalculada);
         }
     }
 
