@@ -50,12 +50,12 @@ export const DESCENT_MODE_TAG_LABELS = {
 export function getActiveIAC(aircraft) {
     if (aircraft && aircraft.active_iac) return aircraft.active_iac;
 
-    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao.AIC) {
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao["SBSP"] && cartasNavegacao["SBSP"]["17R"] && cartasNavegacao["SBSP"]["17R"].AIC) {
         // Carta padrão para SBSP RNP Y RWY 17R
-        if (cartasNavegacao.AIC["RNPY17R"]) {
-            return cartasNavegacao.AIC["RNPY17R"];
+        if (cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"]) {
+            return cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"];
         }
-        return Object.values(cartasNavegacao.AIC)[0] || null;
+        return Object.values(cartasNavegacao["SBSP"]["17R"].AIC)[0] || null;
     }
     return null;
 }
@@ -68,7 +68,7 @@ export function getActiveIAC(aircraft) {
  */
 export function getNextIACFix(currentFixName, active_iac = null) {
     if (!currentFixName) return null;
-    const iac = active_iac || (cartasNavegacao && cartasNavegacao.AIC ? cartasNavegacao.AIC["RNPY17R"] : null);
+    const iac = active_iac || getActiveIAC();
     if (!iac || !iac.linhas) return null;
 
     for (const linha of iac.linhas) {
@@ -154,7 +154,7 @@ export function getFixAltitudeFt(fixName, active_iac = null) {
         return rest.fl * 100;
     }
 
-    const iac = active_iac || (cartasNavegacao && cartasNavegacao.AIC ? cartasNavegacao.AIC["RNPY17R"] : null);
+    const iac = active_iac || getActiveIAC();
     if (iac && iac.fixos) {
         const f = iac.fixos.find(item => item.nome === fixName);
         if (f && f.restricao && f.restricao.fl !== undefined) {

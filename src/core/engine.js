@@ -195,7 +195,6 @@ export function gerenciarEsteiraDeTrafego() {
     if (!state.configFluxo || !Array.isArray(state.configFluxo.esteiras)) return;
 
     state.configFluxo.esteiras.forEach(esteira => {
-        if (!esteira.ativo) return;
         const fixoAlvo = esteira.fixo;
         if (!state.fixos[fixoAlvo]) return;
 
@@ -206,9 +205,10 @@ export function gerenciarEsteiraDeTrafego() {
             const pertenceAEsteira = ((aero.esteiraId === esteira.id && aero.fixoOrigem === fixoAlvo) || (!aero.esteiraId && aero.fixoOrigem === fixoAlvo));
 
             if (pertenceAEsteira && !aero.pousou) {
-                vivosNestaEsteira = true;
-
+                // Apenas aeronaves que AINDA NÃO cruzaram o fixo contam como vivas na fila de espera da esteira
                 if (!aero.gerouSucessor) {
+                    vivosNestaEsteira = true;
+
                     let distTrigger = calcularRumoDistancia(aero, state.fixos[fixoAlvo]).distanciaNM;
                     if (aero.distTriggerAnt === undefined) aero.distTriggerAnt = distTrigger;
 
@@ -221,26 +221,29 @@ export function gerenciarEsteiraDeTrafego() {
                     if (passou) {
                         aero.gerouSucessor = true;
 
-                        const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, aero.dest || "SBSP");
-                        if (rotaCompleta && rotaCompleta.length > 0) {
-                            let margem = Math.random() * 2.0;
-                            let separacaoReal = esteira.separacao + distTrigger + margem;
-                            let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, separacaoReal);
+                        // Se a esteira estiver ativa, gera o sucessor respeitando a separação
+                        if (esteira.ativo) {
+                            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, aero.dest || "SBSP");
+                            if (rotaCompleta && rotaCompleta.length > 0) {
+                                let margem = Math.random() * 2.0;
+                                let separacaoReal = esteira.separacao + margem;
+                                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, separacaoReal);
 
-                            if (spawnPt) {
-                                let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230;
-                                let dados = gerarDadosAeronave();
-                                const targetWp = rotaCompleta[spawnPt.wpIndex] || fixoAlvo;
-                                const niveis = obterNiveisSpawn(targetWp, rotaCompleta);
-                                let novaAero = new Aeronave(
-                                    dados.callsign, dados.tipo,
-                                    spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel,
-                                    niveis.nivAtual, niveis.nivAutorizado, aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
-                                );
-                                novaAero.esteiraId = esteira.id;
-                                novaAero.fixoOrigem = fixoAlvo;
-                                novaAero.rotaOriginal = fixoAlvo;
-                                state.aeronaves.push(novaAero);
+                                if (spawnPt) {
+                                    let vel = Math.floor(Math.random() * (250 - 230 + 1)) + 230;
+                                    let dados = gerarDadosAeronave();
+                                    const targetWp = rotaCompleta[spawnPt.wpIndex] || fixoAlvo;
+                                    const niveis = obterNiveisSpawn(targetWp, rotaCompleta);
+                                    let novaAero = new Aeronave(
+                                        dados.callsign, dados.tipo,
+                                        spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel,
+                                        niveis.nivAtual, niveis.nivAutorizado, aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                                    );
+                                    novaAero.esteiraId = esteira.id;
+                                    novaAero.fixoOrigem = fixoAlvo;
+                                    novaAero.rotaOriginal = fixoAlvo;
+                                    state.aeronaves.push(novaAero);
+                                }
                             }
                         }
                     }
@@ -248,11 +251,11 @@ export function gerenciarEsteiraDeTrafego() {
             }
         });
 
-        // 2. Prevenção de Deadlock: se o operador ligou o fluxo, mas o setor está vazio, injeta artificialmente um avião novo
-        if (!vivosNestaEsteira) {
+        // 2. Injeção de Aeronave: se a esteira está ligada e não há ninguém aguardando cruzar o fixo (vivosNestaEsteira = false)
+        if (esteira.ativo && !vivosNestaEsteira) {
             const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
             if (rotaCompleta && rotaCompleta.length > 0) {
-                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0);
+                let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0); // Spawna no marco zero
                 if (spawnPt) {
                     let dados = gerarDadosAeronave();
                     const niveis = obterNiveisSpawn(fixoAlvo, rotaCompleta);

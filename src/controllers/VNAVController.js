@@ -106,7 +106,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         if (iterWpNome) {
             let restAtual = restricoesFixos[iterWpNome];
             let pisoAtual = isVia ? 0 : altClearence;
-            if (restAtual && restAtual.fl !== undefined && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE")) {
+            if (restAtual && restAtual.fl !== undefined && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE" || restAtual.tipo === "WINDOW")) {
                 pisoAtual = Math.max(pisoAtual, restAtual.fl);
             }
 
@@ -137,6 +137,13 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
 
                     if (rest.tipo === "BELOW" && aero.flAtualNum <= limitFL) {
                         flAlvoFixo = aero.flAtualNum;
+                    }
+                    
+                    if (rest.tipo === "WINDOW") {
+                        let flMax = rest.flMax || limitFL;
+                        if (aero.flAtualNum <= flMax && aero.flAtualNum >= limitFL) {
+                            flAlvoFixo = aero.flAtualNum;
+                        }
                     }
 
                     if (aero.flyByProtegido && isVia) {

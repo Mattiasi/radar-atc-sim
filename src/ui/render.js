@@ -249,14 +249,14 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor) {
                 let telaUltimo = deltaParaTela(pProximo);
                 
                 // Desenha linha prolongada tracejada
-                //state.ctx.strokeStyle = cor; 
-                //state.ctx.lineWidth = 1; 
-                //state.ctx.setLineDash([5, 5]); 
-                //state.ctx.beginPath(); 
-                //state.ctx.moveTo(telaUltimo.x, telaUltimo.y); 
-                //state.ctx.lineTo(telaExt.x, telaExt.y); 
-                //state.ctx.stroke(); 
-                //state.ctx.setLineDash([]); 
+                state.ctx.strokeStyle = cor; 
+                state.ctx.lineWidth = 1; 
+                state.ctx.setLineDash([5, 5]); 
+                state.ctx.beginPath(); 
+                state.ctx.moveTo(telaUltimo.x, telaUltimo.y); 
+                state.ctx.lineTo(telaExt.x, telaExt.y); 
+                state.ctx.stroke(); 
+                state.ctx.setLineDash([]); 
 
                 while (alvoIndex < alvosNM.length) {
                     let propExt = (alvosNM[alvoIndex] - (accDist + distSeg)) / distSeg;
@@ -295,13 +295,17 @@ export function desenharMapaBase() {
 
     // 3. Rotas e linhas configuradas nas cartas (STAR, SID, AIC)
     if (cartasNavegacao) {
-        Object.values(cartasNavegacao).forEach(categoria => {
-            Object.values(categoria).forEach(carta => {
-                if (carta.linhas && carta.cor) {
-                    carta.linhas.forEach(linha => {
-                        desenharCaminho(linha, carta.cor);
+        Object.values(cartasNavegacao).forEach(aerodromo => {
+            Object.values(aerodromo).forEach(cabeceira => {
+                Object.values(cabeceira).forEach(categoria => {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.linhas && carta.cor) {
+                            carta.linhas.forEach(linha => {
+                                desenharCaminho(linha, carta.cor);
+                            });
+                        }
                     });
-                }
+                });
             });
         });
     }
@@ -350,16 +354,23 @@ export function desenharMapaBase() {
 
     // 5. Marcas de milhagem (Data-Driven: lido dinamicamente das cartas)
     if (cartasNavegacao) {
-        Object.values(cartasNavegacao).forEach(categoria => {
-            Object.values(categoria).forEach(carta => {
-                if (carta.marcasMilhagem) {
-                    desenharMarcasMilhagem(
-                        carta.marcasMilhagem.rota, 
-                        carta.marcasMilhagem.pontoZero, 
-                        carta.marcasMilhagem.distancias, 
-                        carta.cor || '#ff9900'
-                    );
-                }
+        Object.values(cartasNavegacao).forEach(aerodromo => {
+            Object.values(aerodromo).forEach(cabeceira => {
+                Object.values(cabeceira).forEach(categoria => {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.marcasMilhagem) {
+                            const marcasArray = Array.isArray(carta.marcasMilhagem) ? carta.marcasMilhagem : [carta.marcasMilhagem];
+                            marcasArray.forEach(marca => {
+                                desenharMarcasMilhagem(
+                                    marca.rota, 
+                                    marca.pontoZero, 
+                                    marca.distancias, 
+                                    carta.cor || '#ff9900'
+                                );
+                            });
+                        }
+                    });
+                });
             });
         });
     }
@@ -386,7 +397,12 @@ export function desenharMapaBase() {
         // Restrições de altitude da carta
         if (restricoesFixos[nome]) {
             const res = restricoesFixos[nome];
-            if (res.fl > 80) {
+            if (res.tipo === "WINDOW") {
+                let txtFl = "FL" + (res.flMax || res.fl).toString().padStart(3, '0') + "-FL" + res.fl.toString().padStart(3, '0');
+                state.ctx.font = '10px monospace';
+                state.ctx.fillStyle = '#000000';
+                state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
+            } else if (res.fl > 80) {
                 let txtFl = "FL" + res.fl.toString().padStart(3, '0');
                 if (res.tipo === "ABOVE") txtFl += "+";
                 else if (res.tipo === "BELOW") txtFl += "-";
@@ -394,8 +410,7 @@ export function desenharMapaBase() {
                 state.ctx.font = '10px monospace';
                 state.ctx.fillStyle = '#000000';
                 state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
-            } 
-            if (res.fl < 75) {
+            } else if (res.fl < 75) {
                 let txtFl = res.fl.toString().padEnd(4, '0') + "'";
                 if (res.tipo === "ABOVE") txtFl += "+";
                 else if (res.tipo === "BELOW") txtFl += "-";

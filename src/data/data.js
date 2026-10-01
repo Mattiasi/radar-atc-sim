@@ -17,35 +17,49 @@ export const restricoesFixos = {
     "SBSP": { fl: 26, tipo: "AT" }
 };
 
-Object.values(cartasNavegacao).forEach(categoria => {
-    Object.values(categoria).forEach(carta => {
-        if (carta.fixos) {
-            carta.fixos.forEach(f => {
-                fixosNavegacao.push({
-                    nome: f.nome,
-                    lat: f.lat,
-                    lon: f.lon,
-                    cor: carta.cor,
-                    restricao: f.restricao
-                });
-                if (f.restricao) {
-                    restricoesFixos[f.nome] = f.restricao;
+if (cartasNavegacao) {
+    Object.values(cartasNavegacao).forEach(aerodromo => {
+        Object.values(aerodromo).forEach(cabeceira => {
+            Object.values(cabeceira).forEach(categoria => {
+                if (categoria) {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.fixos) {
+                            carta.fixos.forEach(f => {
+                                fixosNavegacao.push({
+                                    nome: f.nome,
+                                    lat: f.lat,
+                                    lon: f.lon,
+                                    cor: carta.cor,
+                                    restricao: f.restricao
+                                });
+                                if (f.restricao) {
+                                    restricoesFixos[f.nome] = f.restricao;
+                                }
+                            });
+                        }
+                    });
                 }
             });
-        }
+        });
     });
-});
+}
 
 /**
  * Conjunto de fixos pertencentes a cartas de aproximação por instrumentos (IAC / AIC).
  */
 export const fixosIAC = new Set(["LUVDI", "KOMGU", "GERSU", "URUTA", "SP139", "SP017", "SBSP"]);
 
-if (cartasNavegacao && cartasNavegacao.AIC) {
-    Object.values(cartasNavegacao.AIC).forEach(carta => {
-        if (carta.fixos) {
-            carta.fixos.forEach(f => fixosIAC.add(f.nome));
-        }
+if (cartasNavegacao) {
+    Object.values(cartasNavegacao).forEach(aerodromo => {
+        Object.values(aerodromo).forEach(cabeceira => {
+            if (cabeceira.AIC) {
+                Object.values(cabeceira.AIC).forEach(carta => {
+                    if (carta.fixos) {
+                        carta.fixos.forEach(f => fixosIAC.add(f.nome));
+                    }
+                });
+            }
+        });
     });
 }
 
@@ -72,17 +86,21 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
 
     const conexoes = {};
     if (typeof cartasNavegacao === 'object' && cartasNavegacao !== null) {
-        Object.values(cartasNavegacao).forEach(categoria => {
-            Object.values(categoria).forEach(carta => {
-                if (carta.linhas) {
-                    carta.linhas.forEach(linha => {
-                        for (let i = 0; i < linha.length - 1; i++) {
-                            if (!conexoes[linha[i]]) {
-                                conexoes[linha[i]] = linha[i + 1];
-                            }
+        Object.values(cartasNavegacao).forEach(aerodromo => {
+            Object.values(aerodromo).forEach(cabeceira => {
+                Object.values(cabeceira).forEach(categoria => {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.linhas) {
+                            carta.linhas.forEach(linha => {
+                                for (let i = 0; i < linha.length - 1; i++) {
+                                    if (!conexoes[linha[i]]) {
+                                        conexoes[linha[i]] = linha[i + 1];
+                                    }
+                                }
+                            });
                         }
                     });
-                }
+                });
             });
         });
     }
@@ -118,13 +136,17 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
 export function obterTodosFixosProcedimentos() {
     const fixosSet = new Set();
     if (cartasNavegacao && typeof cartasNavegacao === 'object') {
-        Object.values(cartasNavegacao).forEach(categoria => {
-            Object.values(categoria).forEach(carta => {
-                if (carta.fixos && Array.isArray(carta.fixos)) {
-                    carta.fixos.forEach(f => {
-                        if (f && f.nome) fixosSet.add(f.nome);
+        Object.values(cartasNavegacao).forEach(aerodromo => {
+            Object.values(aerodromo).forEach(cabeceira => {
+                Object.values(cabeceira).forEach(categoria => {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.fixos && Array.isArray(carta.fixos)) {
+                            carta.fixos.forEach(f => {
+                                if (f && f.nome) fixosSet.add(f.nome);
+                            });
+                        }
                     });
-                }
+                });
             });
         });
     }
@@ -148,17 +170,21 @@ export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP") {
     // 2. Grafo inverso de conexões a partir das cartas de navegação
     const conexoesInversas = {};
     if (typeof cartasNavegacao === 'object' && cartasNavegacao !== null) {
-        Object.values(cartasNavegacao).forEach(categoria => {
-            Object.values(categoria).forEach(carta => {
-                if (carta.linhas) {
-                    carta.linhas.forEach(linha => {
-                        for (let i = 1; i < linha.length; i++) {
-                            if (!conexoesInversas[linha[i]]) {
-                                conexoesInversas[linha[i]] = linha[i - 1];
-                            }
+        Object.values(cartasNavegacao).forEach(aerodromo => {
+            Object.values(aerodromo).forEach(cabeceira => {
+                Object.values(cabeceira).forEach(categoria => {
+                    Object.values(categoria).forEach(carta => {
+                        if (carta.linhas) {
+                            carta.linhas.forEach(linha => {
+                                for (let i = 1; i < linha.length; i++) {
+                                    if (!conexoesInversas[linha[i]]) {
+                                        conexoesInversas[linha[i]] = linha[i - 1];
+                                    }
+                                }
+                            });
                         }
                     });
-                }
+                });
             });
         });
     }
@@ -218,7 +244,7 @@ export function obterNiveisSpawn(fixoAlvo, rotaCompleta = []) {
             for (let i = idxAlvo; i < rotaCompleta.length; i++) {
                 const rest = restricoesFixos[rotaCompleta[i]];
                 if (rest && rest.fl !== undefined) {
-                    flSpawn = rest.fl;
+                    flSpawn = rest.tipo === "WINDOW" ? (rest.flMax || rest.fl) : rest.fl;
                     break;
                 }
             }
@@ -252,7 +278,7 @@ export function obterNiveisSpawn(fixoAlvo, rotaCompleta = []) {
 
     return {
         nivAtual: formatarFL(flSpawn),
-        nivAutorizado: formatarFL(flAutorizado)
+        nivAutorizado: "VIA"
     };
 }
 

@@ -63,7 +63,7 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                         aero.modoLNAV = false;
                         aero.flyByProtegido = null;
                     } else {
-                        if (restricaoAlvo && restricaoAlvo.fl !== undefined && (restricaoAlvo.tipo === "ABOVE" || restricaoAlvo.tipo === "AT")) {
+                        if (restricaoAlvo && restricaoAlvo.fl !== undefined && (restricaoAlvo.tipo === "ABOVE" || restricaoAlvo.tipo === "AT" || restricaoAlvo.tipo === "WINDOW")) {
                             aero.flyByProtegido = {
                                 fixoNome: wpNome,
                                 flMinimo: restricaoAlvo.fl,
