@@ -1,9 +1,9 @@
-import { state } from './state.js';
+import { state } from '../core/state.js';
 import { desenharRadar } from './render.js';
 import { painelVentoUI } from './painelVentoUI.js';
-import { obterTodosFixosProcedimentos } from './data.js';
+import { obterTodosFixosProcedimentos } from '../data/data.js';
 import { menuRazaoController } from './RadarTagController.js';
-import { flightCommandService } from './FlightCommandService.js';
+import { flightCommandService } from '../agents/FlightCommandService.js';
 
 /**
  * ============================================================================

@@ -13,9 +13,9 @@
  * ============================================================================
  */
 
-import { correcaoLon, geoParaDelta } from './utils.js';
-import { calculateWindCorrectionAngle, normalizeHeading } from './windMath.js';
-import { aerodromos } from './data.js';
+import { correcaoLon, geoParaDelta } from '../utils/utils.js';
+import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
+import { aerodromos } from '../data/data.js';
 
 /**
  * Modos da Máquina de Estados Lateral (Lateral FSM)

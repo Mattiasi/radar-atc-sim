@@ -10,11 +10,11 @@
  * ============================================================================
  */
 
-import { state } from './state.js';
+import { state } from '../core/state.js';
 import { desenharRadar } from './render.js';
-import { getAircraftPerformance } from './PerformanceDB.js';
-import { VERTICAL_MODES } from './VirtualPilot.js';
-import { flightCommandService } from './FlightCommandService.js';
+import { getAircraftPerformance } from '../data/PerformanceDB.js';
+import { VERTICAL_MODES } from '../agents/VirtualPilot.js';
+import { flightCommandService } from '../agents/FlightCommandService.js';
 
 /**
  * Formata a string de razão vertical e modo para a 5ª linha da etiqueta.

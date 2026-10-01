@@ -1,6 +1,6 @@
-import { state } from './state.js';
-import { correcaoLon, calcularRumoDistancia } from './utils.js';
-import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from './data.js';
+import { state } from '../core/state.js';
+import { correcaoLon, calcularRumoDistancia } from '../utils/utils.js';
+import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from '../data/data.js';
 import { scratchpadUI } from './ui.js';
 import { renderizarLinha6, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 

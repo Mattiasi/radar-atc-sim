@@ -1,6 +1,6 @@
-import { calcularRumoDistancia } from './utils.js';
-import { normalizeHeading, calculateWindCorrectionAngle } from './windMath.js';
-import { isFixoIAC } from './data.js';
+import { calcularRumoDistancia } from '../utils/utils.js';
+import { normalizeHeading, calculateWindCorrectionAngle } from '../physics/windMath.js';
+import { isFixoIAC } from '../data/data.js';
 import { ILS_LATERAL_MODES } from './ILSController.js';
 import { authorize_approach, update_approach_vertical_profile, DESCENT_MODES } from './ApproachProfileManager.js';
 

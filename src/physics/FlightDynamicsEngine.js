@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { getAircraftPerformance } from './PerformanceDB.js';
+import { getAircraftPerformance } from '../data/PerformanceDB.js';
 
 export class FlightDynamicsEngine {
     /**

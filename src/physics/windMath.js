@@ -7,7 +7,7 @@
  * ============================================================================
  */
 
-import { correcaoLon } from './utils.js';
+import { correcaoLon } from '../utils/utils.js';
 
 /**
  * Normaliza qualquer ângulo em graus para o intervalo padrão [0, 360).

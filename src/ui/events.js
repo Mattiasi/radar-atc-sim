@@ -1,5 +1,5 @@
-import { state } from './state.js';
-import { correcaoLon } from './utils.js';
+import { state } from '../core/state.js';
+import { correcaoLon } from '../utils/utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
 import { scratchpadUI, menuNivelUI } from './ui.js';
 import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';

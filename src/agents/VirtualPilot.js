@@ -9,8 +9,8 @@
  * ============================================================================
  */
 
-import { getAircraftPerformance } from './PerformanceDB.js';
-import { DESCENT_MODES } from './ApproachProfileManager.js';
+import { getAircraftPerformance } from '../data/PerformanceDB.js';
+import { DESCENT_MODES } from '../controllers/ApproachProfileManager.js';
 
 export const VERTICAL_MODES = {
     AUTO: 'AUTO',

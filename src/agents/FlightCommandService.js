@@ -11,11 +11,11 @@
  * ============================================================================
  */
 
-import { state } from './state.js';
-import { getAircraftPerformance } from './PerformanceDB.js';
-import { fixosNavegacao, montarRotaAPartirDeFixo, isFixoIAC } from './data.js';
+import { state } from '../core/state.js';
+import { getAircraftPerformance } from '../data/PerformanceDB.js';
+import { fixosNavegacao, montarRotaAPartirDeFixo, isFixoIAC } from '../data/data.js';
 import { TASK_TYPES } from './pilotEngine.js';
-import { authorize_approach, cancel_approach, DESCENT_MODES, findFirstIACFix } from './ApproachProfileManager.js';
+import { authorize_approach, cancel_approach, DESCENT_MODES, findFirstIACFix } from '../controllers/ApproachProfileManager.js';
 import { VERTICAL_MODES } from './VirtualPilot.js';
 
 export const DIC_FIXOS_PADRAO = {

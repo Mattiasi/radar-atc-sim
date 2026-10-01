@@ -1,9 +1,9 @@
 import { state } from './state.js';
 import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego } from './engine.js';
-import { configurarEventosUsuario, aplicarLimites } from './events.js';
-import { inicializarUI, painelVentoUI } from './ui.js';
-import { desenharRadar } from './render.js';
-import { windManager } from './windManager.js';
+import { configurarEventosUsuario, aplicarLimites } from '../ui/events.js';
+import { inicializarUI, painelVentoUI } from '../ui/ui.js';
+import { desenharRadar } from '../ui/render.js';
+import { windManager } from '../physics/windManager.js';
 
 /**
  * ============================================================================

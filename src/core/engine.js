@@ -1,6 +1,6 @@
 import { state } from './state.js';
-import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta, deltaParaGeo } from './utils.js';
-import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo, obterNiveisSpawn } from './data.js';
+import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta, deltaParaGeo } from '../utils/utils.js';
+import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo, obterNiveisSpawn } from '../data/data.js';
 import { Aeronave } from './Aeronave.js';
 
 /**

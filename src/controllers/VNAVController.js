@@ -1,4 +1,4 @@
-import { calcularRumoDistancia, correcaoLon } from './utils.js';
+import { calcularRumoDistancia, correcaoLon } from '../utils/utils.js';
 import { DESCENT_MODES, update_approach_vertical_profile } from './ApproachProfileManager.js';
 import { ILS_VERTICAL_MODES } from './ILSController.js';
 

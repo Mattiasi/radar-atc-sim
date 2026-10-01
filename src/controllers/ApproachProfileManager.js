@@ -17,9 +17,9 @@
  * ============================================================================
  */
 
-import { state } from './state.js';
-import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData } from './data.js';
-import { calcularRumoDistancia } from './utils.js';
+import { state } from '../core/state.js';
+import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData } from '../data/data.js';
+import { calcularRumoDistancia } from '../utils/utils.js';
 import { calculateILSGeometry } from './ILSController.js';
 
 /**

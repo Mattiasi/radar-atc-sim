@@ -11,8 +11,8 @@
  * ============================================================================
  */
 
-import { state } from './state.js';
-import { calcularRumoDistancia } from './utils.js';
+import { state } from '../core/state.js';
+import { calcularRumoDistancia } from '../utils/utils.js';
 import { 
     normalizeHeading, 
     windFromDirectionToVector, 
