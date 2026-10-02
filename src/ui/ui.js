@@ -73,7 +73,6 @@ export class PainelFluxoController {
         this.containerEsteiras.innerHTML = '';
 
         const todosFixos = obterTodosFixosProcedimentos();
-        todosFixos.sort();
 
         const opcoesSeparacao = [5, 8, 10, 12, 15, 18, 20, 25];
 
@@ -97,15 +96,30 @@ export class PainelFluxoController {
             // 2. Select Fixo (qualquer fixo de cartas cadastradas)
             const selFixo = document.createElement('select');
             selFixo.className = 'sel-fixo';
-            todosFixos.forEach(nomeFixo => {
+            selFixo.style.backgroundColor = '#222';
+            selFixo.style.color = '#fff';
+            selFixo.style.fontWeight = 'bold';
+            
+            todosFixos.forEach(obj => {
                 const opt = document.createElement('option');
-                opt.value = nomeFixo;
-                opt.textContent = nomeFixo;
-                if (nomeFixo === esteira.fixo) opt.selected = true;
+                opt.value = obj.id;
+                opt.textContent = `${obj.nome} (${obj.dest})`;
+                opt.style.color = obj.cor;
+                opt.style.fontWeight = 'bold';
+                opt.style.backgroundColor = '#1a1a1a';
+                if (obj.id === esteira.fixo) opt.selected = true;
                 selFixo.appendChild(opt);
             });
+            
+            // Set initial color of select based on selected option
+            const updateSelectColor = () => {
+                const selectedOpt = selFixo.options[selFixo.selectedIndex];
+                if (selectedOpt) selFixo.style.color = selectedOpt.style.color;
+            };
+            updateSelectColor();
             selFixo.addEventListener('change', () => {
                 esteira.fixo = selFixo.value;
+                updateSelectColor();
             });
             selFixo.addEventListener('mousedown', (e) => e.stopPropagation());
 
@@ -149,12 +163,13 @@ export class PainelFluxoController {
     _adicionarNovaEsteira() {
         const todosFixos = obterTodosFixosProcedimentos();
         const fixosUsados = new Set(state.configFluxo.esteiras.map(e => e.fixo));
-        let fixoEscolhido = todosFixos.find(f => !fixosUsados.has(f)) || todosFixos[0] || "SP099";
+        let fixoEscolhido = todosFixos.find(f => !fixosUsados.has(f.id));
+        let fixoId = fixoEscolhido ? fixoEscolhido.id : (todosFixos[0] ? todosFixos[0].id : "SP099|SBSP");
 
         state.configFluxo.esteiras.push({
             id: 'esteira_' + Date.now(),
             ativo: true,
-            fixo: fixoEscolhido,
+            fixo: fixoId,
             separacao: 15
         });
 

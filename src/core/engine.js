@@ -161,10 +161,14 @@ export function carregarTrafegoTeste() {
 
     state.configFluxo.esteiras.forEach(esteira => {
         if (!esteira.ativo) return;
-        const fixoAlvo = esteira.fixo;
+        const partes = esteira.fixo.split('|');
+        const fixoAlvo = partes[0];
+        const destino = partes[1] || state.aeroIdAtivo;
+        const cartaNome = partes[2] || null;
+        
         if (!state.fixos[fixoAlvo]) return;
 
-        const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
+        const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, destino, cartaNome);
         if (rotaCompleta && rotaCompleta.length > 0) {
             let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0);
             if (spawnPt) {
@@ -174,7 +178,7 @@ export function carregarTrafegoTeste() {
                 let aero = new Aeronave(
                     dados.callsign, dados.tipo, 
                     spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel, 
-                    niveis.nivAtual, niveis.nivAutorizado, "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                    niveis.nivAtual, niveis.nivAutorizado, destino, "", rotaCompleta, spawnPt.wpIndex
                 );
                 aero.esteiraId = esteira.id;
                 aero.fixoOrigem = fixoAlvo;
@@ -195,7 +199,11 @@ export function gerenciarEsteiraDeTrafego() {
     if (!state.configFluxo || !Array.isArray(state.configFluxo.esteiras)) return;
 
     state.configFluxo.esteiras.forEach(esteira => {
-        const fixoAlvo = esteira.fixo;
+        const partes = esteira.fixo.split('|');
+        const fixoAlvo = partes[0];
+        const destino = partes[1] || state.aeroIdAtivo;
+        const cartaNome = partes[2] || null;
+        
         if (!state.fixos[fixoAlvo]) return;
 
         let vivosNestaEsteira = false;
@@ -223,7 +231,7 @@ export function gerenciarEsteiraDeTrafego() {
 
                         // Se a esteira estiver ativa, gera o sucessor respeitando a separação
                         if (esteira.ativo) {
-                            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, aero.dest || "SBSP");
+                            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, aero.dest || destino, cartaNome);
                             if (rotaCompleta && rotaCompleta.length > 0) {
                                 let margem = Math.random() * 2.0;
                                 let separacaoReal = esteira.separacao + margem;
@@ -237,7 +245,7 @@ export function gerenciarEsteiraDeTrafego() {
                                     let novaAero = new Aeronave(
                                         dados.callsign, dados.tipo,
                                         spawnPt.lat, spawnPt.lon, spawnPt.rumo, vel,
-                                        niveis.nivAtual, niveis.nivAutorizado, aero.dest || "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                                        niveis.nivAtual, niveis.nivAutorizado, aero.dest || destino, "", rotaCompleta, spawnPt.wpIndex
                                     );
                                     novaAero.esteiraId = esteira.id;
                                     novaAero.fixoOrigem = fixoAlvo;
@@ -253,7 +261,7 @@ export function gerenciarEsteiraDeTrafego() {
 
         // 2. Injeção de Aeronave: se a esteira está ligada e não há ninguém aguardando cruzar o fixo (vivosNestaEsteira = false)
         if (esteira.ativo && !vivosNestaEsteira) {
-            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, "SBSP");
+            const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, destino, cartaNome);
             if (rotaCompleta && rotaCompleta.length > 0) {
                 let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0); // Spawna no marco zero
                 if (spawnPt) {
@@ -262,7 +270,7 @@ export function gerenciarEsteiraDeTrafego() {
                     let novaAero = new Aeronave(
                         dados.callsign, dados.tipo,
                         spawnPt.lat, spawnPt.lon, spawnPt.rumo, 240,
-                        niveis.nivAtual, niveis.nivAutorizado, "SBSP", "", rotaCompleta, spawnPt.wpIndex
+                        niveis.nivAtual, niveis.nivAutorizado, destino, "", rotaCompleta, spawnPt.wpIndex
                     );
                     novaAero.esteiraId = esteira.id;
                     novaAero.fixoOrigem = fixoAlvo;

@@ -50,8 +50,18 @@ export const DESCENT_MODE_TAG_LABELS = {
 export function getActiveIAC(aircraft) {
     if (aircraft && aircraft.active_iac) return aircraft.active_iac;
 
+    const dest = (aircraft && aircraft.dest) ? aircraft.dest : "SBSP";
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[dest]) {
+        const aerodromoCartas = cartasNavegacao[dest];
+        // Procura pela cabeceira correspondente ou primeira disponível com AIC
+        for (const cabeceira of Object.values(aerodromoCartas)) {
+            if (cabeceira && cabeceira.AIC && Object.keys(cabeceira.AIC).length > 0) {
+                return Object.values(cabeceira.AIC)[0];
+            }
+        }
+    }
+
     if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao["SBSP"] && cartasNavegacao["SBSP"]["17R"] && cartasNavegacao["SBSP"]["17R"].AIC) {
-        // Carta padrão para SBSP RNP Y RWY 17R
         if (cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"]) {
             return cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"];
         }
@@ -78,9 +88,12 @@ export function getNextIACFix(currentFixName, active_iac = null) {
         }
     }
 
-    // Se o fixo for o último de uma perna interna (ex: SP017), o próximo é o destino final (pista / SBSP)
+    // Se o fixo for o último de uma perna interna
     if (currentFixName === "SP017") {
         return "SBSP";
+    }
+    if (currentFixName === "RW10R") {
+        return "SBGR";
     }
 
     return null;

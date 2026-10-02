@@ -46,8 +46,8 @@ export const state = {
     // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO DATA-DRIVEN) ---
     configFluxo: {
         esteiras: [
-            { id: "esteira_1", ativo: false, fixo: "OGTAL", separacao: 15 },
-            { id: "esteira_2", ativo: false, fixo: "PRUMO", separacao: 15 }
+            { id: "esteira_1", ativo: false, fixo: "OGTAL|SBSP", separacao: 15 },
+            { id: "esteira_2", ativo: false, fixo: "PRUMO|SBSP", separacao: 15 }
         ]
     },
 

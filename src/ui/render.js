@@ -199,7 +199,7 @@ export function desenharCaminho(caminhoArray, cor) {
  * @param {string} fixoOrigem - Fixo alvo final (o marco zero).
  * @param {Array} alvosNM - Array de distâncias a marcar (ex: [10, 20, 30]).
  */
-export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor) {
+export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor, labels = null) {
     const idxOrigem = caminhoArray.indexOf(fixoOrigem);
     if (idxOrigem === -1) return;
     
@@ -233,7 +233,8 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor) {
             state.ctx.arc(ptTela.x, ptTela.y, 4, 0, Math.PI * 2); 
             state.ctx.fill();
             state.ctx.font = 'bold 12px Arial'; 
-            state.ctx.fillText(alvosNM[alvoIndex].toString(), ptTela.x + Math.cos(perp) * 12 - 6, ptTela.y + Math.sin(perp) * 12 + 4);
+            let texto = labels && labels[alvoIndex] !== undefined ? labels[alvoIndex].toString() : alvosNM[alvoIndex].toString();
+            state.ctx.fillText(texto, ptTela.x + Math.cos(perp) * 12 - 6, ptTela.y + Math.sin(perp) * 12 + 4);
             
             alvoIndex++;
         }
@@ -271,7 +272,8 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor) {
                     state.ctx.arc(ptTela.x, ptTela.y, 4, 0, Math.PI * 2); 
                     state.ctx.fill();
                     state.ctx.font = 'bold 12px Arial'; 
-                    state.ctx.fillText(alvosNM[alvoIndex].toString(), ptTela.x + Math.cos(perp) * 12 - 6, ptTela.y + Math.sin(perp) * 12 + 4);
+            let texto = labels && labels[alvoIndex] !== undefined ? labels[alvoIndex].toString() : alvosNM[alvoIndex].toString();
+            state.ctx.fillText(texto, ptTela.x + Math.cos(perp) * 12 - 6, ptTela.y + Math.sin(perp) * 12 + 4);
                     alvoIndex++;
                 }
             }
@@ -365,7 +367,8 @@ export function desenharMapaBase() {
                                     marca.rota, 
                                     marca.pontoZero, 
                                     marca.distancias, 
-                                    carta.cor || '#ff9900'
+                                    carta.cor || '#ff9900',
+                                    marca.textos
                                 );
                             });
                         }
@@ -616,14 +619,15 @@ export function desenharVetores() {
  * É chamada a cada frame (via requestAnimationFrame no main.js) para redesenhar o Canvas inteiro.
  */
 export function desenharRadar() {
-    // 1. Limpa o ecrã com a cor de fundo (cinza escuro)
-    state.ctx.fillStyle = '#808080'; 
-    state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
-    
-    // 2. Desenha o chão estático do radar
-    desenharMapaBase();
+    try {
+        // 1. Limpa o ecrã com a cor de fundo (cinza escuro)
+        state.ctx.fillStyle = '#808080'; 
+        state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+        
+        // 2. Desenha o chão estático do radar
+        desenharMapaBase();
 
-    // 3. Renderiza todas as aeronaves em voo
+        // 3. Renderiza todas as aeronaves em voo
    state.aeronaves.forEach(aero => {
         let pt = deltaParaTela(aero);
         
@@ -777,4 +781,20 @@ export function desenharRadar() {
     
     // 4. No topo de tudo, renderiza vetores ativos criados pelo controlador
     desenharVetores();
+    } catch (e) {
+        console.error("Crash during render:", e);
+        state.ctx.fillStyle = '#000000';
+        state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+        state.ctx.fillStyle = '#ff0000';
+        state.ctx.font = '20px Arial';
+        state.ctx.fillText("CRASH IN RENDER LOOP:", 50, 50);
+        state.ctx.font = '14px Arial';
+        state.ctx.fillText(e.message, 50, 80);
+        if (e.stack) {
+            const lines = e.stack.split('\n');
+            lines.forEach((line, i) => {
+                state.ctx.fillText(line, 50, 110 + (i * 20));
+            });
+        }
+    }
 }

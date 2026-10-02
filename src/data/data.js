@@ -1,7 +1,7 @@
 import { dmsParaDecimal, latCentro, lonCentro, geoParaDelta } from '../utils/utils.js';
 
 // Imports from the newly separated data files
-import { cartasNavegacao } from './cartas.js';
+import { cartasNavegacao } from './cartas.js?v=2';
 import { aerodromos } from './aerodromos.js';
 import { verticesSetor, estruturaEspacoAereo } from './espacoAereo.js';
 
@@ -14,7 +14,8 @@ export { cartasNavegacao, aerodromos, verticesSetor, estruturaEspacoAereo };
  */
 export const fixosNavegacao = [];
 export const restricoesFixos = {
-    "SBSP": { fl: 26, tipo: "AT" }
+    "SBSP": { fl: 26, tipo: "AT" },
+    "SBGR": { fl: 25, tipo: "AT" }
 };
 
 if (cartasNavegacao) {
@@ -81,7 +82,7 @@ export function isFixoIAC(nomeFixo) {
  * @param {string} [dest="SBSP"] - Aeródromo de destino da aeronave
  * @returns {Array<string>} Lista ordenada de fixos até o pouso ou fim do procedimento
  */
-export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
+export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = null) {
     if (!fixoOrigem) return [];
 
     const conexoes = {};
@@ -93,7 +94,7 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
                         if (carta.linhas) {
                             carta.linhas.forEach(linha => {
                                 for (let i = 0; i < linha.length - 1; i++) {
-                                    if (!conexoes[linha[i]]) {
+                                    if (cartaNome && carta.nome === cartaNome) { conexoes[linha[i]] = linha[i + 1]; } else if (!conexoes[linha[i]]) {
                                         conexoes[linha[i]] = linha[i + 1];
                                     }
                                 }
@@ -134,15 +135,28 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP") {
  * @returns {Array<string>} Lista de nomes de fixos disponíveis
  */
 export function obterTodosFixosProcedimentos() {
-    const fixosSet = new Set();
+    const fixos = [];
+    const fixosUnicos = new Set();
     if (cartasNavegacao && typeof cartasNavegacao === 'object') {
-        Object.values(cartasNavegacao).forEach(aerodromo => {
+        Object.entries(cartasNavegacao).forEach(([dest, aerodromo]) => {
             Object.values(aerodromo).forEach(cabeceira => {
                 Object.values(cabeceira).forEach(categoria => {
                     Object.values(categoria).forEach(carta => {
                         if (carta.fixos && Array.isArray(carta.fixos)) {
                             carta.fixos.forEach(f => {
-                                if (f && f.nome) fixosSet.add(f.nome);
+                                if (f && f.nome) {
+                                    const id = f.nome + '|' + dest + '|' + carta.nome;
+                                    if (!fixosUnicos.has(id)) {
+                                        fixosUnicos.add(id);
+                                        fixos.push({
+                                            id: id,
+                                            nome: f.nome,
+                                            dest: dest,
+                                            cartaNome: carta.nome,
+                                            cor: carta.cor || '#ffffff'
+                                        });
+                                    }
+                                }
                             });
                         }
                     });
@@ -150,7 +164,7 @@ export function obterTodosFixosProcedimentos() {
             });
         });
     }
-    return Array.from(fixosSet);
+    return fixos.sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
 /**
@@ -161,11 +175,11 @@ export function obterTodosFixosProcedimentos() {
  * @param {string} [dest="SBSP"] - Aeródromo de destino
  * @returns {{ rotaCompleta: Array<string>, targetIndex: number }} Trajetória completa e índice do fixo na rota
  */
-export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP") {
+export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP", cartaNome = null) {
     if (!fixoAlvo) return { rotaCompleta: [], targetIndex: -1 };
 
     // 1. Rota posterior partindo do fixo até a pista de pouso
-    const posteriores = montarRotaAPartirDeFixo(fixoAlvo, dest);
+    const posteriores = montarRotaAPartirDeFixo(fixoAlvo, dest, cartaNome);
 
     // 2. Grafo inverso de conexões a partir das cartas de navegação
     const conexoesInversas = {};
@@ -177,7 +191,7 @@ export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP") {
                         if (carta.linhas) {
                             carta.linhas.forEach(linha => {
                                 for (let i = 1; i < linha.length; i++) {
-                                    if (!conexoesInversas[linha[i]]) {
+                                    if (cartaNome && carta.nome === cartaNome) { conexoesInversas[linha[i]] = linha[i - 1]; } else if (!conexoesInversas[linha[i]]) {
                                         conexoesInversas[linha[i]] = linha[i - 1];
                                     }
                                 }
