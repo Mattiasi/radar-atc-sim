@@ -1,7 +1,7 @@
 import { calcularRumoDistancia, correcaoLon } from '../utils/utils.js';
 import { DESCENT_MODES, update_approach_vertical_profile } from './ApproachProfileManager.js';
 import { ILS_VERTICAL_MODES } from './ILSController.js';
-import { isFixoIAC } from '../data/data.js';
+import { isFixoIAC, obterRestricaoFixoParaAeronave } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
 
 export function updateVNAV(aero, dtSec, state, restricoesFixos) {
@@ -48,7 +48,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         // Regra operacional: desce sem restrições direto até a altitude do fixo do IAC voado
         aero.descent_mode = DESCENT_MODES.OPEN_DESCENT;
         aero.verticalMode = 'OP-D';
-        const rest = restricoesFixos[aero.srAteFixoIAC];
+        const rest = obterRestricaoFixoParaAeronave(aero.srAteFixoIAC, aero);
         const tetoDescida = (rest && rest.fl !== undefined) ? rest.fl : 55;
         if (tetoDescida < aero.flAtualNum) {
             targetFL = tetoDescida;
@@ -107,7 +107,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         let iterIndex = startWpIndex;
 
         if (iterWpNome) {
-            let restAtual = restricoesFixos[iterWpNome];
+            let restAtual = obterRestricaoFixoParaAeronave(iterWpNome, aero);
             let pisoAtual = isVia ? 0 : altClearence;
             if (restAtual && restAtual.fl !== undefined && (restAtual.tipo === "AT" || restAtual.tipo === "ABOVE" || restAtual.tipo === "WINDOW")) {
                 pisoAtual = Math.max(pisoAtual, restAtual.fl);
@@ -116,7 +116,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
             let flCruzeiroSegmento = aero.flAtualNum;
             if (startWpIndex > 0 && aero.rota) {
                 const prevWpNome = aero.rota[startWpIndex - 1];
-                const prevRest = restricoesFixos[prevWpNome];
+                const prevRest = obterRestricaoFixoParaAeronave(prevWpNome, aero);
                 if (prevRest && prevRest.fl !== undefined) {
                     flCruzeiroSegmento = isVia ? prevRest.fl : Math.max(prevRest.fl, altClearence);
                 }
@@ -134,7 +134,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
             for (let i = 0; i < lookaheadLimit; i++) {
                 if (!iterWpNome) break;
 
-                let rest = restricoesFixos[iterWpNome];
+                let rest = obterRestricaoFixoParaAeronave(iterWpNome, aero);
                 if (rest && rest.fl !== undefined) {
                     let limitFL = rest.fl;
                     let flAlvoFixo = isVia ? limitFL : Math.max(limitFL, altClearence);

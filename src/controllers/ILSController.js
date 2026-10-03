@@ -16,6 +16,7 @@
 import { correcaoLon, geoParaDelta } from '../utils/utils.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
 import { aerodromos } from '../data/data.js';
+import { state } from '../core/state.js';
 
 /**
  * Modos da Máquina de Estados Lateral (Lateral FSM)
@@ -141,11 +142,15 @@ export function getRunwayILS(aircraft) {
     if (!aircraft || !aircraft.dest) return null;
 
     const destName = aircraft.dest;
-    const aerodromo = aerodromos.find(a => a.nome === destName);
-    if (!aerodromo || !aerodromo.pistas) return null;
-
     const runwayId = aircraft.assigned_runway || aircraft.pistaAtribuida;
     if (!runwayId) return null;
+
+    // Regra operacional: ILS disponível exclusivamente em SBSP e SBKP para a pista 15
+    const isPermittedILS = (destName === "SBSP") || (destName === "SBKP" && (runwayId === "15" || runwayId.includes("15")));
+    if (!isPermittedILS) return null;
+
+    const aerodromo = aerodromos.find(a => a.nome === destName);
+    if (!aerodromo || !aerodromo.pistas) return null;
 
     for (const pista of aerodromo.pistas) {
         if (!pista.cabeceiras) continue;
@@ -173,9 +178,26 @@ export function getRunwayILS(aircraft) {
             const dxThNM = dxCenterNM - 0.5 * compNM * Math.sin(radFC);
             const dyThNM = dyCenterNM - 0.5 * compNM * Math.cos(radFC);
 
-            // Coordenadas cartesianas exatas do threshold
-            const thDeltaLat = aeroDelta.deltaLat + (dyThNM / 60);
-            const thDeltaLon = aeroDelta.deltaLon + (dxThNM / (60 * correcaoLon));
+            // Verifica se há coordenadas precisas em state.fixos
+            const suf = destName ? destName.slice(2) : "";
+            const thKey = `R${runwayId.replace("/", "")}${suf}`;
+            const rwKey = `RW${runwayId.replace("/", "")}`;
+            
+            let thDeltaLat, thDeltaLon;
+            if (cabeceira && cabeceira.lat !== undefined && cabeceira.lon !== undefined) {
+                const cabDelta = geoParaDelta(cabeceira.lat, cabeceira.lon);
+                thDeltaLat = cabDelta.deltaLat;
+                thDeltaLon = cabDelta.deltaLon;
+            } else {
+                const targetThFix = (state && state.fixos) ? (state.fixos[thKey] || state.fixos[rwKey]) : null;
+                if (targetThFix) {
+                    thDeltaLat = targetThFix.deltaLat;
+                    thDeltaLon = targetThFix.deltaLon;
+                } else {
+                    thDeltaLat = aeroDelta.deltaLat + (dyThNM / 60);
+                    thDeltaLon = aeroDelta.deltaLon + (dxThNM / (60 * correcaoLon));
+                }
+            }
 
             return {
                 airport: aerodromo.nome,
@@ -562,7 +584,7 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
             // Fim da rolagem: após desacelerar na pista, marca para remoção pelo simulador
             if (!aircraft.tempoNoSolo) aircraft.tempoNoSolo = 0;
             aircraft.tempoNoSolo += dt;
-            if (aircraft.tempoNoSolo >= 3.5 || along_track_nm <= -2.0) {
+            if (aircraft.tempoNoSolo >= 1.5 || along_track_nm <= -2.0) {
                 aircraft.pousou = true;
             }
         }

@@ -18,7 +18,7 @@
  */
 
 import { state } from '../core/state.js';
-import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData } from '../data/data.js';
+import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData, obterRestricaoFixoParaAeronave } from '../data/data.js';
 import { calcularRumoDistancia } from '../utils/utils.js';
 import { calculateILSGeometry } from './ILSController.js';
 
@@ -53,19 +53,31 @@ export function getActiveIAC(aircraft) {
     const dest = (aircraft && aircraft.dest) ? aircraft.dest : "SBSP";
     if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[dest]) {
         const aerodromoCartas = cartasNavegacao[dest];
-        // Procura pela cabeceira correspondente ou primeira disponível com AIC
+        const rwyId = aircraft ? (aircraft.assigned_runway || aircraft.pistaAtribuida) : null;
+        if (rwyId && aerodromoCartas[rwyId]) {
+            const cab = aerodromoCartas[rwyId];
+            const iacGroup = cab.IAC || cab.AIC;
+            if (iacGroup && Object.keys(iacGroup).length > 0) {
+                return Object.values(iacGroup)[0];
+            }
+        }
+        // Procura pela cabeceira correspondente ou primeira disponível com IAC / AIC
         for (const cabeceira of Object.values(aerodromoCartas)) {
-            if (cabeceira && cabeceira.AIC && Object.keys(cabeceira.AIC).length > 0) {
-                return Object.values(cabeceira.AIC)[0];
+            const iacGroup = cabeceira.IAC || cabeceira.AIC;
+            if (iacGroup && Object.keys(iacGroup).length > 0) {
+                return Object.values(iacGroup)[0];
             }
         }
     }
 
-    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao["SBSP"] && cartasNavegacao["SBSP"]["17R"] && cartasNavegacao["SBSP"]["17R"].AIC) {
-        if (cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"]) {
-            return cartasNavegacao["SBSP"]["17R"].AIC["RNPY17R"];
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao["SBSP"] && cartasNavegacao["SBSP"]["17R"]) {
+        const sbsp17rIAC = cartasNavegacao["SBSP"]["17R"].IAC || cartasNavegacao["SBSP"]["17R"].AIC;
+        if (sbsp17rIAC) {
+            if (sbsp17rIAC["RNPY17R"]) {
+                return sbsp17rIAC["RNPY17R"];
+            }
+            return Object.values(sbsp17rIAC)[0] || null;
         }
-        return Object.values(cartasNavegacao["SBSP"]["17R"].AIC)[0] || null;
     }
     return null;
 }
@@ -135,9 +147,11 @@ export function findFirstIACFix(aircraft, active_iac = null) {
     }
 
     // 4. Se não houver histórico de esteira, seleciona o IAF/IF mais próximo
-    const fixosCandidatos = ["KOMGU", "LUVDI", "GERSU"];
+    const fixosCandidatos = (iac && iac.linhas && iac.linhas.length > 0)
+        ? Array.from(new Set(iac.linhas.map(l => l[0])))
+        : ["KOMGU", "LUVDI", "GERSU", "LOMEN"];
     let menorDist = Infinity;
-    let melhorFixo = "KOMGU";
+    let melhorFixo = fixosCandidatos[0] || "KOMGU";
 
     for (const fNome of fixosCandidatos) {
         const coords = state.fixos ? state.fixos[fNome] : null;
@@ -157,17 +171,18 @@ export function findFirstIACFix(aircraft, active_iac = null) {
  * Obtém a restrição de altitude em pés de um fixo.
  * @param {string} fixName - Nome do fixo
  * @param {Object} [active_iac=null] - Carta IAC
+ * @param {string|Object} [destOuAero=null] - Destino ou instância da aeronave
  * @returns {number} Altitude em pés (ex: FL 55 -> 5500)
  */
-export function getFixAltitudeFt(fixName, active_iac = null) {
+export function getFixAltitudeFt(fixName, active_iac = null, destOuAero = null) {
     if (!fixName) return 5500;
 
-    const rest = restricoesFixos[fixName];
+    const rest = obterRestricaoFixoParaAeronave(fixName, destOuAero);
     if (rest && rest.fl !== undefined) {
         return rest.fl * 100;
     }
 
-    const iac = active_iac || getActiveIAC();
+    const iac = active_iac || getActiveIAC(destOuAero);
     if (iac && iac.fixos) {
         const f = iac.fixos.find(item => item.nome === fixName);
         if (f && f.restricao && f.restricao.fl !== undefined) {
@@ -205,7 +220,7 @@ export function authorize_approach(aircraft, active_iac = null) {
 
     // 1. Identificar o primeiro fixo da IAC aplicável
     const first_iac_fix = findFirstIACFix(aircraft, iac);
-    const fix_restriction_altitude = getFixAltitudeFt(first_iac_fix, iac);
+    const fix_restriction_altitude = getFixAltitudeFt(first_iac_fix, iac, aircraft);
 
     // 2. REGRA DE SEGURANÇA:
     // Se a aeronave já estiver voando em altitude inferior à restrição do fixo
@@ -416,11 +431,11 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         // PROGRESSÃO APÓS O FIXO ATUAL SER CRUZADO
         // ---------------------------------------------------------------------
         if (fixoCruzado) {
-            // Se cruzamos o FAF (SP139) ou SDF (SP017), transiciona para captura do GLIDEPATH
-            if (holdFixName === "SP017") {
+            // Se cruzamos o FAF (SP139/OPSER) ou SDF (SP017), transiciona para captura do GLIDEPATH
+            if (holdFixName === "SP017" || holdFixName === "OPSER") {
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
-                aircraft.hold_altitude_until_waypoint = "SBSP";
+                aircraft.hold_altitude_until_waypoint = (holdFixName === "OPSER") ? "RW10R" : (aircraft.dest || "SBSP");
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
@@ -448,8 +463,8 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 nextFixName = getNextIACFix(holdFixName, iac);
             }
 
-            if (nextFixName && nextFixName !== "SBSP") {
-                const nextRestrictionAlt = getFixAltitudeFt(nextFixName, iac);
+            if (nextFixName && nextFixName !== "SBSP" && nextFixName !== "SBGR") {
+                const nextRestrictionAlt = getFixAltitudeFt(nextFixName, iac, aircraft);
 
                 // Aplica a regra de segurança: não subir se voando abaixo
                 const curAlt = (aircraft.alt !== undefined) ? aircraft.alt : (aircraft.flAtualNum * 100);
@@ -473,7 +488,7 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 // Chegou à perna final de aproximação
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
-                aircraft.hold_altitude_until_waypoint = "SBSP";
+                aircraft.hold_altitude_until_waypoint = aircraft.dest || "SBSP";
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;

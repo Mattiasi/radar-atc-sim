@@ -72,11 +72,20 @@ export class PainelFluxoController {
         if (!this.containerEsteiras) return;
         this.containerEsteiras.innerHTML = '';
 
-        const todosFixos = obterTodosFixosProcedimentos();
+        const todosFixos = obterTodosFixosProcedimentos(true);
 
         const opcoesSeparacao = [5, 8, 10, 12, 15, 18, 20, 25];
 
         state.configFluxo.esteiras.forEach((esteira) => {
+            // Se o fixo atualmente configurado na esteira não estiver mais disponível nas cabeceiras ativas,
+            // e existirem fixos disponíveis, seleciona o primeiro fixo ativo automaticamente
+            const fixoValido = todosFixos.find(obj => obj.id === esteira.fixo || (esteira.fixo && obj.id.startsWith(esteira.fixo)));
+            if (fixoValido) {
+                esteira.fixo = fixoValido.id;
+            } else if (todosFixos.length > 0) {
+                esteira.fixo = todosFixos[0].id;
+            }
+
             const linha = document.createElement('div');
             linha.className = 'linha-esteira';
             linha.dataset.id = esteira.id;
@@ -86,35 +95,51 @@ export class PainelFluxoController {
             chkContainer.className = 'chk-esteira-container';
             const chk = document.createElement('input');
             chk.type = 'checkbox';
-            chk.checked = esteira.ativo;
+            chk.checked = esteira.ativo && (todosFixos.length > 0);
+            if (todosFixos.length === 0) {
+                esteira.ativo = false;
+                chk.disabled = true;
+            }
             chk.addEventListener('change', () => {
                 esteira.ativo = chk.checked;
             });
             chk.addEventListener('mousedown', (e) => e.stopPropagation());
             chkContainer.appendChild(chk);
 
-            // 2. Select Fixo (qualquer fixo de cartas cadastradas)
+            // 2. Select Fixo (apenas fixos das cabeceiras ativas no Vídeo Mapa)
             const selFixo = document.createElement('select');
             selFixo.className = 'sel-fixo';
             selFixo.style.backgroundColor = '#222';
             selFixo.style.color = '#fff';
             selFixo.style.fontWeight = 'bold';
             
-            todosFixos.forEach(obj => {
-                const opt = document.createElement('option');
-                opt.value = obj.id;
-                opt.textContent = `${obj.nome} (${obj.dest})`;
-                opt.style.color = obj.cor;
-                opt.style.fontWeight = 'bold';
-                opt.style.backgroundColor = '#1a1a1a';
-                if (obj.id === esteira.fixo) opt.selected = true;
-                selFixo.appendChild(opt);
-            });
+            if (todosFixos.length === 0) {
+                const optEmpty = document.createElement('option');
+                optEmpty.value = "";
+                optEmpty.textContent = "Nenhuma cabeceira ativa";
+                optEmpty.disabled = true;
+                optEmpty.selected = true;
+                selFixo.appendChild(optEmpty);
+                selFixo.disabled = true;
+            } else {
+                todosFixos.forEach(obj => {
+                    const opt = document.createElement('option');
+                    opt.value = obj.id;
+                    opt.textContent = `${obj.nome} - [${obj.dest}] RWY ${obj.pistaNum} (${obj.cartaNome})`;
+                    opt.style.color = obj.cor;
+                    opt.style.fontWeight = 'bold';
+                    opt.style.backgroundColor = '#1a1a1a';
+                    if (obj.id === esteira.fixo) opt.selected = true;
+                    selFixo.appendChild(opt);
+                });
+            }
             
             // Set initial color of select based on selected option
             const updateSelectColor = () => {
                 const selectedOpt = selFixo.options[selFixo.selectedIndex];
-                if (selectedOpt) selFixo.style.color = selectedOpt.style.color;
+                if (selectedOpt && selectedOpt.style.color) {
+                    selFixo.style.color = selectedOpt.style.color;
+                }
             };
             updateSelectColor();
             selFixo.addEventListener('change', () => {
@@ -161,10 +186,11 @@ export class PainelFluxoController {
     }
 
     _adicionarNovaEsteira() {
-        const todosFixos = obterTodosFixosProcedimentos();
+        const todosFixos = obterTodosFixosProcedimentos(true);
+        if (todosFixos.length === 0) return;
         const fixosUsados = new Set(state.configFluxo.esteiras.map(e => e.fixo));
         let fixoEscolhido = todosFixos.find(f => !fixosUsados.has(f.id));
-        let fixoId = fixoEscolhido ? fixoEscolhido.id : (todosFixos[0] ? todosFixos[0].id : "SP099|SBSP");
+        let fixoId = fixoEscolhido ? fixoEscolhido.id : todosFixos[0].id;
 
         state.configFluxo.esteiras.push({
             id: 'esteira_' + Date.now(),

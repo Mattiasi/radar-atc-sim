@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego } from './engine.js';
 import { configurarEventosUsuario, aplicarLimites } from '../ui/events.js';
 import { inicializarUI, painelVentoUI } from '../ui/ui.js';
+import { inicializarVideoMapDrawer } from '../ui/VideoMapDrawerController.js';
 import { desenharRadar } from '../ui/render.js';
 import { windManager } from '../physics/windManager.js';
 
@@ -88,7 +89,16 @@ function executarPassoRadar() {
     });
 
     // Limpeza de Memória (Garbage Collection): Remove aviões que pousaram
-    state.aeronaves = state.aeronaves.filter(a => !a.pousou);
+    const pousadas = state.aeronaves.filter(a => a.pousou);
+    if (pousadas.length > 0) {
+        pousadas.forEach(a => {
+            if (state.aeroEditandoTexto === a) state.aeroEditandoTexto = null;
+            if (state.aeroEditandoNivel === a) state.aeroEditandoNivel = null;
+            if (state.aeroEditandoRazao === a) state.aeroEditandoRazao = null;
+            if (state.tagController && state.tagController.aeroAtiva === a) state.tagController.fecharMenu();
+        });
+        state.aeronaves = state.aeronaves.filter(a => !a.pousou);
+    }
     
     // Injeta novos aviões nas rotas caso a esteira de separação permita
     gerenciarEsteiraDeTrafego(); 
@@ -151,6 +161,7 @@ function loopPrincipal(tempoAtual) {
 // --- 2. SEQUÊNCIA DE INICIALIZAÇÃO (BOOT) ---
 inicializarEspacoAereo();       // Carrega a geometria das rotas e TMA
 inicializarUI();                // Inicializa e encapsula os elementos HTML/DOM (Painel, Scratchpad e Menus)
+inicializarVideoMapDrawer();     // Inicializa o Painel Retrátil de Vídeo-Mapa e Brilho
 carregarTrafegoTeste();         // Faz spawn dos 2 aviões iniciais de demonstração
 configurarEventosUsuario();     // Liga os "ouvintes" (Listeners) de rato e teclado
 aplicarLimites(false);          // Garante que o zoom e o enquadramento inicial estão corretos

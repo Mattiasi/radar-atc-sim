@@ -1,5 +1,5 @@
 import { state } from '../core/state.js';
-import { correcaoLon, calcularRumoDistancia } from '../utils/utils.js';
+import { correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from '../data/data.js';
 import { scratchpadUI } from './ui.js';
 import { renderizarLinha6, estaLinhasExtrasVisiveis } from './RadarTagController.js';
@@ -37,6 +37,21 @@ export function telaParaDelta(x, y) {
         deltaLon: (x - state.centroX - state.offsetX) / (correcaoLon * state.escala),
         deltaLat: (state.centroY + state.offsetY - y) / state.escala
     };
+}
+
+/**
+ * Determina se um fixo representa um limiar/cabeceira de pista (ex: RW10R, RWY15, R10RGR, R15KP, etc.).
+ * Fixos de pista devem ficar invisíveis no radar (não desenha o triângulo, nome ou restrição sobre o asfalto).
+ * @param {string} nome - Nome do fixo
+ * @returns {boolean}
+ */
+export function isFixoDePista(nome) {
+    if (!nome || typeof nome !== 'string') return false;
+    // Padrão RW ou RWY seguido do número da pista (ex: RW10R, RW15, RWY33, RWY12)
+    if (/^RWY?\d{1,2}[LRC]?$/i.test(nome)) return true;
+    // Padrão R + número da pista + sufixo de aeródromo ou letra (ex: R10RGR, R17RSP, R15KP, R16SJ, etc.)
+    if (/^R\d{2}[LRC]?([A-Z]{2})?$/i.test(nome)) return true;
+    return false;
 }
 
 /**
@@ -287,26 +302,54 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor, l
  * (mapa, limites, rotas, fixos e respetivas restrições).
  */
 export function desenharMapaBase() {
-    // 1. Linhas tracejadas dos setores da TMA
-    estruturaEspacoAereo.linhasFronteira.forEach(linha => desenharLinhaATCSMAC(linha));
+    // 1 e 2. Linhas tracejadas e altitudes da ATCSMAC (com controle reativo de opacidade)
+    const alphaATCSMAC = (state.radarLayers && state.radarLayers.opacity && state.radarLayers.opacity.ATCSMAC !== undefined)
+        ? state.radarLayers.opacity.ATCSMAC
+        : 0.8;
 
-    // 2. Altitudes mínimas de cada setor
-    estruturaEspacoAereo.setoresAltitude.forEach(setor => {
-        escreverAltitudeArea(setor.vertices, setor.altitude);
-    });
+    if (alphaATCSMAC > 0.01) {
+        state.ctx.save();
+        state.ctx.globalAlpha = alphaATCSMAC;
 
-    // 3. Rotas e linhas configuradas nas cartas (STAR, SID, AIC)
-    if (cartasNavegacao) {
-        Object.values(cartasNavegacao).forEach(aerodromo => {
-            Object.values(aerodromo).forEach(cabeceira => {
-                Object.values(cabeceira).forEach(categoria => {
-                    Object.values(categoria).forEach(carta => {
-                        if (carta.linhas && carta.cor) {
-                            carta.linhas.forEach(linha => {
-                                desenharCaminho(linha, carta.cor);
-                            });
-                        }
-                    });
+        estruturaEspacoAereo.linhasFronteira.forEach(linha => desenharLinhaATCSMAC(linha));
+        estruturaEspacoAereo.setoresAltitude.forEach(setor => {
+            escreverAltitudeArea(setor.vertices, setor.altitude);
+        });
+
+        state.ctx.restore();
+    }
+
+    // 3. Rotas e linhas configuradas nas cartas (STAR, SID, IAC)
+    if (cartasNavegacao && state.radarLayers) {
+        Object.entries(cartasNavegacao).forEach(([aerodromoKey, aerodromo]) => {
+            Object.entries(aerodromo).forEach(([cabeceiraKey, cabeceira]) => {
+                const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
+                const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
+                const groupKey = `${aerodromoKey}-${numPista}`;
+                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                // Se a cabeceira não estiver ativa, oculta imediatamente
+                if (!estaAtiva) return;
+
+                Object.entries(cabeceira).forEach(([catKey, categoria]) => {
+                    const catType = (catKey === 'AIC' || catKey === 'IAC') ? 'IAC' : catKey;
+                    const alpha = state.radarLayers.opacity[catType] !== undefined ? state.radarLayers.opacity[catType] : 0.8;
+                    if (alpha <= 0.01) return;
+
+                    if (categoria && typeof categoria === 'object') {
+                        Object.values(categoria).forEach(carta => {
+                            if (state.radarLayers.activeCharts && state.radarLayers.activeCharts.size > 0) {
+                                if (!state.radarLayers.activeCharts.has(carta.nome)) return;
+                            }
+                            if (carta.linhas && carta.cor) {
+                                state.ctx.save();
+                                state.ctx.globalAlpha = alpha;
+                                carta.linhas.forEach(linha => {
+                                    desenharCaminho(linha, carta.cor);
+                                });
+                                state.ctx.restore();
+                            }
+                        });
+                    }
                 });
             });
         });
@@ -332,6 +375,7 @@ export function desenharMapaBase() {
                 compNM: aero.compNM || (aero.pistas && aero.pistas[0] ? aero.pistas[0].compNM : 1.0),
                 sepY: 0,
                 sepX: 0,
+                cabeceiras: (aero.pistas && aero.pistas[0]) ? aero.pistas[0].cabeceiras : undefined,
                 ...aero.prolongamento
             });
         }
@@ -347,6 +391,7 @@ export function desenharMapaBase() {
                         sepYNM: pista.sepYNM,
                         sepX: pista.sepX,
                         sepXNM: pista.sepXNM,
+                        cabeceiras: pista.cabeceiras,
                         ...pista.prolongamento
                     });
                 }
@@ -354,75 +399,146 @@ export function desenharMapaBase() {
         }
     });
 
-    // 5. Marcas de milhagem (Data-Driven: lido dinamicamente das cartas)
-    if (cartasNavegacao) {
-        Object.values(cartasNavegacao).forEach(aerodromo => {
-            Object.values(aerodromo).forEach(cabeceira => {
-                Object.values(cabeceira).forEach(categoria => {
-                    Object.values(categoria).forEach(carta => {
-                        if (carta.marcasMilhagem) {
-                            const marcasArray = Array.isArray(carta.marcasMilhagem) ? carta.marcasMilhagem : [carta.marcasMilhagem];
-                            marcasArray.forEach(marca => {
-                                desenharMarcasMilhagem(
-                                    marca.rota, 
-                                    marca.pontoZero, 
-                                    marca.distancias, 
-                                    carta.cor || '#ff9900',
-                                    marca.textos
-                                );
-                            });
-                        }
-                    });
+    // 5. Marcas de milhagem (Data-Driven: lido dinamicamente das cartas ativas com opacidade respectiva)
+    if (cartasNavegacao && state.radarLayers) {
+        Object.entries(cartasNavegacao).forEach(([aerodromoKey, aerodromo]) => {
+            Object.entries(aerodromo).forEach(([cabeceiraKey, cabeceira]) => {
+                const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
+                const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
+                const groupKey = `${aerodromoKey}-${numPista}`;
+                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                if (!estaAtiva) return;
+
+                Object.entries(cabeceira).forEach(([catKey, categoria]) => {
+                    const catType = (catKey === 'AIC' || catKey === 'IAC') ? 'IAC' : catKey;
+                    const alpha = state.radarLayers.opacity[catType] !== undefined ? state.radarLayers.opacity[catType] : 0.8;
+                    if (alpha <= 0.01) return;
+
+                    if (categoria && typeof categoria === 'object') {
+                        Object.values(categoria).forEach(carta => {
+                            if (state.radarLayers.activeCharts && state.radarLayers.activeCharts.size > 0) {
+                                if (!state.radarLayers.activeCharts.has(carta.nome)) return;
+                            }
+                            if (carta.marcasMilhagem) {
+                                state.ctx.save();
+                                state.ctx.globalAlpha = alpha;
+                                const marcasArray = Array.isArray(carta.marcasMilhagem) ? carta.marcasMilhagem : [carta.marcasMilhagem];
+                                marcasArray.forEach(marca => {
+                                    desenharMarcasMilhagem(
+                                        marca.rota, 
+                                        marca.pontoZero, 
+                                        marca.distancias, 
+                                        carta.cor || '#ff9900',
+                                        marca.textos
+                                    );
+                                });
+                                state.ctx.restore();
+                            }
+                        });
+                    }
                 });
             });
         });
     }
 
-    // 6. Desenho exclusivo dos fixos de navegação (sem poluição com pontos PT_xx)
-    fixosNavegacao.forEach(fixoObj => {
-        const nome = fixoObj.nome;
-        const pt = pegarCoordenadaTela(nome);
-        const corFixo = fixoObj.cor || '#ff9900';
+    // 6. Desenho exclusivo dos fixos de navegação pertencentes às cabeceiras e cartas ativas (com opacidade por procedimento)
+    if (cartasNavegacao && state.radarLayers) {
+        const fixosParaDesenhar = new Map();
 
-        // Triângulo do fixo
-        state.ctx.fillStyle = corFixo;
-        state.ctx.beginPath(); 
-        state.ctx.moveTo(pt.x, pt.y - 5); 
-        state.ctx.lineTo(pt.x + 5, pt.y + 4); 
-        state.ctx.lineTo(pt.x - 5, pt.y + 4); 
-        state.ctx.fill();
+        Object.entries(cartasNavegacao).forEach(([aerodromoKey, aerodromo]) => {
+            Object.entries(aerodromo).forEach(([cabeceiraKey, cabeceira]) => {
+                const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
+                const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
+                const groupKey = `${aerodromoKey}-${numPista}`;
+                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                if (!estaAtiva) return;
 
-        // Nome do fixo
-        state.ctx.font = '12px Arial'; 
-        state.ctx.fillStyle = corFixo;
-        state.ctx.fillText(nome, pt.x + 8, pt.y + 4);
+                Object.entries(cabeceira).forEach(([catKey, categoria]) => {
+                    const catType = (catKey === 'AIC' || catKey === 'IAC') ? 'IAC' : catKey;
+                    const alpha = state.radarLayers.opacity[catType] !== undefined ? state.radarLayers.opacity[catType] : 0.8;
+                    if (alpha <= 0.01) return;
 
-        // Restrições de altitude da carta
-        if (restricoesFixos[nome]) {
-            const res = restricoesFixos[nome];
-            if (res.tipo === "WINDOW") {
-                let txtFl = "FL" + (res.flMax || res.fl).toString().padStart(3, '0') + "-FL" + res.fl.toString().padStart(3, '0');
-                state.ctx.font = '10px monospace';
-                state.ctx.fillStyle = '#000000';
-                state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
-            } else if (res.fl > 80) {
-                let txtFl = "FL" + res.fl.toString().padStart(3, '0');
-                if (res.tipo === "ABOVE") txtFl += "+";
-                else if (res.tipo === "BELOW") txtFl += "-";
-                
-                state.ctx.font = '10px monospace';
-                state.ctx.fillStyle = '#000000';
-                state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
-            } else if (res.fl < 75) {
-                let txtFl = res.fl.toString().padEnd(4, '0') + "'";
-                if (res.tipo === "ABOVE") txtFl += "+";
-                else if (res.tipo === "BELOW") txtFl += "-";
-                state.ctx.font = '10px monospace';
-                state.ctx.fillStyle = '#000000';
-                state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
+                    if (categoria && typeof categoria === 'object') {
+                        Object.values(categoria).forEach(carta => {
+                            if (state.radarLayers.activeCharts && state.radarLayers.activeCharts.size > 0) {
+                                if (!state.radarLayers.activeCharts.has(carta.nome)) return;
+                            }
+                            if (carta.fixos && Array.isArray(carta.fixos)) {
+                                carta.fixos.forEach(f => {
+                                    if (!f || !f.nome) return;
+                                    const nome = f.nome;
+                                    if (isFixoDePista(nome)) return; // Fixos de pista são mantidos invisíveis no radar
+                                    const existente = fixosParaDesenhar.get(nome);
+                                    if (existente) {
+                                        existente.alpha = Math.max(existente.alpha, alpha);
+                                    } else {
+                                        fixosParaDesenhar.set(nome, {
+                                            nome: nome,
+                                            cor: carta.cor || '#ff9900',
+                                            restricao: f.restricao || restricoesFixos[nome],
+                                            alpha: alpha
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        fixosParaDesenhar.forEach(fixoObj => {
+            const nome = fixoObj.nome;
+            if (isFixoDePista(nome)) return; // Garantia adicional de invisibilidade
+            const pt = pegarCoordenadaTela(nome);
+            if (!pt || (pt.x === 0 && pt.y === 0 && !state.fixos[nome])) return;
+            const corFixo = fixoObj.cor || '#ff9900';
+
+            state.ctx.save();
+            state.ctx.globalAlpha = fixoObj.alpha;
+
+            // Triângulo do fixo
+            state.ctx.fillStyle = corFixo;
+            state.ctx.beginPath(); 
+            state.ctx.moveTo(pt.x, pt.y - 5); 
+            state.ctx.lineTo(pt.x + 5, pt.y + 4); 
+            state.ctx.lineTo(pt.x - 5, pt.y + 4); 
+            state.ctx.fill();
+
+            // Nome do fixo
+            state.ctx.font = '12px Arial'; 
+            state.ctx.fillStyle = corFixo;
+            state.ctx.fillText(nome, pt.x + 8, pt.y + 4);
+
+            // Restrições de altitude da carta
+            const res = fixoObj.restricao;
+            if (res) {
+                if (res.tipo === "WINDOW") {
+                    let txtFl = "FL" + (res.flMax || res.fl).toString().padStart(3, '0') + "-FL" + res.fl.toString().padStart(3, '0');
+                    state.ctx.font = '10px monospace';
+                    state.ctx.fillStyle = '#000000';
+                    state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
+                } else if (res.fl > 80) {
+                    let txtFl = "FL" + res.fl.toString().padStart(3, '0');
+                    if (res.tipo === "ABOVE") txtFl += "+";
+                    else if (res.tipo === "BELOW") txtFl += "-";
+                    
+                    state.ctx.font = '10px monospace';
+                    state.ctx.fillStyle = '#000000';
+                    state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
+                } else if (res.fl < 75) {
+                    let txtFl = res.fl.toString().padEnd(4, '0') + "'";
+                    if (res.tipo === "ABOVE") txtFl += "+";
+                    else if (res.tipo === "BELOW") txtFl += "-";
+                    state.ctx.font = '10px monospace';
+                    state.ctx.fillStyle = '#000000';
+                    state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
+                }
             }
-        }
-    });
+
+            state.ctx.restore();
+        });
+    }
 
     // 7. Aeródromos e suas pistas (Data-Driven: renderização genérica a partir de aerodromos em data.js)
     aerodromos.forEach(aero => {
@@ -456,12 +572,62 @@ export function desenharProlongamentoPista(cx, cy, rumo, config = {}) {
         espacoNM = 1.0,
         tracosAntes = 0,
         tracosDepois = 0,
-        cor = '#ffffff'
+        cor = '#ffffff',
+        cabeceiras = null
     } = config;
 
     if (tracosAntes <= 0 && tracosDepois <= 0) return;
 
     const umNM = state.escala / 60;
+    const cabs = cabeceiras ? Object.values(cabeceiras) : null;
+
+    if (cabs && cabs.length >= 2 && cabs[0].lat !== undefined && cabs[1].lat !== undefined) {
+        let cab1 = cabs[0];
+        let cab2 = cabs[1];
+        const r1 = cab1.rumo !== undefined ? cab1.rumo : (cab1.frontCourseDeg !== undefined ? cab1.frontCourseDeg : 0);
+        const r2 = cab2.rumo !== undefined ? cab2.rumo : (cab2.frontCourseDeg !== undefined ? cab2.frontCourseDeg : 0);
+        if (r1 > 180 && r2 <= 180) {
+            cab1 = cabs[1];
+            cab2 = cabs[0];
+        }
+
+        const p1 = deltaParaTela(geoParaDelta(cab1.lat, cab1.lon));
+        const p2 = deltaParaTela(geoParaDelta(cab2.lat, cab2.lon));
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const compPx = Math.hypot(dx, dy);
+        const anguloRad = Math.atan2(dy, dx);
+
+        state.ctx.save();
+        state.ctx.translate(p1.x, p1.y);
+        state.ctx.rotate(anguloRad);
+
+        state.ctx.strokeStyle = cor;
+        state.ctx.lineWidth = 1;
+        state.ctx.setLineDash([]);
+        state.ctx.beginPath();
+
+        // Tracejados no sentido recuado (aproximação para cabeceira 1, ex: RW10R)
+        for (let i = 0; i < tracosAntes; i++) {
+            const xInicio = -(afastamentoNM + i * (tamanhoTracoNM + espacoNM)) * umNM;
+            const xFim = xInicio - tamanhoTracoNM * umNM;
+            state.ctx.moveTo(xInicio, 0);
+            state.ctx.lineTo(xFim, 0);
+        }
+
+        // Tracejados no sentido de avanço (aproximação/decolagem cabeceira 2, ex: 28L)
+        for (let i = 0; i < tracosDepois; i++) {
+            const xInicio = compPx + (afastamentoNM + i * (tamanhoTracoNM + espacoNM)) * umNM;
+            const xFim = xInicio + tamanhoTracoNM * umNM;
+            state.ctx.moveTo(xInicio, 0);
+            state.ctx.lineTo(xFim, 0);
+        }
+
+        state.ctx.stroke();
+        state.ctx.restore();
+        return;
+    }
+
     const anguloRad = (rumo - 90) * (Math.PI / 180);
     const sepXPx = (sepXNM !== undefined) ? (sepXNM * umNM) : (sepX || 0);
     const sepYPx = (sepYNM !== undefined) ? (sepYNM * umNM) : (sepY || 0);
@@ -518,6 +684,33 @@ export function desenharSimboloPista(cx, cy, aeroOuNome, rumoPistaFallback = 120
 
     // 1. Desenha todas as pistas físicas com seus respectivos rumos e posições relativas
     pistas.forEach(pista => {
+        const cabs = pista.cabeceiras ? Object.values(pista.cabeceiras) : null;
+        if (cabs && cabs.length >= 2 && cabs[0].lat !== undefined && cabs[1].lat !== undefined) {
+            let cab1 = cabs[0];
+            let cab2 = cabs[1];
+            const r1 = cab1.rumo !== undefined ? cab1.rumo : (cab1.frontCourseDeg !== undefined ? cab1.frontCourseDeg : 0);
+            const r2 = cab2.rumo !== undefined ? cab2.rumo : (cab2.frontCourseDeg !== undefined ? cab2.frontCourseDeg : 0);
+            if (r1 > 180 && r2 <= 180) {
+                cab1 = cabs[1];
+                cab2 = cabs[0];
+            }
+            const p1 = deltaParaTela(geoParaDelta(cab1.lat, cab1.lon));
+            const p2 = deltaParaTela(geoParaDelta(cab2.lat, cab2.lon));
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const compPx = Math.hypot(dx, dy);
+            const anguloRad = Math.atan2(dy, dx);
+            const largPx = pista.larguraPx || 4.0;
+
+            state.ctx.save();
+            state.ctx.translate(p1.x, p1.y);
+            state.ctx.rotate(anguloRad);
+            state.ctx.fillStyle = 'rgb(88, 88, 88)'; // Asfalto
+            state.ctx.fillRect(0, -largPx / 2, compPx, largPx);
+            state.ctx.restore();
+            return;
+        }
+
         const rumo = pista.rumo !== undefined ? pista.rumo : (aeroObj.rumoPista || rumoPistaFallback);
         const anguloRad = (rumo - 90) * (Math.PI / 180);
         const compPx = (pista.compNM !== undefined ? pista.compNM : 1.0) * umNM;

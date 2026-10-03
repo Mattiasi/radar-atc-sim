@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
-import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData } from '../data/data.js';
+import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData, obterRestricaoFixoParaAeronave } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
 import { windManager } from '../physics/windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
@@ -103,12 +103,13 @@ export class Aeronave {
      * @param {string} dest - Aeródromo de destino (ex: "SBSP").
      * @param {string} [textoLivre=""] - Anotações do controlador inseridas no bloco livre da etiqueta (Scratchpad).
      * @param {Array<string>} [rota=[]] - Lista sequencial de nomes de fixos da STAR (ex: ROTA_PRUMO ou ROTA_OGTAL).
-     * @param {number} [spawnWpIndex=0] - Índice do fixo ativo para onde a aeronave se dirige logo após o spawn.
+     * @param {string} [cartaNome=null] - Nome opcional da carta/STAR de navegação ativa da aeronave.
      */
-    constructor(callsign, tipo, lat, lon, proa, vel, nivAtual, nivAutorizado, dest, textoLivre = "", rota = [], spawnWpIndex = 0) {
+    constructor(callsign, tipo, lat, lon, proa, vel, nivAtual, nivAutorizado, dest, textoLivre = "", rota = [], spawnWpIndex = 0, cartaNome = null) {
         // --- 1. IDENTIFICAÇÃO E POSIÇÃO CARTESIANA ---
         this.callsign = callsign; // Identificador ATC
         this.tipo = tipo;         // Modelo da aeronave para determinar coeficientes de desempenho
+        this.cartaNome = cartaNome; // Procedimento STAR/IAC ativo da aeronave
         
         // Posição cartesiana em deltas magnéticos relativos ao marco zero do radar (Aeroporto SBSP).
         // Converte coordenadas reais WGS-84 (ou recebe deltas diretamente se já convertidos).
@@ -170,7 +171,8 @@ export class Aeronave {
                         const dLat = (coords.deltaLat - this.deltaLat) * 60;
                         const dLon = (coords.deltaLon - this.deltaLon) * correcaoLon * 60;
                         const dist = Math.hypot(dLat, dLon);
-                        if (dist <= 2.0 && restricoesFixos[nomeFixo] && restricoesFixos[nomeFixo].fl !== undefined) {
+                        const restPropria = obterRestricaoFixoParaAeronave(nomeFixo, dest, this.cartaNome);
+                        if (dist <= 2.0 && restPropria && restPropria.fl !== undefined) {
                             fixoSobAero = nomeFixo;
                             idxFixoSobAero = i;
                             break;
@@ -180,13 +182,16 @@ export class Aeronave {
             }
 
             // 2. Fallback se estiver no waypoint 0 e possuir restrição
-            if (!fixoSobAero && spawnWpIndex === 0 && restricoesFixos[rota[0]] && restricoesFixos[rota[0]].fl !== undefined) {
-                // NÃO definir fixoSobAero para evitar avanço prematuro do waypoint
+            if (!fixoSobAero && spawnWpIndex === 0) {
+                const restWp0 = obterRestricaoFixoParaAeronave(rota[0], dest, this.cartaNome);
+                if (restWp0 && restWp0.fl !== undefined) {
+                    // NÃO definir fixoSobAero para evitar avanço prematuro do waypoint
+                }
             }
         }
 
         if (fixoSobAero) {
-            const niveisFixo = obterNiveisSpawn(fixoSobAero, rota);
+            const niveisFixo = obterNiveisSpawn(fixoSobAero, rota, dest, this.cartaNome);
             nivAtual = niveisFixo.nivAtual;
             nivAutorizado = niveisFixo.nivAutorizado;
 
@@ -206,7 +211,7 @@ export class Aeronave {
             }
         } else if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
             const refWp = rota[spawnWpIndex] || rota[0];
-            const niveisAuto = obterNiveisSpawn(refWp, rota);
+            const niveisAuto = obterNiveisSpawn(refWp, rota, dest, this.cartaNome);
             if (!nivAtual) nivAtual = niveisAuto.nivAtual;
             if (!nivAutorizado) nivAutorizado = niveisAuto.nivAutorizado;
         }
@@ -251,13 +256,31 @@ export class Aeronave {
         this.driftAngle = 0;                     // Ângulo de deriva (Drift Angle = Track - Proa)
         
         let pistaPadrao = null;
-        if (Array.isArray(aerodromos)) {
+
+        // 1. Tenta obter a pista ativa a partir do Video Mapa (radarLayerState)
+        if (state.radarLayers && state.radarLayers.activeRunways) {
+            const prefixo = dest + "-";
+            for (const rwyKey of state.radarLayers.activeRunways) {
+                if (rwyKey.startsWith(prefixo)) {
+                    pistaPadrao = rwyKey.split("-")[1];
+                    // Se a chave for algo como "17" e precisarmos da específica "17R", o modelo já cuidará ou pegamos a primeira.
+                    // Para evitar pegar chaves de grupo (ex: "SBSP-17") se tiver a específica ("SBSP-17R"), preferimos as específicas.
+                    if (pistaPadrao.length > 2) {
+                        break; // Ex: "17R" tem length 3, achou específica, quebra o loop
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback caso não haja pista ativa no Video Mapa
+        if (!pistaPadrao && Array.isArray(aerodromos)) {
             const aeroData = aerodromos.find(a => a.nome === dest);
             if (aeroData && aeroData.pistas && aeroData.pistas.length > 0) {
                 const primaryId = aeroData.pistas[0].id;
                 pistaPadrao = primaryId.includes('/') ? primaryId.split('/')[0] : primaryId;
             }
         }
+        
         this.pistaAtribuida = pistaPadrao || ((dest === "SBSP") ? "17R" : null); // Cabeceira terminal atribuída para vento local
         this.ventoAtual = { fromDeg: 0, speedKt: 0, vLat: 0, vLon: 0, origem: "GLOBAL" }; // Vento atuante
 
@@ -402,16 +425,24 @@ export class Aeronave {
      */
     calcularDistanceToGo() {
         const destNome = this.dest || "SBSP";
-        const ptThreshold = state.fixos[destNome] || state.fixos["SBSP"];
+        const rwy = this.assigned_runway ? this.assigned_runway.replace("/", "") : "";
+        const suf = destNome ? destNome.slice(2) : "";
+        const thKey = `R${rwy}${suf}`;
+        const rwKey = `RW${rwy}`;
+        
+        const rwData = getRunwayData(this);
+        const ptThreshold = (rwData && rwData.threshold)
+            ? rwData.threshold
+            : (state.fixos[thKey] || state.fixos[rwKey] || state.fixos[destNome] || state.fixos["SBSP"]);
         if (!ptThreshold) return 20.0;
 
         // Distância euclidiana em linha reta até o limiar
         const infoDireta = calcularRumoDistancia(this, ptThreshold);
         const distDireta = infoDireta.distanciaNM;
 
-        // Rumo magnético da pista de pouso (ex: 170° para SBSP 17R)
-        let rumoPista = 170;
-        if (Array.isArray(aerodromos)) {
+        // Rumo magnético da pista de pouso
+        let rumoPista = (rwData && rwData.front_course_deg !== undefined) ? rwData.front_course_deg : 170;
+        if (!rwData && Array.isArray(aerodromos)) {
             const aeroData = aerodromos.find(a => a.nome === destNome);
             if (aeroData && aeroData.rumoPista !== undefined) {
                 rumoPista = aeroData.rumoPista;
@@ -857,12 +888,12 @@ export class Aeronave {
                 if (this.vel > 20) {
                     this.vel = Math.max(20, this.vel - 5.0 * dtSec);
                     this.currentIAS = this.vel;
-                }
-
-                if (!this.tempoNoSolo) this.tempoNoSolo = 0;
-                this.tempoNoSolo += dtSec;
-                if ((this.vel <= 25 && this.tempoNoSolo >= 2.5) || this.tempoNoSolo >= 4.5 || alongTrack <= -rwyCompNM - 0.1) {
-                    this.pousou = true;
+                } else {
+                    if (!this.tempoNoSolo) this.tempoNoSolo = 0;
+                    this.tempoNoSolo += dtSec;
+                    if (this.tempoNoSolo >= 1.5 || alongTrack <= -rwyCompNM - 0.1) {
+                        this.pousou = true;
+                    }
                 }
             } else if (heightAgl <= 500) {
                 // Se ainda em voo, só avalia aproximação final e toque se estiver abaixo de 500 ft AGL
@@ -886,17 +917,27 @@ export class Aeronave {
                     distTh <= 2.5
                 );
 
-                // Deve estar alinhado com a pista (crossTrack <= 0.15 NM) e na aproximação final
-                if (emAproximacaoFinal && Math.abs(crossTrack) <= 0.15) {
+                // Deve estar alinhado com a pista (crossTrack <= 0.25 NM) ou muito próximo ao aeroporto 
+                let distAero = 999;
+                const aeroCoords = state.fixos ? (state.fixos[this.dest] || state.fixos["SBSP"]) : null;
+                if (aeroCoords) {
+                    const navAero = calcularRumoDistancia(this, aeroCoords);
+                    distAero = navAero ? navAero.distanciaNM : 999;
+                }
+
+                const alinhado = (Math.abs(crossTrack) <= 0.25);
+                const pertoAero = (distTh <= 1.0 || distAero <= 1.0);
+
+                if (emAproximacaoFinal && (alinhado || pertoAero)) {
                     // 1. Mudança de Squawk para 2000 na aproximação final sobre a pista
-                    if (alongTrack <= 0.5 && alongTrack >= -rwyCompNM - 0.5 && heightAgl <= 50.0) {
+                    if ((alongTrack <= 0.5 && alongTrack >= -rwyCompNM - 0.5) || pertoAero) {
                         this.squawk = "2000";
                         if (this.transponder) this.transponder.code = "2000";
                     }
 
                     // 2. Detecção de Toque (Touchdown) no solo da pista
-                    const sobrePista = (alongTrack <= 0.2 && alongTrack >= -rwyCompNM - 0.5);
-                    const noSolo = (heightAgl <= 35.0 || altFt <= rwyElevFt + 25.0);
+                    const sobrePista = (alongTrack <= 0.2 && alongTrack >= -rwyCompNM - 0.5) || pertoAero;
+                    const noSolo = (heightAgl <= 50.0 || altFt <= rwyElevFt + 50.0);
 
                     if (sobrePista && noSolo) {
                         this.on_ground = true;
@@ -942,5 +983,6 @@ export class Aeronave {
         commandParser.parseAndExecuteScratchpad(this, this.textoLivre);
     }
 }
+
 
 

@@ -46,13 +46,35 @@ export const state = {
     // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO DATA-DRIVEN) ---
     configFluxo: {
         esteiras: [
-            { id: "esteira_1", ativo: false, fixo: "OGTAL|SBSP", separacao: 15 },
-            { id: "esteira_2", ativo: false, fixo: "PRUMO|SBSP", separacao: 15 }
+            { id: "esteira_1", ativo: false, fixo: "OGTAL|SBSP|OGTAL 2A", separacao: 15 },
+            { id: "esteira_2", ativo: false, fixo: "VUNOX|SBGR|VUNOX 1A", separacao: 15 }
         ]
     },
 
     // --- ENTIDADES DO SIMULADOR ---
     fixos: {},                 // Dicionário com os fixos/waypoints já convertidos em distâncias relativas ao centro
     aeronaves: [],             // Array com todas as instâncias ativas da classe Aeronave (tráfegos vivos na frequência)
-    windManager: null          // Gerenciador do sistema físico e meteorológico de vento
+    windManager: null,         // Gerenciador do sistema físico e meteorológico de vento
+
+    // --- CONTROLE DE CAMADAS DE VÍDEO-MAPA E BRILHO (STATE PATTERN) ---
+    radarLayers: null          // Inicializado abaixo com radarLayerState
 };
+
+/**
+ * Estado reativo centralizado das camadas de vídeo-mapa e controle de opacidade.
+ */
+export const radarLayerState = {
+    activeRunways: new Set(["SBSP-17", "SBSP-17R", "SBGR-10", "SBGR-10R", "SBGR-10L"]), // Chave única por pista ativa
+    activeCharts: new Set([
+        "OGTAL 2A", "ORESU 1A", "RNP Y RWY 17R",
+        "VUNOX 1A", "EDMUS 2A", "MOLLE 1A"
+    ]), // Nomes das cartas/STARs ativas individualmente
+    opacity: {
+        STAR: 0.8,
+        SID: 0.8,
+        IAC: 0.8,
+        ATCSMAC: 0.8
+    }
+};
+
+state.radarLayers = radarLayerState;

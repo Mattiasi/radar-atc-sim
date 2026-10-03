@@ -1,6 +1,6 @@
 import { calcularRumoDistancia } from '../utils/utils.js';
 import { normalizeHeading, calculateWindCorrectionAngle } from '../physics/windMath.js';
-import { isFixoIAC } from '../data/data.js';
+import { isFixoIAC, obterRestricaoFixoParaAeronave } from '../data/data.js';
 import { ILS_LATERAL_MODES } from './ILSController.js';
 import { authorize_approach, update_approach_vertical_profile, DESCENT_MODES } from './ApproachProfileManager.js';
 
@@ -33,7 +33,7 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
             let wpCoords = state.fixos[wpNome];
             if (wpCoords) {
                 navInfo = calcularRumoDistancia(aero, wpCoords);
-                restricaoAlvo = restricoesFixos[wpNome]; 
+                restricaoAlvo = obterRestricaoFixoParaAeronave(wpNome, aero); 
 
                 let flyByDist = 0.4; 
                 
