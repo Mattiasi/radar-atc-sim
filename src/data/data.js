@@ -14,9 +14,9 @@ export { cartasNavegacao, aerodromos, verticesSetor, estruturaEspacoAereo };
  * - restricoesFixos: dicionário de restrições de nível de voo e altitude
  */
 export const fixosNavegacao = [
-    {nome: "RW10R", lat: dmsParaDecimal(23, 26, 31.70, 'S'), lon: dmsParaDecimal(46, 29, 21.70, 'W')},
-    {nome: "R10RGR", lat: dmsParaDecimal(23, 26, 31.70, 'S'), lon: dmsParaDecimal(46, 29, 21.70, 'W')},
-    {nome: "R28LGR", lat: dmsParaDecimal(23, 26, 4.26, 'S'), lon: dmsParaDecimal(46, 27, 39.93, 'W')},
+    {nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W')},
+    {nome: "R10RGR", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W')},
+    {nome: "R28LGR", lat: dmsParaDecimal(23, 25, 52.02, 'S'), lon: dmsParaDecimal(46, 27, 31.02, 'W')},
     {nome: "R10LGR", lat: dmsParaDecimal(23, 26, 17.76, 'S'), lon: dmsParaDecimal(46, 29, 16.96, 'W')},
     {nome: "R28RGR", lat: dmsParaDecimal(23, 25, 43.91, 'S'), lon: dmsParaDecimal(46, 27, 11.45, 'W')},
     {nome: "R17RSP", lat: dmsParaDecimal(23, 37, 6.61, 'S'), lon: dmsParaDecimal(46, 39, 43.83, 'W')},

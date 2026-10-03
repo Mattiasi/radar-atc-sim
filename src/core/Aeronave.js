@@ -340,6 +340,14 @@ export class Aeronave {
         this._on_ground = false;
         this._flight_phase = "IN_FLIGHT";
         this.just_touched_down = false;
+
+        // Se nasceu autorizada VIA e o waypoint atual já pertence à IAC, engaja aproximação
+        if (this.nivAutorizado === "VIA" || this.cleared_level === "VIA") {
+            const activeWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
+            if (activeWp && isFixoIAC(activeWp)) {
+                authorize_approach(this);
+            }
+        }
     }
 
     get assigned_runway() {
@@ -908,16 +916,6 @@ export class Aeronave {
                     distTh = geom.distance_nm;
                 }
 
-                const emAproximacaoFinal = (
-                    this.descent_mode === DESCENT_MODES.GLIDEPATH ||
-                    this.descent_mode === 'FLARE' ||
-                    this.flight_phase === 'APPROACH' ||
-                    this.wpNome === this.dest ||
-                    (this.rota && this.wpIndex >= this.rota.length - 2) ||
-                    distTh <= 2.5
-                );
-
-                // Deve estar alinhado com a pista (crossTrack <= 0.25 NM) ou muito próximo ao aeroporto 
                 let distAero = 999;
                 const aeroCoords = state.fixos ? (state.fixos[this.dest] || state.fixos["SBSP"]) : null;
                 if (aeroCoords) {
@@ -925,29 +923,46 @@ export class Aeronave {
                     distAero = navAero ? navAero.distanciaNM : 999;
                 }
 
-                const alinhado = (Math.abs(crossTrack) <= 0.25);
-                const pertoAero = (distTh <= 1.0 || distAero <= 1.0);
+                const curWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
+                const emAproximacaoFinal = (
+                    this.descent_mode === DESCENT_MODES.GLIDEPATH ||
+                    this.descent_mode === 'FLARE' ||
+                    this.flight_phase === 'APPROACH' ||
+                    curWp === this.dest ||
+                    (this.rota && this.wpIndex >= this.rota.length - 2) ||
+                    distTh <= 2.5
+                );
 
-                if (emAproximacaoFinal && (alinhado || pertoAero)) {
-                    // 1. Mudança de Squawk para 2000 na aproximação final sobre a pista
-                    if ((alongTrack <= 0.5 && alongTrack >= -rwyCompNM - 0.5) || pertoAero) {
-                        this.squawk = "2000";
-                        if (this.transponder) this.transponder.code = "2000";
-                    }
+                // Deve estar alinhado com o prolongamento/eixo da pista
+                const alinhado = (Math.abs(crossTrack) <= 0.35);
 
-                    // 2. Detecção de Toque (Touchdown) no solo da pista
-                    const sobrePista = (alongTrack <= 0.2 && alongTrack >= -rwyCompNM - 0.5) || pertoAero;
-                    const noSolo = (heightAgl <= 50.0 || altFt <= rwyElevFt + 50.0);
+                // REGRAS OBRIGATÓRIAS DE POUSO E TRANSPONDER 2000:
+                // 1. "apos a coordenada do inicio da cabeceira":
+                //    alongTrack <= 0.0 (o ponto 0.0 é a coordenada exata da cabeceira física; valores > 0 ainda estão antes)
+                //    e dentro da extensão da pista (alongTrack >= -rwyCompNM - 0.2)
+                const aposInicioCabeceira = rwy
+                    ? (alongTrack <= 0.0 && alongTrack >= -rwyCompNM - 0.2)
+                    : (distAero <= 0.2);
 
-                    if (sobrePista && noSolo) {
+                // 2. "esta na altitude do aeroporto":
+                //    A aeronave deve ter descido e tocado na elevação física da pista/aeródromo (tolerância <= 20.0 ft)
+                const naAltitudeDoAeroporto = (Math.abs(altFt - rwyElevFt) <= 20.0 || heightAgl <= 20.0);
+
+                if (emAproximacaoFinal && (alinhado || !rwy)) {
+                    // Touchdown e ativação do Squawk 2000: Ocorrem ESTRITAMENTE quando estiver
+                    // após a coordenada do início da cabeceira E na altitude do aeroporto
+                    if (aposInicioCabeceira && naAltitudeDoAeroporto) {
                         this.on_ground = true;
                         this._on_ground = true;
                         this.flight_phase = "LANDED";
                         this._flight_phase = "LANDED";
                         this.alt = rwyElevFt;
                         this.flAtualNum = rwyElevFt / 100;
+                        this.nivAtual = Math.round(this.flAtualNum).toString().padStart(3, '0');
                         this.currentVS = 0;
                         this.targetVS = 0;
+
+                        // Aciona 2000 estritamente após a cabeceira e na altitude do aeroporto
                         this.squawk = "2000";
                         if (this.transponder) this.transponder.code = "2000";
 

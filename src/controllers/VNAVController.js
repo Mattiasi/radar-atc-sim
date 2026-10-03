@@ -1,7 +1,7 @@
 import { calcularRumoDistancia, correcaoLon } from '../utils/utils.js';
 import { DESCENT_MODES, update_approach_vertical_profile } from './ApproachProfileManager.js';
-import { ILS_VERTICAL_MODES } from './ILSController.js';
-import { isFixoIAC, obterRestricaoFixoParaAeronave } from '../data/data.js';
+import { ILS_VERTICAL_MODES, calculateILSGeometry } from './ILSController.js';
+import { isFixoIAC, obterRestricaoFixoParaAeronave, getRunwayData } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
 
 export function updateVNAV(aero, dtSec, state, restricoesFixos) {
@@ -22,6 +22,46 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         aero.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN
     );
 
+    if (aero.on_ground || aero.pousou || aero.flight_phase === "LANDED") {
+        aero.targetFL = aero.flAtualNum;
+        aero.target_altitude = (aero.alt !== undefined) ? aero.alt : (aero.flAtualNum * 100);
+        aero.targetVS = 0;
+        aero.currentVS = 0;
+        aero.razaoEfetiva = 0;
+        aero.verticalMode = 'GROUND';
+        aero.descent_mode = 'LANDED';
+        return;
+    }
+
+    let pertoPistaOuAero = false;
+    const rwy = getRunwayData(aero);
+    if (rwy) {
+        const geom = calculateILSGeometry(aero.deltaLat, aero.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
+        if (geom.along_track_nm <= 5.0 && geom.along_track_nm >= -(rwy.comp_nm + 1.0) && Math.abs(geom.cross_track_nm) <= 1.5) {
+            pertoPistaOuAero = true;
+        }
+    } else {
+        const destCoords = state.fixos ? (state.fixos[aero.dest] || state.fixos["SBSP"]) : null;
+        if (destCoords) {
+            const navDest = calcularRumoDistancia(aero, destCoords);
+            if (navDest && navDest.distanciaNM <= 3.0) {
+                pertoPistaOuAero = true;
+            }
+        }
+    }
+
+    // Se estiver no corredor final da pista e não estiver no solo, assegura captura do glidepath
+    if (pertoPistaOuAero && !aero.on_ground && aero.descent_mode !== DESCENT_MODES.GLIDEPATH && aero.descent_mode !== 'FLARE') {
+        aero.descent_mode = DESCENT_MODES.GLIDEPATH;
+        aero.verticalMode = 'G/S';
+        aero.cleared_approach = true;
+    }
+
+    const emAproximacao = aero.cleared_approach || 
+                          aero.descent_mode === DESCENT_MODES.GLIDEPATH || 
+                          aero.descent_mode === DESCENT_MODES.APPROACH_PROFILE || 
+                          aero.descent_mode === 'FLARE';
+
     if (isCapturingOrTrackingGS) {
         aero.descent_mode = (aero.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE) ? 'FLARE' : 'GLIDEPATH';
         aero.verticalMode = 'G/S';
@@ -29,7 +69,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
         aero.hold_altitude_until_waypoint = null;
         aero.vertical_floor_altitude = null;
         aero.vertical_floor_fl = null;
-    } else if (!isVia && !isILS && !isNaN(altClearence) && altClearence > aero.flAtualNum) {
+    } else if (!emAproximacao && !pertoPistaOuAero && !isVia && !isILS && !isNaN(altClearence) && altClearence > aero.flAtualNum) {
         targetFL = altClearence;
         const perfRate = (aero.perf && aero.perf.rates && aero.perf.rates.climbNormal) 
             ? aero.perf.rates.climbNormal 

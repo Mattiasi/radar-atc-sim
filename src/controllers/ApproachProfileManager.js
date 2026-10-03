@@ -233,15 +233,24 @@ export function authorize_approach(aircraft, active_iac = null) {
     // 3. ATUALIZAÇÃO DO ESTADO DA AERONAVE
     aircraft.cleared_approach = true;
     aircraft.autorizadoProcedimento = true; // Compatibilidade retroativa
-    aircraft.descent_mode = DESCENT_MODES.APPROACH_PROFILE;
-    aircraft.verticalMode = 'APP';
+    const isThresholdFix = (first_iac_fix === "RW10R" || (/^RW\d{2}/i.test(first_iac_fix)));
+    if (isThresholdFix) {
+        aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
+        aircraft.verticalMode = 'G/S';
+        aircraft.hold_altitude_until_waypoint = first_iac_fix;
+        aircraft.vertical_floor_altitude = null;
+        aircraft.vertical_floor_fl = null;
+    } else {
+        aircraft.descent_mode = DESCENT_MODES.APPROACH_PROFILE;
+        aircraft.verticalMode = 'APP';
 
-    // 4. TRAVA VERTICAL (Hold Altitude Until Waypoint)
-    aircraft.hold_altitude_until_waypoint = first_iac_fix;
-    aircraft.target_altitude = target_altitude;
-    aircraft.targetFL = target_fl;
-    aircraft.vertical_floor_altitude = target_altitude;
-    aircraft.vertical_floor_fl = target_fl;
+        // 4. TRAVA VERTICAL (Hold Altitude Until Waypoint)
+        aircraft.hold_altitude_until_waypoint = first_iac_fix;
+        aircraft.target_altitude = target_altitude;
+        aircraft.targetFL = target_fl;
+        aircraft.vertical_floor_altitude = target_altitude;
+        aircraft.vertical_floor_fl = target_fl;
+    }
 
     // Reseta flags de monitoramento de aproximação
     aircraft.last_distance_to_hold_fix = undefined;
@@ -348,43 +357,67 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
 
         const rwy = getRunwayData(aircraft);
         const thresholdAltFt = rwy ? rwy.threshold.elevation_ft : 2631;
-        let distThresholdNM = 1.0;
+        let alongTrackNM = 1.0;
+        let crossTrackNM = 0.0;
 
         if (rwy) {
             const geom = calculateILSGeometry(aircraft.deltaLat, aircraft.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
-            distThresholdNM = Math.max(0, geom.along_track_nm);
+            alongTrackNM = geom.along_track_nm;
+            crossTrackNM = geom.cross_track_nm;
         } else {
             const destCoords = state.fixos ? (state.fixos[aircraft.dest] || state.fixos["SBSP"]) : null;
             if (destCoords) {
                 const navDest = calcularRumoDistancia(aircraft, destCoords);
-                distThresholdNM = navDest ? navDest.distanciaNM : 1.0;
+                alongTrackNM = navDest ? navDest.distanciaNM : 1.0;
             }
         }
 
-        // Rampa ideal de 3°: altitude = cabeceira + (distância * 318.4 ft/NM)
-        const glidepathAltFt = thresholdAltFt + (distThresholdNM * 318.4);
+        // Rampa ideal de 3° com TCH de ~50 ft (visando o ponto de toque a ~1000 ft / 0.16 NM após a cabeceira)
+        const distAimingPointNM = Math.max(0, alongTrackNM + 0.16);
+        const glidepathAltFt = thresholdAltFt + (distAimingPointNM * 318.4);
         const targetAltFt = Math.max(thresholdAltFt, glidepathAltFt);
 
         aircraft.target_altitude = targetAltFt;
         aircraft.targetFL = Math.round(targetAltFt / 100);
 
         // Razão vertical nominal para seguir rampa de 3° (ft/min ≈ GS * 5.3)
-        const gs = aircraft.groundSpeed || aircraft.vel || 140;
-        let vsGlidepath = -Math.round(gs * 5.3);
+        const gsKt = (aircraft.groundSpeed !== undefined && aircraft.groundSpeed > 50) 
+            ? aircraft.groundSpeed 
+            : (aircraft.vel || 140);
+        const vsNominal = -Math.round(gsKt * 5.3);
 
-        // Suavização do toque / flare próximo ao solo (altura <= 65 ft AGL)
         const curAlt = (aircraft.alt !== undefined) ? aircraft.alt : (aircraft.flAtualNum * 100);
         const heightAgl = curAlt - thresholdAltFt;
-        if (heightAgl <= 65 && distThresholdNM <= 0.5) {
-            const tFlare = Math.max(0, Math.min(1, heightAgl / 65));
-            vsGlidepath = Math.round(-120 + tFlare * (vsGlidepath - (-120)));
+
+        // Correção de desvio da rampa (fechamento de malha proporcional)
+        const altErrorFt = targetAltFt - curAlt; // negativo se a aeronave estiver acima da rampa
+        const vsCorr = Math.max(-500, Math.min(400, altErrorFt * 3.0));
+        let vsGlidepath = vsNominal + vsCorr;
+
+        // Gestão de velocidade na aproximação final (desaceleração para Vapp)
+        if (alongTrackNM <= 6.0 && alongTrackNM > 3.0) {
+            aircraft.targetIAS = 160;
+        } else if (alongTrackNM <= 3.0) {
+            aircraft.targetIAS = aircraft.approachSpeed || 135;
+        }
+        if (aircraft.targetIAS && aircraft.vel > aircraft.targetIAS) {
+            aircraft.vel = Math.max(aircraft.targetIAS, aircraft.vel - 3.0 * dtSec);
+            aircraft.currentIAS = aircraft.vel;
+        }
+
+        // Suavização do toque / flare próximo ao solo (altura <= 50 ft AGL)
+        if (heightAgl <= 50 && alongTrackNM <= 0.3) {
+            aircraft.descent_mode = 'FLARE';
+            aircraft.verticalMode = 'FLARE';
+            const tFlare = Math.max(0, Math.min(1, heightAgl / 50));
+            vsGlidepath = Math.round(-150 + tFlare * (vsGlidepath - (-150)));
         }
 
         aircraft.razaoEfetiva = Math.abs(vsGlidepath);
         aircraft.targetVS = vsGlidepath;
 
         if (aircraft.virtualPilot) {
-            aircraft.virtualPilot.verticalMode = 'G/S';
+            aircraft.virtualPilot.verticalMode = (aircraft.descent_mode === 'FLARE') ? 'FLARE' : 'G/S';
             aircraft.virtualPilot.targetAlt = targetAltFt;
             aircraft.virtualPilot.targetVS = vsGlidepath;
         }
@@ -401,29 +434,34 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         // prematuramente. Vamos depender do flyByProtegido e da distância física real.
 
         if (!fixoCruzado) {
-            if (aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName) {
-                fixoCruzado = false;
-            } else {
-                const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
-                if (holdCoords) {
-                    const nav = calcularRumoDistancia(aircraft, holdCoords);
-                    const distNM = nav.distanciaNM;
+            const holdCoords = state.fixos ? state.fixos[holdFixName] : null;
+            if (holdCoords) {
+                const nav = calcularRumoDistancia(aircraft, holdCoords);
+                const distNM = nav.distanciaNM;
 
-                    if (aircraft.min_dist_to_hold_fix === undefined || aircraft.hold_fix_tracked !== holdFixName) {
-                        aircraft.min_dist_to_hold_fix = distNM;
-                        aircraft.hold_fix_tracked = holdFixName;
-                    } else if (distNM < aircraft.min_dist_to_hold_fix) {
-                        aircraft.min_dist_to_hold_fix = distNM;
-                    }
+                if (aircraft.min_dist_to_hold_fix === undefined || aircraft.hold_fix_tracked !== holdFixName) {
+                    aircraft.min_dist_to_hold_fix = distNM;
+                    aircraft.hold_fix_tracked = holdFixName;
+                } else if (distNM < aircraft.min_dist_to_hold_fix) {
+                    aircraft.min_dist_to_hold_fix = distNM;
+                }
 
-                    const sobrevoou = (distNM <= 0.25);
-                    const passouTraves = (aircraft.min_dist_to_hold_fix <= 1.2 && distNM >= aircraft.min_dist_to_hold_fix + 0.10);
+                const emProtecaoFlyBy = Boolean(aircraft.flyByProtegido && aircraft.flyByProtegido.fixoNome === holdFixName);
+                if (!emProtecaoFlyBy) {
+                    const sobrevoou = (distNM <= 0.35);
+                    const passouTraves = (aircraft.min_dist_to_hold_fix <= 1.5 && distNM >= aircraft.min_dist_to_hold_fix + 0.08);
 
-                    if (sobrevoou || passouTraves) {
+                    // Se a rota LNAV já avançou além deste fixo e estamos nos afastando dele
+                    const idxHold = (aircraft.rota && Array.isArray(aircraft.rota)) ? aircraft.rota.indexOf(holdFixName) : -1;
+                    const rotaJaPassou = (idxHold !== -1 && aircraft.wpIndex > idxHold && distNM >= aircraft.min_dist_to_hold_fix + 0.05);
+
+                    if (sobrevoou || passouTraves || rotaJaPassou) {
                         fixoCruzado = true;
                     }
-                    aircraft.last_distance_to_hold_fix = distNM;
                 }
+                aircraft.last_distance_to_hold_fix = distNM;
+            } else {
+                fixoCruzado = true;
             }
         }
 
@@ -431,8 +469,9 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         // PROGRESSÃO APÓS O FIXO ATUAL SER CRUZADO
         // ---------------------------------------------------------------------
         if (fixoCruzado) {
-            // Se cruzamos o FAF (SP139/OPSER) ou SDF (SP017), transiciona para captura do GLIDEPATH
-            if (holdFixName === "SP017" || holdFixName === "OPSER") {
+            // Se cruzamos o FAF (SP139/OPSER), SDF (SP017) ou cabeceira (RW10R), transiciona para captura do GLIDEPATH
+            const isFafOrThreshold = (holdFixName === "SP017" || holdFixName === "OPSER" || holdFixName === "RW10R" || (/^RW\d{2}/i.test(holdFixName)));
+            if (isFafOrThreshold) {
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
                 aircraft.hold_altitude_until_waypoint = (holdFixName === "OPSER") ? "RW10R" : (aircraft.dest || "SBSP");

@@ -884,7 +884,7 @@ export function desenharRadar() {
         let textX = lx + 12 * dir;
         const radarSnap = aero.posicaoRadar || aero;
         const gsDisplay = Math.round(radarSnap.groundSpeed !== undefined ? radarSnap.groundSpeed : (aero.groundSpeed !== undefined ? aero.groundSpeed : aero.vel));
-        const nivDisplay = radarSnap.nivAtual || aero.nivAtual;
+        const nivDisplay = ((radarSnap.nivAtual !== undefined && radarSnap.nivAtual !== null) ? radarSnap.nivAtual : (aero.nivAtual || "")).toString();
         
         // Renderização para aviões visualmente identificados em fase de pouso final
         if (aero.squawk === "2000") {
@@ -902,7 +902,7 @@ export function desenharRadar() {
             // LINHA 1: Callsign e Tipo de Aeronave
             // O callsign fica verde (#00e676) se a etiqueta estiver expandida; caso contrário, fica preto (#000000).
             const corCallsign = aero.expandida ? '#00e676' : '#000000';
-            const callsignTexto = aero.callsign.padEnd(8, ' ');
+            const callsignTexto = (aero.callsign || "").padEnd(8, ' ');
 
             if (isRight) {
                 state.ctx.fillStyle = corCallsign;

@@ -64,7 +64,7 @@ export class CommandParser {
         const matchNoApp = /\b(NOAPP|NOAPX|CANCEL)\b/.test(texto);
         if (matchApp) {
             authorize_approach(aero);
-        } else if (matchNoApp || (aero.cleared_approach && !matchApp && aero.nivAutorizado !== "VIA" && aero.cleared_level !== "VIA" && !aero.ils_authorized)) {
+        } else if (matchNoApp) {
             cancel_approach(aero);
         }
 

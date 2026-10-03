@@ -109,7 +109,7 @@ export const aerodromos = [
             {
                 id: "10R/28L",
                 rumo: 96,
-                compNM: 1.62,
+                compNM: 1.63,
                 larguraPx: 3.5,
                 prolongamento: {
                     tracosAntes: 4,
@@ -121,8 +121,8 @@ export const aerodromos = [
                 },
                 cabeceiras: {
                     "10R": {
-                        lat: dmsParaDecimal(23, 26, 31.70, 'S'),
-                        lon: dmsParaDecimal(46, 29, 21.70, 'W'),
+                        lat: dmsParaDecimal(23, 26, 19.67, 'S'),
+                        lon: dmsParaDecimal(46, 29, 13.30, 'W'),
                         id: "10R",
                         rumo: 96,
                         frontCourseDeg: 96,
@@ -130,8 +130,8 @@ export const aerodromos = [
                         ils: { enabled: false, loc_valid: false, gs_valid: false }
                     },
                     "28L": {
-                        lat: dmsParaDecimal(23, 26, 4.26, 'S'),
-                        lon: dmsParaDecimal(46, 27, 39.93, 'W'),
+                        lat: dmsParaDecimal(23, 25, 52.02, 'S'),
+                        lon: dmsParaDecimal(46, 27, 31.02, 'W'),
                         id: "28L",
                         rumo: 276,
                         frontCourseDeg: 276,

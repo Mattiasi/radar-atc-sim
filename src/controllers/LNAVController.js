@@ -1,7 +1,7 @@
 import { calcularRumoDistancia } from '../utils/utils.js';
 import { normalizeHeading, calculateWindCorrectionAngle } from '../physics/windMath.js';
-import { isFixoIAC, obterRestricaoFixoParaAeronave } from '../data/data.js';
-import { ILS_LATERAL_MODES } from './ILSController.js';
+import { isFixoIAC, obterRestricaoFixoParaAeronave, getRunwayData } from '../data/data.js';
+import { ILS_LATERAL_MODES, calculateILSGeometry } from './ILSController.js';
 import { authorize_approach, update_approach_vertical_profile, DESCENT_MODES } from './ApproachProfileManager.js';
 
 /**
@@ -35,6 +35,15 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                 navInfo = calcularRumoDistancia(aero, wpCoords);
                 restricaoAlvo = obterRestricaoFixoParaAeronave(wpNome, aero); 
 
+                // Verificação contínua: se voando VIA e rastreando fixo de IAC, autoriza aproximação imediatamente
+                const isViaAtivo = (aero.nivAutorizadoFisico === "VIA" || aero.nivAutorizadoFisico === "---" || aero.nivAutorizado === "VIA" || aero.cleared_level === "VIA");
+                if (!aero.srAteFixoIAC && isViaAtivo && !aero.cleared_approach) {
+                    const activeWp = (aero.rota && aero.wpIndex < aero.rota.length) ? aero.rota[aero.wpIndex] : null;
+                    if (isFixoIAC(wpNome) || isFixoIAC(activeWp)) {
+                        authorize_approach(aero);
+                    }
+                }
+
                 let flyByDist = 0.4; 
                 
                 if (aero.wpOffRoute === null && aero.rota && aero.wpIndex + 1 < aero.rota.length) {
@@ -54,6 +63,10 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                         
                         flyByDist = Math.max(0.6, Math.min(antecipacaoCalculada, limitePerna));
                     }
+                }
+                const isThresholdFix = (wpNome === "RW10R" || (/^RW\d{2}/i.test(wpNome)));
+                if (isThresholdFix) {
+                    flyByDist = 0.05; // Voa até a vertical exata da cabeceira
                 }
                 aero.flyByDist = flyByDist;
                 
@@ -112,6 +125,22 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                     let wind = aero.ventoAtual || { fromDeg: 0, speedKt: 0 };
                     let wca = calculateWindCorrectionAngle(rumoAlvo, aero.vel, wind.fromDeg, wind.speedKt);
                     aero.proaDestino = Math.round(normalizeHeading(rumoAlvo + wca));
+                }
+            }
+        }
+
+        // Alinhamento final com o prolongamento/eixo da pista na aproximação
+        if (aero.descent_mode === DESCENT_MODES.GLIDEPATH || aero.descent_mode === 'FLARE') {
+            const rwy = getRunwayData(aero);
+            if (rwy) {
+                const geom = calculateILSGeometry(aero.deltaLat, aero.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
+                if (geom.along_track_nm <= 1.5) {
+                    if (geom.along_track_nm <= 0.0) {
+                        aero.proaDestino = rwy.front_course_deg;
+                    } else {
+                        const corr = Math.max(-10, Math.min(10, -geom.cross_track_nm * 40));
+                        aero.proaDestino = Math.round(normalizeHeading(rwy.front_course_deg + corr));
+                    }
                 }
             }
         }

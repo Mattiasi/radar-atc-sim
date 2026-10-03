@@ -66,8 +66,8 @@ export const state = {
 export const radarLayerState = {
     activeRunways: new Set(["SBSP-17", "SBSP-17R", "SBGR-10", "SBGR-10R", "SBGR-10L"]), // Chave única por pista ativa
     activeCharts: new Set([
-        "OGTAL 2A", "ORESU 1A", "RNP Y RWY 17R",
-        "VUNOX 1A", "EDMUS 2A", "MOLLE 1A"
+        "OGTAL 2A", "ORESU 1A", "RNP Y RWY 17R", "RNP 17",
+        "VUNOX 1A", "EDMUS 2A", "MOLLE 1A", "RNP Y RWY 10R", "RNP 10"
     ]), // Nomes das cartas/STARs ativas individualmente
     opacity: {
         STAR: 0.8,

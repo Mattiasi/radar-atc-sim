@@ -107,6 +107,13 @@ export class FlightDynamicsEngine {
      * @param {number} dt - Passo de tempo em segundos
      */
     static atualizarCinematicaVertical(ac, perf, dt) {
+        if (ac.on_ground || ac.flight_phase === 'LANDED' || ac.pousou) {
+            ac.currentVS = 0;
+            ac.targetVS = 0;
+            ac.verticalSpeed = 0;
+            return;
+        }
+
         if (ac.targetVS === undefined) ac.targetVS = 0;
         if (ac.currentVS === undefined) ac.currentVS = ac.verticalSpeed || 0;
         if (ac.alt === undefined) ac.alt = (ac.flAtualNum || 0) * 100;

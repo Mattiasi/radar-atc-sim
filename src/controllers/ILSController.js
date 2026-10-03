@@ -530,9 +530,9 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
         aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_CAPTURE ||
         aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
         
-        // Touchdown detectado fisicamente na superfície da pista
-        const overRunway = (along_track_nm <= 0.35 && along_track_nm >= -2.5);
-        const onGround = (height_agl <= ILS_CONSTANTS.TOUCHDOWN_TOLERANCE_FT || altFt <= th.elevation_ft + 8.0);
+        // Touchdown detectado fisicamente na superfície da pista (após início da cabeceira e na altitude)
+        const overRunway = (along_track_nm <= 0.0 && along_track_nm >= -2.5);
+        const onGround = (height_agl <= 15.0 || altFt <= th.elevation_ft + 15.0);
 
         if (overRunway && onGround) {
             aircraft.autopilot.vertical_mode = ILS_VERTICAL_MODES.TOUCHDOWN;
