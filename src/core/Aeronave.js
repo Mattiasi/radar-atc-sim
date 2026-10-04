@@ -11,6 +11,7 @@ import { DESCENT_MODES, authorize_approach, cancel_approach, update_approach_ver
 import { updateLNAV, updateLateralPhysics, updateFlyByProtection } from '../controllers/LNAVController.js';
 import { updateVNAV } from '../controllers/VNAVController.js';
 import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from '../controllers/ILSController.js';
+import { verificarTouchdown, processarRolloutESumico } from '../controllers/LandingRolloutManager.js';
 import { commandParser } from '../agents/CommandParser.js';
 
 /**
@@ -275,13 +276,22 @@ export class Aeronave {
         // 2. Fallback caso não haja pista ativa no Video Mapa
         if (!pistaPadrao && Array.isArray(aerodromos)) {
             const aeroData = aerodromos.find(a => a.nome === dest);
-            if (aeroData && aeroData.pistas && aeroData.pistas.length > 0) {
-                const primaryId = aeroData.pistas[0].id;
-                pistaPadrao = primaryId.includes('/') ? primaryId.split('/')[0] : primaryId;
+            if (aeroData) {
+                if (aeroData.pistaPadrao) {
+                    pistaPadrao = aeroData.pistaPadrao;
+                } else if (aeroData.pistas && aeroData.pistas.length > 0) {
+                    const primaryPista = aeroData.pistas[0];
+                    if (primaryPista.cabeceiras && Object.keys(primaryPista.cabeceiras).length > 0) {
+                        pistaPadrao = Object.keys(primaryPista.cabeceiras)[0];
+                    } else {
+                        const primaryId = primaryPista.id;
+                        pistaPadrao = primaryId.includes('/') ? primaryId.split('/')[0] : primaryId;
+                    }
+                }
             }
         }
         
-        this.pistaAtribuida = pistaPadrao || ((dest === "SBSP") ? "17R" : null); // Cabeceira terminal atribuída para vento local
+        this.pistaAtribuida = pistaPadrao || "17R"; // Cabeceira terminal atribuída para vento local
         this.ventoAtual = { fromDeg: 0, speedKt: 0, vLat: 0, vLon: 0, origem: "GLOBAL" }; // Vento atuante
 
         // --- 9. PILOT COCKPIT INTERACTION & DYNAMICS ENGINE ---
@@ -344,7 +354,7 @@ export class Aeronave {
         // Se nasceu autorizada VIA e o waypoint atual já pertence à IAC, engaja aproximação
         if (this.nivAutorizado === "VIA" || this.cleared_level === "VIA") {
             const activeWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
-            if (activeWp && isFixoIAC(activeWp)) {
+            if (activeWp && isFixoIAC(activeWp, this)) {
                 authorize_approach(this);
             }
         }
@@ -398,9 +408,9 @@ export class Aeronave {
         const wpAtual = (this.rota && this.rota.length > 0 && this.wpIndex < this.rota.length) 
             ? this.rota[this.wpIndex] 
             : null;
-        if (wpAtual && isFixoIAC(wpAtual)) return true;
-        if (this.wpOffRoute && isFixoIAC(this.wpOffRoute)) return true;
-        if (this.wpPendente && typeof this.wpPendente === 'string' && isFixoIAC(this.wpPendente)) return true;
+        if (wpAtual && isFixoIAC(wpAtual, this)) return true;
+        if (this.wpOffRoute && isFixoIAC(this.wpOffRoute, this)) return true;
+        if (this.wpPendente && typeof this.wpPendente === 'string' && isFixoIAC(this.wpPendente, this)) return true;
         if (this.dtg !== undefined && this.dtg <= 14.0) return true;
         return false;
     }
@@ -432,7 +442,7 @@ export class Aeronave {
      * @returns {number} Distância restante estimada até o toque em Milhas Náuticas (NM).
      */
     calcularDistanceToGo() {
-        const destNome = this.dest || "SBSP";
+        const destNome = this.dest || (Array.isArray(aerodromos) && aerodromos[0] ? aerodromos[0].nome : "SBSP");
         const rwy = this.assigned_runway ? this.assigned_runway.replace("/", "") : "";
         const suf = destNome ? destNome.slice(2) : "";
         const thKey = `R${rwy}${suf}`;
@@ -441,7 +451,7 @@ export class Aeronave {
         const rwData = getRunwayData(this);
         const ptThreshold = (rwData && rwData.threshold)
             ? rwData.threshold
-            : (state.fixos[thKey] || state.fixos[rwKey] || state.fixos[destNome] || state.fixos["SBSP"]);
+            : (state.fixos[thKey] || state.fixos[rwKey] || state.fixos[destNome] || (state.fixos && Object.values(state.fixos)[0]));
         if (!ptThreshold) return 20.0;
 
         // Distância euclidiana em linha reta até o limiar
@@ -865,64 +875,24 @@ export class Aeronave {
         if (!emILS) {
             const rwy = getRunwayData(this);
             const rwyElevFt = rwy ? rwy.threshold.elevation_ft : 2631;
-            const rwyCompNM = rwy ? (rwy.comp_nm || 1.0) : 1.0;
             const frontCourse = rwy ? (rwy.front_course_deg || 170) : 170;
             const altFt = (this.alt !== undefined) ? this.alt : (this.flAtualNum * 100);
             const heightAgl = altFt - rwyElevFt;
 
+            let alongTrack = -999;
+            let crossTrack = 0;
+            let distTh = 999;
+            if (rwy) {
+                const geom = calculateILSGeometry(this.deltaLat, this.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, frontCourse);
+                alongTrack = geom.along_track_nm;
+                crossTrack = geom.cross_track_nm;
+                distTh = geom.distance_nm;
+            }
+
             // Se a aeronave já tocou o solo, gerencia a desaceleração, rolagem e ciclo de vida
             if (this.on_ground) {
-                this.flight_phase = "LANDED";
-                this._flight_phase = "LANDED";
-                this.alt = rwyElevFt;
-                this.flAtualNum = rwyElevFt / 100;
-                this.currentVS = 0;
-                this.targetVS = 0;
-                this.squawk = "2000";
-                if (this.transponder) this.transponder.code = "2000";
-
-                // Mantém o alinhamento no eixo da pista durante a rolagem no solo
-                this.proa = frontCourse;
-                this.proaDestino = frontCourse;
-                this.direcaoCurva = 0;
-
-                let alongTrack = -999;
-                if (rwy) {
-                    const geom = calculateILSGeometry(this.deltaLat, this.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, frontCourse);
-                    alongTrack = geom.along_track_nm;
-                }
-
-                // Desaceleração física na corrida de pista (Ground Rollout)
-                if (this.vel > 20) {
-                    this.vel = Math.max(20, this.vel - 5.0 * dtSec);
-                    this.currentIAS = this.vel;
-                } else {
-                    if (!this.tempoNoSolo) this.tempoNoSolo = 0;
-                    this.tempoNoSolo += dtSec;
-                    if (this.tempoNoSolo >= 1.5 || alongTrack <= -rwyCompNM - 0.1) {
-                        this.pousou = true;
-                    }
-                }
+                processarRolloutESumico(this, rwy, dtSec, alongTrack);
             } else if (heightAgl <= 500) {
-                // Se ainda em voo, só avalia aproximação final e toque se estiver abaixo de 500 ft AGL
-                let alongTrack = 999;
-                let crossTrack = 999;
-                let distTh = 999;
-
-                if (rwy) {
-                    const geom = calculateILSGeometry(this.deltaLat, this.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, frontCourse);
-                    alongTrack = geom.along_track_nm;
-                    crossTrack = geom.cross_track_nm;
-                    distTh = geom.distance_nm;
-                }
-
-                let distAero = 999;
-                const aeroCoords = state.fixos ? (state.fixos[this.dest] || state.fixos["SBSP"]) : null;
-                if (aeroCoords) {
-                    const navAero = calcularRumoDistancia(this, aeroCoords);
-                    distAero = navAero ? navAero.distanciaNM : 999;
-                }
-
                 const curWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
                 const emAproximacaoFinal = (
                     this.descent_mode === DESCENT_MODES.GLIDEPATH ||
@@ -933,42 +903,10 @@ export class Aeronave {
                     distTh <= 2.5
                 );
 
-                // Deve estar alinhado com o prolongamento/eixo da pista
-                const alinhado = (Math.abs(crossTrack) <= 0.35);
-
-                // REGRAS OBRIGATÓRIAS DE POUSO E TRANSPONDER 2000:
-                // 1. "apos a coordenada do inicio da cabeceira":
-                //    alongTrack <= 0.0 (o ponto 0.0 é a coordenada exata da cabeceira física; valores > 0 ainda estão antes)
-                //    e dentro da extensão da pista (alongTrack >= -rwyCompNM - 0.2)
-                const aposInicioCabeceira = rwy
-                    ? (alongTrack <= 0.0 && alongTrack >= -rwyCompNM - 0.2)
-                    : (distAero <= 0.2);
-
-                // 2. "esta na altitude do aeroporto":
-                //    A aeronave deve ter descido e tocado na elevação física da pista/aeródromo (tolerância <= 20.0 ft)
-                const naAltitudeDoAeroporto = (Math.abs(altFt - rwyElevFt) <= 20.0 || heightAgl <= 20.0);
-
-                if (emAproximacaoFinal && (alinhado || !rwy)) {
-                    // Touchdown e ativação do Squawk 2000: Ocorrem ESTRITAMENTE quando estiver
-                    // após a coordenada do início da cabeceira E na altitude do aeroporto
-                    if (aposInicioCabeceira && naAltitudeDoAeroporto) {
-                        this.on_ground = true;
-                        this._on_ground = true;
-                        this.flight_phase = "LANDED";
-                        this._flight_phase = "LANDED";
-                        this.alt = rwyElevFt;
-                        this.flAtualNum = rwyElevFt / 100;
-                        this.nivAtual = Math.round(this.flAtualNum).toString().padStart(3, '0');
-                        this.currentVS = 0;
-                        this.targetVS = 0;
-
-                        // Aciona 2000 estritamente após a cabeceira e na altitude do aeroporto
-                        this.squawk = "2000";
-                        if (this.transponder) this.transponder.code = "2000";
-
-                        this.proa = frontCourse;
-                        this.proaDestino = frontCourse;
-                        this.direcaoCurva = 0;
+                if (emAproximacaoFinal) {
+                    const tocou = verificarTouchdown(this, rwy, dtSec, alongTrack, crossTrack, altFt, heightAgl);
+                    if (tocou) {
+                        processarRolloutESumico(this, rwy, dtSec, alongTrack);
                     }
                 }
             }

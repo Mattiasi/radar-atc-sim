@@ -2,6 +2,7 @@ import { flightCommandService } from './FlightCommandService.js';
 import { authorize_approach, cancel_approach, DESCENT_MODES, findFirstIACFix } from '../controllers/ApproachProfileManager.js';
 import { fixosNavegacao } from '../data/data.js';
 import { AircraftStateMutator } from '../core/AircraftStateMutator.js';
+import { state } from '../core/state.js';
 
 export const DIC_FIXOS_PADRAO = {
     "PRU": "PRUMO", "IRP": "IROPU", "LVD": "LUVDI", "GRS": "GERSU",
@@ -18,9 +19,24 @@ export class CommandParser {
         if (texto === aero.ultimoComandoTexto) return;
         aero.ultimoComandoTexto = texto;
 
-        if (/\bILS\b/.test(texto)) {
+        const matchILS = texto.match(/\bILS(?:\s+(\d{1,2}[RCL]?))?\b/);
+        if (matchILS) {
             flightCommandService.setLevel(aero, "ILS");
-            aero.textoLivre = aero.textoLivre.replace(/\bILS\b/g, '').trim();
+            authorize_approach(aero);
+            if (matchILS[1]) {
+                aero.assigned_runway = matchILS[1];
+                aero.pistaAtribuida = matchILS[1];
+            }
+            aero.textoLivre = aero.textoLivre.replace(/\bILS(?:\s+\d{1,2}[RCL]?)?\b/gi, '').trim();
+            aero.ultimoComandoTexto = aero.textoLivre;
+            texto = aero.textoLivre.toUpperCase().trim();
+        }
+
+        const matchRwy = texto.match(/\b(?:RWY|RW)\s*(\d{1,2}[RCL]?)\b/);
+        if (matchRwy) {
+            aero.assigned_runway = matchRwy[1];
+            aero.pistaAtribuida = matchRwy[1];
+            aero.textoLivre = aero.textoLivre.replace(/\b(?:RWY|RW)\s*\d{1,2}[RCL]?\b/gi, '').trim();
             aero.ultimoComandoTexto = aero.textoLivre;
             texto = aero.textoLivre.toUpperCase().trim();
         }
@@ -93,9 +109,19 @@ export class CommandParser {
                 }
             });
         }
+        if (state.fixos) {
+            Object.keys(state.fixos).forEach(nome => {
+                if (!dicFixos[nome]) {
+                    dicFixos[nome] = nome;
+                }
+            });
+        }
+
+        // Ordena chaves por comprimento decrescente para priorizar nomes mais específicos
+        const chavesOrdenadas = Object.keys(dicFixos).sort((a, b) => b.length - a.length);
 
         let wpTarget = null;
-        for (let key in dicFixos) {
+        for (const key of chavesOrdenadas) {
             const regex = new RegExp(`\\b${key}\\b`, 'i');
             if (regex.test(texto)) {
                 wpTarget = dicFixos[key];
@@ -103,8 +129,8 @@ export class CommandParser {
             }
         }
         if (!wpTarget) {
-            for (let key in dicFixos) {
-                if (texto.includes(key) || texto.includes(dicFixos[key])) {
+            for (const key of chavesOrdenadas) {
+                if (key.length >= 3 && (texto.includes(key) || texto.includes(dicFixos[key]))) {
                     wpTarget = dicFixos[key];
                     break;
                 }

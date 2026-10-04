@@ -15,6 +15,8 @@ import { windManager } from '../physics/windManager.js';
 
 // Vincula o gerenciador de vento ao estado global
 state.windManager = windManager;
+window.state = state;
+window.windManager = windManager;
 
 // --- 1. SETUP INICIAL DO CANVAS ---
 // Conecta o estado global ao elemento HTML real e ajusta a resolução para ecrã inteiro.

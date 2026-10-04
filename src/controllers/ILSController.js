@@ -17,6 +17,7 @@ import { correcaoLon, geoParaDelta } from '../utils/utils.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
 import { aerodromos } from '../data/data.js';
 import { state } from '../core/state.js';
+import { verificarTouchdown, processarRolloutESumico } from './LandingRolloutManager.js';
 
 /**
  * Modos da Máquina de Estados Lateral (Lateral FSM)
@@ -134,6 +135,7 @@ export function calculateILSGeometry(acDeltaLat, acDeltaLon, thDeltaLat, thDelta
 /**
  * Obtém a configuração ILS da cabeceira ativa de forma 100% data-driven.
  * Não utiliza verificações hardcoded por aeroporto ou pista.
+ * Suporta qualquer aeródromo configurado em aerodromos.js com cabeceira.ils.enabled = true.
  * 
  * @param {Object} aircraft - Instância da aeronave
  * @returns {Object|null} Configuração ILS da cabeceira ou null se inválida/desabilitada
@@ -142,87 +144,115 @@ export function getRunwayILS(aircraft) {
     if (!aircraft || !aircraft.dest) return null;
 
     const destName = aircraft.dest;
-    const runwayId = aircraft.assigned_runway || aircraft.pistaAtribuida;
-    if (!runwayId) return null;
-
-    // Regra operacional: ILS disponível exclusivamente em SBSP e SBKP para a pista 15
-    const isPermittedILS = (destName === "SBSP") || (destName === "SBKP" && (runwayId === "15" || runwayId.includes("15")));
-    if (!isPermittedILS) return null;
-
     const aerodromo = aerodromos.find(a => a.nome === destName);
     if (!aerodromo || !aerodromo.pistas) return null;
 
+    const runwayId = aircraft.assigned_runway || aircraft.pistaAtribuida;
+
+    // 1. Se a aeronave tem pista atribuída, valida estritamente a cabeceira solicitada
+    if (runwayId) {
+        for (const pista of aerodromo.pistas) {
+            if (!pista.cabeceiras) continue;
+            const cabeceira = pista.cabeceiras[runwayId];
+            if (cabeceira) {
+                if (cabeceira.ils && cabeceira.ils.enabled) {
+                    return montarDadosILS(aerodromo, pista, cabeceira, runwayId);
+                }
+                // Pista atribuída explicitamente, mas não possui ILS habilitado
+                return null;
+            }
+        }
+        return null;
+    }
+
+    // 2. Fallback data-driven: se nenhuma pista foi atribuída, procura a primeira cabeceira com ILS habilitado
     for (const pista of aerodromo.pistas) {
         if (!pista.cabeceiras) continue;
-
-        const cabeceira = pista.cabeceiras[runwayId];
-        if (cabeceira && cabeceira.ils && cabeceira.ils.enabled) {
-            // Calcula as coordenadas relativas da cabeceira (threshold)
-            const frontCourse = cabeceira.frontCourseDeg !== undefined ? cabeceira.frontCourseDeg : pista.rumo;
-            const compNM = pista.compNM || 1.0;
-            const sepYNM = (pista.sepYNM !== undefined) ? pista.sepYNM : ((pista.sepY || 0) / 60);
-            const sepXNM = (pista.sepXNM !== undefined) ? pista.sepXNM : ((pista.sepX || 0) / 60);
-
-            // Centro do aeródromo em deltaLat/deltaLon relativo a SBSP (0,0)
-            const aeroDelta = (aerodromo.lat !== undefined && aerodromo.lon !== undefined)
-                ? geoParaDelta(aerodromo.lat, aerodromo.lon)
-                : { deltaLat: 0, deltaLon: 0 };
-
-            // Centro da pista: deslocamento em NM a partir do centro do aeródromo
-            const radRumoPista = (pista.rumo || frontCourse) * (Math.PI / 180);
-            const dxCenterNM = sepXNM * Math.sin(radRumoPista) + sepYNM * Math.cos(radRumoPista);
-            const dyCenterNM = sepXNM * Math.cos(radRumoPista) - sepYNM * Math.sin(radRumoPista);
-
-            // A cabeceira de pouso (threshold) para o rumo frontCourse fica na extremidade de onde os aviões chegam
-            const radFC = frontCourse * (Math.PI / 180);
-            const dxThNM = dxCenterNM - 0.5 * compNM * Math.sin(radFC);
-            const dyThNM = dyCenterNM - 0.5 * compNM * Math.cos(radFC);
-
-            // Verifica se há coordenadas precisas em state.fixos
-            const suf = destName ? destName.slice(2) : "";
-            const thKey = `R${runwayId.replace("/", "")}${suf}`;
-            const rwKey = `RW${runwayId.replace("/", "")}`;
-            
-            let thDeltaLat, thDeltaLon;
-            if (cabeceira && cabeceira.lat !== undefined && cabeceira.lon !== undefined) {
-                const cabDelta = geoParaDelta(cabeceira.lat, cabeceira.lon);
-                thDeltaLat = cabDelta.deltaLat;
-                thDeltaLon = cabDelta.deltaLon;
-            } else {
-                const targetThFix = (state && state.fixos) ? (state.fixos[thKey] || state.fixos[rwKey]) : null;
-                if (targetThFix) {
-                    thDeltaLat = targetThFix.deltaLat;
-                    thDeltaLon = targetThFix.deltaLon;
-                } else {
-                    thDeltaLat = aeroDelta.deltaLat + (dyThNM / 60);
-                    thDeltaLon = aeroDelta.deltaLon + (dxThNM / (60 * correcaoLon));
-                }
+        for (const [rId, cabeceira] of Object.entries(pista.cabeceiras)) {
+            if (cabeceira && cabeceira.ils && cabeceira.ils.enabled) {
+                return montarDadosILS(aerodromo, pista, cabeceira, rId);
             }
-
-            return {
-                airport: aerodromo.nome,
-                runway: runwayId,
-                name: `ILS RWY ${runwayId}`,
-                threshold: {
-                    deltaLat: thDeltaLat,
-                    deltaLon: thDeltaLon,
-                    elevation_ft: cabeceira.elevacaoFt || aerodromo.elevacaoFt || 2631
-                },
-                front_course_deg: frontCourse,
-                comp_nm: compNM,
-                loc_frequency: cabeceira.ils.freq || "109.5",
-                gs_angle_deg: cabeceira.ils.gs_angle_deg || ILS_CONSTANTS.GS_ANGLE_DEG,
-                loc_max_distance_nm: cabeceira.ils.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0,
-                gs_max_distance_nm: cabeceira.ils.gs_max_distance_nm || ILS_CONSTANTS.GS_MAX_DISTANCE_NM || 30.0,
-                loc_capture_angle_deg: cabeceira.ils.loc_capture_angle_deg || ILS_CONSTANTS.LOC_CAPTURE_LIMIT_DEG,
-                loc_valid: cabeceira.ils.loc_valid !== false,
-                gs_valid: cabeceira.ils.gs_valid !== false,
-                ils_enabled: true
-            };
         }
     }
 
     return null;
+}
+
+/**
+ * Constrói o objeto de parâmetros ILS geométricos e de solo data-driven.
+ */
+function montarDadosILS(aerodromo, pista, cabeceira, runwayId) {
+    const destName = aerodromo.nome;
+    const frontCourse = cabeceira.frontCourseDeg !== undefined ? cabeceira.frontCourseDeg : pista.rumo;
+    const compNM = pista.comprimentoM ? (pista.comprimentoM / 1852) : (pista.compNM || 1.0);
+    const sepYNM = (pista.sepYNM !== undefined) ? pista.sepYNM : ((pista.sepY || 0) / 60);
+    const sepXNM = (pista.sepXNM !== undefined) ? pista.sepXNM : ((pista.sepX || 0) / 60);
+
+    // Centro do aeródromo em deltaLat/deltaLon relativo a SBSP (0,0)
+    const aeroDelta = (aerodromo.lat !== undefined && aerodromo.lon !== undefined)
+        ? geoParaDelta(aerodromo.lat, aerodromo.lon)
+        : { deltaLat: 0, deltaLon: 0 };
+
+    // Centro da pista: deslocamento em NM a partir do centro do aeródromo
+    const radRumoPista = (pista.rumo || frontCourse) * (Math.PI / 180);
+    const dxCenterNM = sepXNM * Math.sin(radRumoPista) + sepYNM * Math.cos(radRumoPista);
+    const dyCenterNM = sepXNM * Math.cos(radRumoPista) - sepYNM * Math.sin(radRumoPista);
+
+    // A cabeceira de pouso (threshold) para o rumo frontCourse
+    const radFC = frontCourse * (Math.PI / 180);
+    const dxThNM = dxCenterNM - 0.5 * compNM * Math.sin(radFC);
+    const dyThNM = dyCenterNM - 0.5 * compNM * Math.cos(radFC);
+
+    // Verifica se há coordenadas geodésicas na cabeceira ou em state.fixos
+    const suf = destName ? destName.slice(2) : "";
+    const thKey = `R${runwayId.replace("/", "")}${suf}`;
+    const rwKey = `RW${runwayId.replace("/", "")}`;
+    
+    let thDeltaLat, thDeltaLon;
+    if (cabeceira && cabeceira.lat !== undefined && cabeceira.lon !== undefined) {
+        const cabDelta = geoParaDelta(cabeceira.lat, cabeceira.lon);
+        thDeltaLat = cabDelta.deltaLat;
+        thDeltaLon = cabDelta.deltaLon;
+    } else {
+        const targetThFix = (state && state.fixos) ? (state.fixos[thKey] || state.fixos[rwKey]) : null;
+        if (targetThFix) {
+            thDeltaLat = targetThFix.deltaLat;
+            thDeltaLon = targetThFix.deltaLon;
+        } else {
+            thDeltaLat = aeroDelta.deltaLat + (dyThNM / 60);
+            thDeltaLon = aeroDelta.deltaLon + (dxThNM / (60 * correcaoLon));
+        }
+    }
+
+    return {
+        airport: aerodromo.nome,
+        runway: runwayId,
+        name: `ILS RWY ${runwayId}`,
+        threshold: {
+            deltaLat: thDeltaLat,
+            deltaLon: thDeltaLon,
+            elevation_ft: cabeceira.elevacaoFt || aerodromo.elevacaoFt || 2631
+        },
+        front_course_deg: frontCourse,
+        comp_nm: compNM,
+        loc_frequency: cabeceira.ils.freq || "109.5",
+        gs_angle_deg: cabeceira.ils.gs_angle_deg || ILS_CONSTANTS.GS_ANGLE_DEG,
+        loc_max_distance_nm: cabeceira.ils.loc_max_distance_nm || ILS_CONSTANTS.LOC_MAX_DISTANCE_NM || 30.0,
+        gs_max_distance_nm: cabeceira.ils.gs_max_distance_nm || ILS_CONSTANTS.GS_MAX_DISTANCE_NM || 30.0,
+        loc_capture_angle_deg: cabeceira.ils.loc_capture_angle_deg || ILS_CONSTANTS.LOC_CAPTURE_LIMIT_DEG,
+        loc_valid: cabeceira.ils.loc_valid !== false,
+        gs_valid: cabeceira.ils.gs_valid !== false,
+        ils_enabled: true,
+        squawkToque: cabeceira.squawkToque || aerodromo.squawkToque || "2000",
+        tempoRolagemAteSquawkSec: cabeceira.tempoRolagemAteSquawkSec || aerodromo.tempoRolagemAteSquawkSec || 4.0,
+        distanciaRolagemAteSquawkNM: cabeceira.distanciaRolagemAteSquawkNM || aerodromo.distanciaRolagemAteSquawkNM || 0.20,
+        velAtivacaoSquawkKt: cabeceira.velAtivacaoSquawkKt || aerodromo.velAtivacaoSquawkKt || 80,
+        velTaxiKt: cabeceira.velTaxiKt || aerodromo.velTaxiKt || 20,
+        desaceleracaoSoloKtPorSec: cabeceira.desaceleracaoSoloKtPorSec || aerodromo.desaceleracaoSoloKtPorSec || 5.0,
+        tempoEsperaDesaparecerSec: cabeceira.tempoEsperaDesaparecerSec || aerodromo.tempoEsperaDesaparecerSec || 1.5,
+        toleranciaVerticalFt: cabeceira.toleranciaVerticalFt || aerodromo.toleranciaVerticalFt || 15.0,
+        toleranciaAlinhamentoNM: cabeceira.toleranciaAlinhamentoNM || aerodromo.toleranciaAlinhamentoNM || 0.35
+    };
 }
 
 /**
@@ -525,68 +555,19 @@ export function update_ils_tracking(aircraft, dt, runway_ils_data) {
     // =========================================================================
     // 19. DETECTAR TOUCHDOWN E 20. TRANSPONDER 2000 (SEÇÕES 46 E 47)
     // =========================================================================
+    const rwy = runway_ils_data;
     if (aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE ||
         aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_TRACK ||
-        aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_CAPTURE ||
-        aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.GS_ARM) {
+        aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN ||
+        (along_track_nm <= 0.2 && height_agl <= 65.0)) {
         
-        // Touchdown detectado fisicamente na superfície da pista (após início da cabeceira e na altitude)
-        const overRunway = (along_track_nm <= 0.0 && along_track_nm >= -2.5);
-        const onGround = (height_agl <= 15.0 || altFt <= th.elevation_ft + 15.0);
-
-        if (overRunway && onGround) {
-            aircraft.autopilot.vertical_mode = ILS_VERTICAL_MODES.TOUCHDOWN;
-            aircraft.on_ground = true;
-            aircraft._on_ground = true;
-            aircraft.flight_phase = "LANDED";
-            aircraft._flight_phase = "LANDED";
-            aircraft.just_touched_down = true;
-
-            // Fixa a aeronave no nível do solo da pista
-            aircraft.alt = th.elevation_ft;
-            aircraft.flAtualNum = th.elevation_ft / 100;
-            aircraft.currentVS = 0;
-            aircraft.targetVS = 0;
-
-            // REGRA FUNDAMENTAL (Seção 47): TRANSPONDER 2000 OCORRE ESTRITAMENTE APÓS O TOQUE!
-            aircraft.squawk = "2000";
-            if (aircraft.transponder) {
-                aircraft.transponder.code = "2000";
-            }
-        }
+        verificarTouchdown(aircraft, rwy, dt, along_track_nm, cross_track_nm, altFt, height_agl);
     }
 
     // =========================================================================
     // 21. CONCLUIR O POUSO E FÍSICA DE SOLO (SEÇÃO 48)
     // =========================================================================
     if (aircraft.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN || aircraft.on_ground) {
-        aircraft.on_ground = true;
-        aircraft.flight_phase = "LANDED";
-        aircraft.alt = th.elevation_ft;
-        aircraft.flAtualNum = th.elevation_ft / 100;
-        aircraft.currentVS = 0;
-        aircraft.targetVS = 0;
-        aircraft.squawk = "2000";
-        if (aircraft.transponder) {
-            aircraft.transponder.code = "2000";
-        }
-
-        // Mantém a proa cravada no eixo da pista durante a rolagem no solo
-        aircraft.proa = frontCourse;
-        aircraft.proaDestino = frontCourse;
-        aircraft.direcaoCurva = 0;
-
-        // Desaceleração física na corrida de pista (Ground Rollout)
-        if (aircraft.vel > 20) {
-            aircraft.vel = Math.max(20, aircraft.vel - 5.0 * dt);
-            aircraft.currentIAS = aircraft.vel;
-        } else {
-            // Fim da rolagem: após desacelerar na pista, marca para remoção pelo simulador
-            if (!aircraft.tempoNoSolo) aircraft.tempoNoSolo = 0;
-            aircraft.tempoNoSolo += dt;
-            if (aircraft.tempoNoSolo >= 1.5 || along_track_nm <= -2.0) {
-                aircraft.pousou = true;
-            }
-        }
+        processarRolloutESumico(aircraft, rwy, dt, along_track_nm);
     }
 }

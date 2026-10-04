@@ -3,6 +3,7 @@ import { normalizeHeading, calculateWindCorrectionAngle } from '../physics/windM
 import { isFixoIAC, obterRestricaoFixoParaAeronave, getRunwayData } from '../data/data.js';
 import { ILS_LATERAL_MODES, calculateILSGeometry } from './ILSController.js';
 import { authorize_approach, update_approach_vertical_profile, DESCENT_MODES } from './ApproachProfileManager.js';
+import { calcularFlyByDistance } from '../physics/FlyByConfig.js';
 
 /**
  * Módulo especializado em Navegação Lateral (LNAV) e transições entre fixos (Fly-By).
@@ -39,35 +40,16 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                 const isViaAtivo = (aero.nivAutorizadoFisico === "VIA" || aero.nivAutorizadoFisico === "---" || aero.nivAutorizado === "VIA" || aero.cleared_level === "VIA");
                 if (!aero.srAteFixoIAC && isViaAtivo && !aero.cleared_approach) {
                     const activeWp = (aero.rota && aero.wpIndex < aero.rota.length) ? aero.rota[aero.wpIndex] : null;
-                    if (isFixoIAC(wpNome) || isFixoIAC(activeWp)) {
+                    if (isFixoIAC(wpNome, aero) || isFixoIAC(activeWp, aero)) {
                         authorize_approach(aero);
                     }
                 }
 
-                let flyByDist = 0.4; 
-                
-                if (aero.wpOffRoute === null && aero.rota && aero.wpIndex + 1 < aero.rota.length) {
-                    let nextWpNome = aero.rota[aero.wpIndex + 1];
-                    let nextWpCoords = state.fixos[nextWpNome];
-                    
-                    if (nextWpCoords) {
-                        let nextNavInfo = calcularRumoDistancia(wpCoords, nextWpCoords);
-                        let proximaProa = parseInt(nextNavInfo.rumo, 10);
-                        let proaAtual = parseInt(navInfo.rumo, 10);
-                        
-                        let difCurva = Math.abs(proximaProa - proaAtual);
-                        if (difCurva > 180) difCurva = 360 - difCurva;
-
-                        let antecipacaoCalculada = difCurva * 0.0186;
-                        let limitePerna = nextNavInfo.distanciaNM * 0.4; 
-                        
-                        flyByDist = Math.max(0.6, Math.min(antecipacaoCalculada, limitePerna));
-                    }
-                }
-                const isThresholdFix = (wpNome === "RW10R" || (/^RW\d{2}/i.test(wpNome)));
-                if (isThresholdFix) {
-                    flyByDist = 0.05; // Voa até a vertical exata da cabeceira
-                }
+                const nextWpNome = (aero.wpOffRoute === null && aero.rota && aero.wpIndex + 1 < aero.rota.length)
+                    ? aero.rota[aero.wpIndex + 1]
+                    : null;
+                const nextWpCoords = (nextWpNome && state.fixos) ? state.fixos[nextWpNome] : null;
+                const flyByDist = calcularFlyByDistance(wpNome, nextWpNome, wpCoords, nextWpCoords, navInfo, aero);
                 aero.flyByDist = flyByDist;
                 
                 if (navInfo.distanciaNM <= flyByDist) {
@@ -100,7 +82,7 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
                         const isViaAtivo = (aero.nivAutorizadoFisico === "VIA" || aero.nivAutorizadoFisico === "---" || aero.nivAutorizado === "VIA" || aero.cleared_level === "VIA");
                         if (!aero.srAteFixoIAC && (aero.cleared_approach || isViaAtivo)) {
                             const activeWp = (aero.rota && aero.wpIndex < aero.rota.length) ? aero.rota[aero.wpIndex] : null;
-                            if (isFixoIAC(wpNome) || isFixoIAC(activeWp)) {
+                            if (isFixoIAC(wpNome, aero) || isFixoIAC(activeWp, aero)) {
                                 if (!aero.cleared_approach) {
                                     authorize_approach(aero);
                                 } else {
@@ -129,12 +111,14 @@ export function updateLNAV(aero, dtSec, state, restricoesFixos) {
             }
         }
 
-        // Alinhamento final com o prolongamento/eixo da pista na aproximação
+        // Alinhamento final com o prolongamento/eixo da pista na aproximação final / rolamento
         if (aero.descent_mode === DESCENT_MODES.GLIDEPATH || aero.descent_mode === 'FLARE') {
             const rwy = getRunwayData(aero);
             if (rwy) {
                 const geom = calculateILSGeometry(aero.deltaLat, aero.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
-                if (geom.along_track_nm <= 1.5) {
+                const rwyComp = rwy.comp_nm || 1.5;
+                const tolLat = rwy.toleranciaAlinhamentoNM || 0.5;
+                if (geom.along_track_nm <= 1.5 && geom.along_track_nm >= -(rwyComp + 0.3) && Math.abs(geom.cross_track_nm) <= tolLat) {
                     if (geom.along_track_nm <= 0.0) {
                         aero.proaDestino = rwy.front_course_deg;
                     } else {

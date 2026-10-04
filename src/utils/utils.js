@@ -118,3 +118,16 @@ export function calcularRumoDistancia(origem, destino) {
         rumo: rRound.toString().padStart(3, '0') // Formata a proa para 3 dígitos (ex: "5" vira "005", Norte vira "360")
     };
 }
+
+/**
+ * Determina se um identificador de fixo/ponto representa uma cabeceira física ou limiar de pista.
+ * Reconhece formatos como: RW10R, RW15, RWY33, RW17R, R10RGR, R15KP, etc.
+ * @param {string} nome
+ * @returns {boolean}
+ */
+export function isFixoDePista(nome) {
+    if (!nome || typeof nome !== 'string') return false;
+    if (/^RWY?\d{1,2}[LRC]?$/i.test(nome)) return true;
+    if (/^R\d{2}[LRC]?([A-Z]{2})?$/i.test(nome)) return true;
+    return false;
+}

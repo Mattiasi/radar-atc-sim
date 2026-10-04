@@ -96,16 +96,57 @@ export function obterRestricaoFixoParaAeronave(fixoNome, destOuAero = null, cart
 
     let dest = null;
     let carta = cartaNome;
+    let rwyAtribuida = null;
 
     if (destOuAero && typeof destOuAero === 'object') {
         dest = destOuAero.dest || destOuAero.destino || null;
         if (!carta) carta = destOuAero.cartaNome || null;
+        rwyAtribuida = destOuAero.assigned_runway || destOuAero.pistaAtribuida || null;
     } else if (typeof destOuAero === 'string') {
         dest = destOuAero;
     }
 
     if (cartasNavegacao && dest && cartasNavegacao[dest]) {
-        for (const cabeceira of Object.values(cartasNavegacao[dest])) {
+        // Ordena cabeceiras: pista atribuída da aeronave > pistas ativas no Vídeo Mapa > outras pistas
+        const cabeceirasEntries = Object.entries(cartasNavegacao[dest]);
+        cabeceirasEntries.sort(([rwyA], [rwyB]) => {
+            if (rwyAtribuida) {
+                if (rwyA === rwyAtribuida) return -1;
+                if (rwyB === rwyAtribuida) return 1;
+            }
+            if (radarLayerState && radarLayerState.activeRunways) {
+                const groupA = `${dest}-${rwyA.replace(/[^0-9]/g, '')}`;
+                const groupB = `${dest}-${rwyB.replace(/[^0-9]/g, '')}`;
+                const ativaA = radarLayerState.activeRunways.has(groupA) || radarLayerState.activeRunways.has(`${dest}-${rwyA}`);
+                const ativaB = radarLayerState.activeRunways.has(groupB) || radarLayerState.activeRunways.has(`${dest}-${rwyB}`);
+                if (ativaA && !ativaB) return -1;
+                if (!ativaA && ativaB) return 1;
+            }
+            return 0;
+        });
+
+        // Primeiro tenta encontrar em cartas que estejam ativas no Vídeo Mapa (ou carta específica)
+        for (const [, cabeceira] of cabeceirasEntries) {
+            for (const categoria of Object.values(cabeceira)) {
+                if (!categoria) continue;
+                for (const c of Object.values(categoria)) {
+                    if (carta && c.nome !== carta) continue;
+                    // Se carta específica não foi informada, prioriza cartas ativas no Vídeo Mapa
+                    if (!carta && radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+                        if (!radarLayerState.activeCharts.has(c.nome)) continue;
+                    }
+                    if (c.fixos && Array.isArray(c.fixos)) {
+                        const f = c.fixos.find(item => item.nome === fixoNome);
+                        if (f && f.restricao) {
+                            return f.restricao;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Se não encontrou nas cartas ativas, faz busca geral de fallback
+        for (const [, cabeceira] of cabeceirasEntries) {
             for (const categoria of Object.values(cabeceira)) {
                 if (!categoria) continue;
                 for (const c of Object.values(categoria)) {
@@ -153,17 +194,71 @@ if (cartasNavegacao) {
  * @param {string} nomeFixo - Nome do fixo / waypoint
  * @returns {boolean}
  */
-export function isFixoIAC(nomeFixo) {
+export function isFixoIAC(nomeFixo, destOuAero = null) {
     if (!nomeFixo) return false;
+    if (destOuAero && typeof destOuAero === 'object') {
+        const dest = destOuAero.dest || destOuAero.destino || "SBSP";
+        let rwy = destOuAero.assigned_runway || destOuAero.pistaAtribuida;
+        if (cartasNavegacao && cartasNavegacao[dest]) {
+            if (!rwy) {
+                // 1. Prioriza pista ativa no Vídeo Mapa para este destino
+                if (radarLayerState && radarLayerState.activeRunways) {
+                    const prefix = `${dest}-`;
+                    for (const rwyKey of radarLayerState.activeRunways) {
+                        if (rwyKey.startsWith(prefix)) {
+                            const cand = rwyKey.split("-")[1];
+                            if (cartasNavegacao[dest][cand]) {
+                                rwy = cand;
+                                if (cand.length > 2) break; // Ex: "17R" ou "10R"
+                            }
+                        }
+                    }
+                }
+                // 2. Se a aeronave tem rota, tenta identificar a cabeceira a partir do fixo
+                if (!rwy) {
+                    const rwyKeys = Object.keys(cartasNavegacao[dest]);
+                    if (rwyKeys.length > 0) {
+                        if (destOuAero.rota && Array.isArray(destOuAero.rota)) {
+                            for (const rk of rwyKeys) {
+                                const grp = cartasNavegacao[dest][rk].IAC || cartasNavegacao[dest][rk].AIC;
+                                if (grp) {
+                                    for (const c of Object.values(grp)) {
+                                        if (c.fixos && c.fixos.some(f => destOuAero.rota.includes(f.nome))) {
+                                            rwy = rk;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (rwy) break;
+                            }
+                        }
+                        if (!rwy) rwy = rwyKeys[0];
+                    }
+                }
+            }
+            if (rwy && cartasNavegacao[dest][rwy]) {
+                const grp = cartasNavegacao[dest][rwy].IAC || cartasNavegacao[dest][rwy].AIC;
+                if (grp) {
+                    for (const carta of Object.values(grp)) {
+                        if (carta.fixos && carta.fixos.some(f => f.nome === nomeFixo)) return true;
+                        if (carta.linhas && carta.linhas.some(l => l.includes(nomeFixo))) return true;
+                    }
+                    return false;
+                }
+            }
+        }
+    }
     return fixosIAC.has(nomeFixo);
 }
 
 /**
  * Constrói dinamicamente a sequência de waypoints de uma rota a partir de qualquer fixo inicial,
  * navegando através do Grafo Direcionado de cartasNavegacao (STAR -> AIC -> Destino).
+ * Prioriza estritamente os procedimentos e cabeceiras ativas no Vídeo Mapa.
  * 
  * @param {string} fixoOrigem - Nome do fixo inicial solicitado (ex: "KOMGU", "GERSU", "PRUMO")
  * @param {string} [dest="SBSP"] - Aeródromo de destino da aeronave
+ * @param {string} [cartaNome=null] - Nome opcional da carta ativa
  * @returns {Array<string>} Lista ordenada de fixos até o pouso ou fim do procedimento
  */
 export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = null) {
@@ -176,13 +271,32 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = n
             : Object.values(cartasNavegacao);
 
         aerodromosParaProcessar.forEach(aerodromo => {
-            Object.values(aerodromo).forEach(cabeceira => {
+            const cabeceirasEntries = Object.entries(aerodromo);
+            // Prioriza cabeceiras ativas no Vídeo Mapa
+            cabeceirasEntries.sort(([rwyA], [rwyB]) => {
+                if (radarLayerState && radarLayerState.activeRunways) {
+                    const groupA = `${dest}-${rwyA.replace(/[^0-9]/g, '')}`;
+                    const groupB = `${dest}-${rwyB.replace(/[^0-9]/g, '')}`;
+                    const ativaA = radarLayerState.activeRunways.has(groupA) || radarLayerState.activeRunways.has(`${dest}-${rwyA}`);
+                    const ativaB = radarLayerState.activeRunways.has(groupB) || radarLayerState.activeRunways.has(`${dest}-${rwyB}`);
+                    if (ativaA && !ativaB) return -1;
+                    if (!ativaA && ativaB) return 1;
+                }
+                return 0;
+            });
+
+            cabeceirasEntries.forEach(([, cabeceira]) => {
                 Object.values(cabeceira).forEach(categoria => {
                     Object.values(categoria).forEach(carta => {
                         if (carta.linhas) {
+                            const isAtiva = (!radarLayerState || !radarLayerState.activeCharts || radarLayerState.activeCharts.size === 0 || radarLayerState.activeCharts.has(carta.nome));
                             carta.linhas.forEach(linha => {
                                 for (let i = 0; i < linha.length - 1; i++) {
-                                    if (cartaNome && carta.nome === cartaNome) { conexoes[linha[i]] = linha[i + 1]; } else if (!conexoes[linha[i]]) {
+                                    if (cartaNome && carta.nome === cartaNome) {
+                                        conexoes[linha[i]] = linha[i + 1];
+                                    } else if (isAtiva && !conexoes[linha[i]]) {
+                                        conexoes[linha[i]] = linha[i + 1];
+                                    } else if (!conexoes[linha[i]]) {
                                         conexoes[linha[i]] = linha[i + 1];
                                     }
                                 }
@@ -553,7 +667,16 @@ export function getRunwayData(aircraft) {
                 deltaLat: aeroDelta.deltaLat,
                 deltaLon: aeroDelta.deltaLon,
                 elevation_ft: aerodromo.elevacaoFt || 2631
-            }
+            },
+            squawkToque: aerodromo.squawkToque || "2000",
+            tempoRolagemAteSquawkSec: aerodromo.tempoRolagemAteSquawkSec || 4.0,
+            distanciaRolagemAteSquawkNM: aerodromo.distanciaRolagemAteSquawkNM || 0.20,
+            velAtivacaoSquawkKt: aerodromo.velAtivacaoSquawkKt || 80,
+            velTaxiKt: aerodromo.velTaxiKt || 20,
+            desaceleracaoSoloKtPorSec: aerodromo.desaceleracaoSoloKtPorSec || 5.0,
+            tempoEsperaDesaparecerSec: aerodromo.tempoEsperaDesaparecerSec || 1.5,
+            toleranciaVerticalFt: aerodromo.toleranciaVerticalFt || 15.0,
+            toleranciaAlinhamentoNM: aerodromo.toleranciaAlinhamentoNM || 0.35
         };
     }
 
@@ -573,7 +696,16 @@ export function getRunwayData(aircraft) {
                     deltaLat: cabDelta.deltaLat,
                     deltaLon: cabDelta.deltaLon,
                     elevation_ft: cab.elevacaoFt || aerodromo.elevacaoFt || 2631
-                }
+                },
+                squawkToque: cab.squawkToque || aerodromo.squawkToque || "2000",
+                tempoRolagemAteSquawkSec: cab.tempoRolagemAteSquawkSec || aerodromo.tempoRolagemAteSquawkSec || 4.0,
+                distanciaRolagemAteSquawkNM: cab.distanciaRolagemAteSquawkNM || aerodromo.distanciaRolagemAteSquawkNM || 0.20,
+                velAtivacaoSquawkKt: cab.velAtivacaoSquawkKt || aerodromo.velAtivacaoSquawkKt || 80,
+                velTaxiKt: cab.velTaxiKt || aerodromo.velTaxiKt || 20,
+                desaceleracaoSoloKtPorSec: cab.desaceleracaoSoloKtPorSec || aerodromo.desaceleracaoSoloKtPorSec || 5.0,
+                tempoEsperaDesaparecerSec: cab.tempoEsperaDesaparecerSec || aerodromo.tempoEsperaDesaparecerSec || 1.5,
+                toleranciaVerticalFt: cab.toleranciaVerticalFt || aerodromo.toleranciaVerticalFt || 15.0,
+                toleranciaAlinhamentoNM: cab.toleranciaAlinhamentoNM || aerodromo.toleranciaAlinhamentoNM || 0.35
             };
         }
     }
@@ -596,7 +728,16 @@ export function getRunwayData(aircraft) {
                     deltaLat: cabDelta.deltaLat,
                     deltaLon: cabDelta.deltaLon,
                     elevation_ft: cab.elevacaoFt || aerodromo.elevacaoFt || 2631
-                }
+                },
+                squawkToque: cab.squawkToque || aerodromo.squawkToque || "2000",
+                tempoRolagemAteSquawkSec: cab.tempoRolagemAteSquawkSec || aerodromo.tempoRolagemAteSquawkSec || 4.0,
+                distanciaRolagemAteSquawkNM: cab.distanciaRolagemAteSquawkNM || aerodromo.distanciaRolagemAteSquawkNM || 0.20,
+                velAtivacaoSquawkKt: cab.velAtivacaoSquawkKt || aerodromo.velAtivacaoSquawkKt || 80,
+                velTaxiKt: cab.velTaxiKt || aerodromo.velTaxiKt || 20,
+                desaceleracaoSoloKtPorSec: cab.desaceleracaoSoloKtPorSec || aerodromo.desaceleracaoSoloKtPorSec || 5.0,
+                tempoEsperaDesaparecerSec: cab.tempoEsperaDesaparecerSec || aerodromo.tempoEsperaDesaparecerSec || 1.5,
+                toleranciaVerticalFt: cab.toleranciaVerticalFt || aerodromo.toleranciaVerticalFt || 15.0,
+                toleranciaAlinhamentoNM: cab.toleranciaAlinhamentoNM || aerodromo.toleranciaAlinhamentoNM || 0.35
             };
         }
     }

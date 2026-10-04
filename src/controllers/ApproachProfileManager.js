@@ -18,7 +18,7 @@
  */
 
 import { state } from '../core/state.js';
-import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData, obterRestricaoFixoParaAeronave } from '../data/data.js';
+import { cartasNavegacao, restricoesFixos, isFixoIAC, montarRotaAPartirDeFixo, getRunwayData, obterRestricaoFixoParaAeronave, aerodromos } from '../data/data.js';
 import { calcularRumoDistancia } from '../utils/utils.js';
 import { calculateILSGeometry } from './ILSController.js';
 
@@ -53,14 +53,56 @@ export function getActiveIAC(aircraft) {
     const dest = (aircraft && aircraft.dest) ? aircraft.dest : "SBSP";
     if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[dest]) {
         const aerodromoCartas = cartasNavegacao[dest];
-        const rwyId = aircraft ? (aircraft.assigned_runway || aircraft.pistaAtribuida) : null;
+        let rwyId = aircraft ? (aircraft.assigned_runway || aircraft.pistaAtribuida) : null;
+        
+        // Se a aeronave não tem cabeceira atribuída, obtém do Vídeo Mapa
+        if (!rwyId && state.radarLayers && state.radarLayers.activeRunways) {
+            const prefix = `${dest}-`;
+            for (const rwyKey of state.radarLayers.activeRunways) {
+                if (rwyKey.startsWith(prefix)) {
+                    const candidate = rwyKey.split("-")[1];
+                    if (aerodromoCartas[candidate]) {
+                        rwyId = candidate;
+                        if (candidate.length > 2) break; // Prefere específica ex: "17R"
+                    }
+                }
+            }
+        }
+
         if (rwyId && aerodromoCartas[rwyId]) {
             const cab = aerodromoCartas[rwyId];
             const iacGroup = cab.IAC || cab.AIC;
             if (iacGroup && Object.keys(iacGroup).length > 0) {
+                // Se houver carta específica ativa no Vídeo Mapa, prioriza ela
+                if (state.radarLayers && state.radarLayers.activeCharts && state.radarLayers.activeCharts.size > 0) {
+                    for (const carta of Object.values(iacGroup)) {
+                        if (state.radarLayers.activeCharts.has(carta.nome)) {
+                            return carta;
+                        }
+                    }
+                }
                 return Object.values(iacGroup)[0];
             }
         }
+
+        // Fallback: busca em cabeceiras ativas no Vídeo Mapa
+        if (state.radarLayers && state.radarLayers.activeRunways) {
+            for (const [cabeceiraKey, cabeceira] of Object.entries(aerodromoCartas)) {
+                const groupKey = `${dest}-${cabeceiraKey.replace(/[^0-9]/g, '')}`;
+                if (state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(`${dest}-${cabeceiraKey}`)) {
+                    const iacGroup = cabeceira.IAC || cabeceira.AIC;
+                    if (iacGroup && Object.keys(iacGroup).length > 0) {
+                        if (state.radarLayers.activeCharts && state.radarLayers.activeCharts.size > 0) {
+                            for (const carta of Object.values(iacGroup)) {
+                                if (state.radarLayers.activeCharts.has(carta.nome)) return carta;
+                            }
+                        }
+                        return Object.values(iacGroup)[0];
+                    }
+                }
+            }
+        }
+
         // Procura pela cabeceira correspondente ou primeira disponível com IAC / AIC
         for (const cabeceira of Object.values(aerodromoCartas)) {
             const iacGroup = cabeceira.IAC || cabeceira.AIC;
@@ -70,27 +112,104 @@ export function getActiveIAC(aircraft) {
         }
     }
 
-    if (typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao["SBSP"] && cartasNavegacao["SBSP"]["17R"]) {
-        const sbsp17rIAC = cartasNavegacao["SBSP"]["17R"].IAC || cartasNavegacao["SBSP"]["17R"].AIC;
-        if (sbsp17rIAC) {
-            if (sbsp17rIAC["RNPY17R"]) {
-                return sbsp17rIAC["RNPY17R"];
+    // Busca dinâmica em qualquer outro aeródromo configurado com cartas
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao) {
+        for (const [aeroKey, aeroObj] of Object.entries(cartasNavegacao)) {
+            for (const cabeceira of Object.values(aeroObj)) {
+                const iacGroup = cabeceira.IAC || cabeceira.AIC;
+                if (iacGroup && Object.keys(iacGroup).length > 0) {
+                    return Object.values(iacGroup)[0];
+                }
             }
-            return Object.values(sbsp17rIAC)[0] || null;
         }
     }
+
     return null;
+}
+
+/**
+ * Verifica se um determinado fixo representa o FAF (Final Approach Fix), SDF (Step-Down Fix)
+ * ou cabeceira/limiar de pista (Threshold / MAPt) de forma 100% data-driven.
+ * 
+ * @param {string} fixoNome - Nome do fixo
+ * @param {Object} [iac=null] - Carta IAC
+ * @param {Object} [aircraft=null] - Instância da aeronave
+ * @returns {boolean} True se for FAF, SDF ou cabeceira
+ */
+export function isFixoFafOuThreshold(fixoNome, iac = null, aircraft = null) {
+    if (!fixoNome) return false;
+
+    // 1. Verificação explícita por metadados na carta IAC (papel: FAF/SDF/MAPT ou isFAF)
+    const activeIac = iac || (aircraft ? getActiveIAC(aircraft) : getActiveIAC());
+    if (activeIac && activeIac.fixos) {
+        const fixObj = activeIac.fixos.find(f => f.nome === fixoNome);
+        if (fixObj) {
+            if (fixObj.papel === "FAF" || fixObj.isFAF === true ||
+                fixObj.papel === "SDF" ||
+                fixObj.papel === "MAPT" || fixObj.isThreshold === true) {
+                return true;
+            }
+        }
+    }
+
+    // 2. Busca global em cartasNavegacao caso não esteja na IAC ativa imediata
+    if (typeof cartasNavegacao === 'object' && cartasNavegacao) {
+        for (const aero of Object.values(cartasNavegacao)) {
+            for (const rwy of Object.values(aero)) {
+                const grp = rwy.IAC || rwy.AIC;
+                if (grp) {
+                    for (const carta of Object.values(grp)) {
+                        if (carta.fixos) {
+                            const found = carta.fixos.find(f => f.nome === fixoNome);
+                            if (found && (found.papel === "FAF" || found.isFAF === true || found.papel === "SDF" || found.papel === "MAPT" || found.isThreshold === true)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Verificação de padrão de cabeceira de pista (ex: RW10R, RW17R, RW15, R10RGR)
+    if (/^RW\d{2}[LRC]?$/i.test(fixoNome) || /^R\d{2}[LRC]?[A-Z]{2}$/i.test(fixoNome)) {
+        return true;
+    }
+
+    // 4. Verificação de cabeceira atribuída da aeronave
+    const rwyAtribuida = aircraft ? (aircraft.assigned_runway || aircraft.pistaAtribuida) : null;
+    if (rwyAtribuida && (fixoNome === rwyAtribuida || fixoNome === `RW${rwyAtribuida}`)) {
+        return true;
+    }
+
+    // 5. Último fixo da linha da IAC
+    if (activeIac && activeIac.linhas) {
+        for (const linha of activeIac.linhas) {
+            const idx = linha.indexOf(fixoNome);
+            if (idx !== -1 && idx === linha.length - 1) {
+                return true;
+            }
+        }
+    }
+
+    // 6. Retrocompatibilidade para fixos legados
+    if (fixoNome === "SP017" || fixoNome === "OPSER" || fixoNome === "RW10R") {
+        return true;
+    }
+
+    return false;
 }
 
 /**
  * Identifica o próximo fixo na sequência geométrica/estruturada da carta IAC.
  * @param {string} currentFixName - Nome do fixo atual
  * @param {Object} [active_iac=null] - Carta IAC ativa
+ * @param {Object} [aircraft=null] - Instância da aeronave (opcional)
  * @returns {string|null} Nome do próximo fixo ou null se fim do procedimento
  */
-export function getNextIACFix(currentFixName, active_iac = null) {
+export function getNextIACFix(currentFixName, active_iac = null, aircraft = null) {
     if (!currentFixName) return null;
-    const iac = active_iac || getActiveIAC();
+    const iac = active_iac || (aircraft ? getActiveIAC(aircraft) : getActiveIAC());
     if (!iac || !iac.linhas) return null;
 
     for (const linha of iac.linhas) {
@@ -100,7 +219,15 @@ export function getNextIACFix(currentFixName, active_iac = null) {
         }
     }
 
-    // Se o fixo for o último de uma perna interna
+    // Se o fixo for o último da perna interna:
+    if (aircraft && aircraft.dest) {
+        const rwy = aircraft.assigned_runway || aircraft.pistaAtribuida;
+        if (rwy && state.fixos && state.fixos[`RW${rwy}`]) {
+            return `RW${rwy}`;
+        }
+        return aircraft.dest;
+    }
+
     if (currentFixName === "SP017") {
         return "SBSP";
     }
@@ -126,15 +253,23 @@ export function findFirstIACFix(aircraft, active_iac = null) {
         const startIdx = (typeof aircraft.wpIndex === 'number') ? aircraft.wpIndex : 0;
         for (let i = startIdx; i < aircraft.rota.length; i++) {
             const wp = aircraft.rota[i];
-            if (isFixoIAC(wp)) {
+            if (iac) {
+                if (iac.fixos && iac.fixos.some(f => f.nome === wp)) return wp;
+                if (iac.linhas && iac.linhas.some(l => l.includes(wp))) return wp;
+            } else if (isFixoIAC(wp, aircraft)) {
                 return wp;
             }
         }
     }
 
     // 2. Busca no waypoint direto fora de rota (DCT pendente)
-    if (aircraft.wpOffRoute && isFixoIAC(aircraft.wpOffRoute)) {
-        return aircraft.wpOffRoute;
+    if (aircraft.wpOffRoute) {
+        if (iac) {
+            if (iac.fixos && iac.fixos.some(f => f.nome === aircraft.wpOffRoute)) return aircraft.wpOffRoute;
+            if (iac.linhas && iac.linhas.some(l => l.includes(aircraft.wpOffRoute))) return aircraft.wpOffRoute;
+        } else if (isFixoIAC(aircraft.wpOffRoute, aircraft)) {
+            return aircraft.wpOffRoute;
+        }
     }
 
     // 3. Caso tenha sido vetorada por proa manual ou esteja fora da rota:
@@ -365,7 +500,7 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
             alongTrackNM = geom.along_track_nm;
             crossTrackNM = geom.cross_track_nm;
         } else {
-            const destCoords = state.fixos ? (state.fixos[aircraft.dest] || state.fixos["SBSP"]) : null;
+            const destCoords = state.fixos ? (state.fixos[aircraft.dest] || (aerodromos[0] && state.fixos[aerodromos[0].nome]) || Object.values(state.fixos)[0]) : null;
             if (destCoords) {
                 const navDest = calcularRumoDistancia(aircraft, destCoords);
                 alongTrackNM = navDest ? navDest.distanciaNM : 1.0;
@@ -469,12 +604,14 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         // PROGRESSÃO APÓS O FIXO ATUAL SER CRUZADO
         // ---------------------------------------------------------------------
         if (fixoCruzado) {
-            // Se cruzamos o FAF (SP139/OPSER), SDF (SP017) ou cabeceira (RW10R), transiciona para captura do GLIDEPATH
-            const isFafOrThreshold = (holdFixName === "SP017" || holdFixName === "OPSER" || holdFixName === "RW10R" || (/^RW\d{2}/i.test(holdFixName)));
+            // Se cruzamos o FAF, SDF ou cabeceira, transiciona para captura do GLIDEPATH (100% data-driven)
+            const isFafOrThreshold = isFixoFafOuThreshold(holdFixName, iac, aircraft);
             if (isFafOrThreshold) {
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
-                aircraft.hold_altitude_until_waypoint = (holdFixName === "OPSER") ? "RW10R" : (aircraft.dest || "SBSP");
+                const rwyTarget = aircraft.assigned_runway ? `RW${aircraft.assigned_runway}` : (aircraft.pistaAtribuida ? `RW${aircraft.pistaAtribuida}` : null);
+                const nextWaypt = (rwyTarget && state.fixos && state.fixos[rwyTarget]) ? rwyTarget : (aircraft.dest || "SBSP");
+                aircraft.hold_altitude_until_waypoint = nextWaypt;
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;
@@ -491,18 +628,24 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 const curIdx = aircraft.rota.indexOf(holdFixName);
                 if (curIdx !== -1 && curIdx + 1 < aircraft.rota.length) {
                     const candidate = aircraft.rota[curIdx + 1];
-                    if (isFixoIAC(candidate)) {
-                        nextFixName = candidate;
-                    }
+                    nextFixName = candidate;
                 }
             }
 
             // Prioridade 2: Grafo da carta IAC
             if (!nextFixName) {
-                nextFixName = getNextIACFix(holdFixName, iac);
+                nextFixName = getNextIACFix(holdFixName, iac, aircraft);
             }
 
-            if (nextFixName && nextFixName !== "SBSP" && nextFixName !== "SBGR") {
+            // Verifica se o próximo ponto é o aeródromo de destino ou uma cabeceira física
+            const isDestinationOrRunway = !nextFixName || 
+                nextFixName === aircraft.dest || 
+                nextFixName === "SBSP" || 
+                nextFixName === "SBGR" ||
+                /^RW\d{2}/i.test(nextFixName) ||
+                (Array.isArray(aerodromos) && aerodromos.some(a => a.nome === nextFixName));
+
+            if (nextFixName && !isDestinationOrRunway) {
                 const nextRestrictionAlt = getFixAltitudeFt(nextFixName, iac, aircraft);
 
                 // Aplica a regra de segurança: não subir se voando abaixo
@@ -527,7 +670,7 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
                 // Chegou à perna final de aproximação
                 aircraft.descent_mode = DESCENT_MODES.GLIDEPATH;
                 aircraft.verticalMode = 'G/S';
-                aircraft.hold_altitude_until_waypoint = aircraft.dest || "SBSP";
+                aircraft.hold_altitude_until_waypoint = nextFixName || aircraft.dest || "SBSP";
                 aircraft.vertical_floor_altitude = null;
                 aircraft.vertical_floor_fl = null;
                 aircraft.last_distance_to_hold_fix = undefined;

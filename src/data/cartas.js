@@ -21,7 +21,7 @@ export const cartasNavegacao = {
                     ],
                     linhas: [
                         ["ANISE", "SP091", "SP111", "OGTAL", "SP099", "SP101", "SP032", "KOMGU"],
-                        ["IBDAL", "MANLO", "SP033", "OGTAL"]
+                        ["IBDAL", "MANLO", "SP033", "OGTAL", "SP099", "SP101", "SP032", "KOMGU"]
                     ],
                     marcasMilhagem: [
                         {
@@ -78,8 +78,8 @@ export const cartasNavegacao = {
                         { nome: "KOMGU", lat: dmsParaDecimal(23, 33, 54.89, 'S'), lon: dmsParaDecimal(46, 49, 40.64, 'W'), restricao: { fl:  55, tipo: "AT" } },
                         { nome: "GERSU", lat: dmsParaDecimal(23, 30, 41.0, 'S'), lon: dmsParaDecimal(46, 44, 10.10, 'W'), restricao: { fl:  47, tipo: "AT" } },
                         { nome: "URUTA", lat: dmsParaDecimal(23, 33, 28.57, 'S'), lon: dmsParaDecimal(46, 42, 14.37, 'W'), restricao: { fl:  40, tipo: "AT" } },
-                        { nome: "SP139", lat: dmsParaDecimal(23, 34, 59.83, 'S'), lon: dmsParaDecimal(46, 41, 11.34, 'W'), restricao: { fl:  36, tipo: "AT" } },
-                        { nome: "SP017", lat: dmsParaDecimal(23, 36, 15.89, 'S'), lon: dmsParaDecimal(46, 40, 18.81, 'W'), restricao: { fl:  32, tipo: "AT" } }
+                        { nome: "SP139", lat: dmsParaDecimal(23, 34, 59.83, 'S'), lon: dmsParaDecimal(46, 41, 11.34, 'W'), restricao: { fl:  36, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "SP017", lat: dmsParaDecimal(23, 36, 15.89, 'S'), lon: dmsParaDecimal(46, 40, 18.81, 'W'), restricao: { fl:  32, tipo: "AT" }, papel: "SDF" }
                     ],
                     linhas: [
                         ["LUVDI", "GERSU", "URUTA", "SP139", "SP017"],
@@ -141,14 +141,17 @@ export const cartasNavegacao = {
                     nome: "RNP 35",
                     cor: '#00ff7f',
                     fixos: [
-                        { nome: "OGTAL", lat: dmsParaDecimal(23, 51, 23.29, 'S'), lon: dmsParaDecimal(46, 37, 33.47, 'W'), restricao: { fl: 60, tipo: "ABOVE" } },
-                        {nome: "ESUNI", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W'), restricao: { fl: 60, tipo: "ABOVE"}},
-                        {nome: "USITO", lat: dmsParaDecimal(23,47,65.00,'S'), lon: dmsParaDecimal(46,32,10,'W'), restricao: { fl: "53", tipo: "ABOVE"}},
-                        {nome: "SURBU", lat: dmsParaDecimal(23,42,30.00,'S'), lon: dmsParaDecimal(46,36,0,'W'), restricao: { fl: 42, tipo: "BWLOW"}}
+                        { nome: "OGTAL", lat: dmsParaDecimal(23, 51, 23.29, 'S'), lon: dmsParaDecimal(46, 37, 33.47, 'W'), restricao: { fl: 60, tipo: "AT" },papel: "IAF" },
+                        {nome: "ESUNI", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W'), restricao: { fl: 60, tipo: "AT"},papel: "IAF"},
+                        {nome: "USITO", lat: dmsParaDecimal(23,47,65.00,'S'), lon: dmsParaDecimal(46,32,10,'W'), restricao: { fl: "53", tipo: "AT"},papel: "IF"},
+                        {nome: "SURBU", lat: dmsParaDecimal(23,42,30.00,'S'), lon: dmsParaDecimal(46,36,0,'W'), restricao: { fl: 42, tipo: "AT"},papel: "FAF",isFAF: true},
+                        {nome: "RW35L", lat: dmsParaDecimal(23,38,5.00,'S'), lon: dmsParaDecimal(46,39,6.70,'W'), restricao: { fl: 26, tipo: "AT"}, papel: "MAPT", isThreshold: true}
+
                     ],
                     linhas: [
-                        ["OGTAL","USITO","SURBU"],
-                        ["ESUNI","USITO","SURBU"]
+                        ["OGTAL","USITO"],
+                        ["ESUNI","USITO"],
+                        ["USITO","SURBU","RW35L"]
                     ]
                 }
             },
@@ -433,6 +436,20 @@ export const cartasNavegacao = {
                 }
             },
             IAC: {
+                "ILS10R": {
+                    nome: "ILS RWY 10R",
+                    cor: '#00ff7f',
+                    fixos: [
+                        { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
+                        { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
+                        { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
+                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
+                    ],
+                    linhas: [
+                        ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
+                    ]
+                },
                 "RNPY10R": {
                     nome: "RNP Y RWY 10R",
                     cor: '#00ff7f',
@@ -440,8 +457,8 @@ export const cartasNavegacao = {
                         { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
                         { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
                         { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
-                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" } },
-                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" } }
+                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
                     ],
                     linhas: [
                         ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
@@ -449,6 +466,20 @@ export const cartasNavegacao = {
                 }
             },
             AIC: {
+                "ILS10R": {
+                    nome: "ILS RWY 10R",
+                    cor: '#00ff7f',
+                    fixos: [
+                        { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
+                        { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
+                        { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
+                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
+                    ],
+                    linhas: [
+                        ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
+                    ]
+                },
                 "RNPY10R": {
                     nome: "RNP Y RWY 10R",
                     cor: '#00ff7f',
@@ -456,8 +487,8 @@ export const cartasNavegacao = {
                         { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
                         { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
                         { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
-                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" } },
-                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" } }
+                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
                     ],
                     linhas: [
                         ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
@@ -578,8 +609,8 @@ export const cartasNavegacao = {
                         { nome: "KP207", lat: dmsParaDecimal(22, 55, 58.30, 'S'), lon: dmsParaDecimal(47, 4, 6.70, 'W'), restricao: { fl: 90, tipo: "BELOW" } },
                         { nome: "ENTIT", lat: dmsParaDecimal(22, 25, 5.0, 'S'), lon: dmsParaDecimal(46, 39, 46.70, 'W'), restricao: { fl: 190, tipo: "ABOVE" } },
                         { nome: "KP203", lat: dmsParaDecimal(22, 33, 93.30, 'S'), lon: dmsParaDecimal(46, 52, 3.30, 'W'), restricao: { fl: 110, tipo: "ABOVE" } },
-                        { nome: "KP204", lat: dmsParaDecimal(22, 38, 80.0, 'S'), lon: dmsParaDecimal(46, 58, 93.30, 'W'), restricao: { fl: 90, tipo: "ABOVE" } },
-                        { nome: "ITEDI", lat: dmsParaDecimal(22, 48, 88.30, 'S'), lon: dmsParaDecimal(47, 13, 30.0, 'W'), restricao: { fl: 60, tipo: "BELOW" } }
+                        { nome: "KP204", lat: dmsParaDecimal(22, 38, 80.0, 'S'), lon: dmsParaDecimal(46, 58, 93.30, 'W'), restricao: { fl: 90, tipo: "ABOVE" } }
+                        
                     ],
                     linhas: [
                         ["EDMUS", "NIBVO", "KP153", "KP154", "KP213", "KP212", "KP211", "KP208", "KP209", "KP207", "ITEDI"],
@@ -600,8 +631,8 @@ export const cartasNavegacao = {
                         { nome: "VERME", lat: dmsParaDecimal(23, 12, 53.30, 'S'), lon: dmsParaDecimal(47, 49, 91.70, 'W') },
                         { nome: "KP217", lat: dmsParaDecimal(23, 10, 8.30, 'S'), lon: dmsParaDecimal(47, 44, 88.30, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
                         { nome: "KP216", lat: dmsParaDecimal(23, 6, 26.70, 'S'), lon: dmsParaDecimal(47, 37, 10.0, 'W'), restricao: { fl: 100, tipo: "BELOW" } },
-                        { nome: "KP214", lat: dmsParaDecimal(23, 2, 63.30, 'S'), lon: dmsParaDecimal(47, 29, 70.0, 'W'), restricao: { fl: 80, tipo: "ABOVE" } },
-                        { nome: "NILKA", lat: dmsParaDecimal(22, 58, 53.30, 'S'), lon: dmsParaDecimal(47, 21, 35.0, 'W'), restricao: { fl: 65, tipo: "BELOW" } }
+                        { nome: "KP214", lat: dmsParaDecimal(23, 2, 63.30, 'S'), lon: dmsParaDecimal(47, 29, 70.0, 'W'), restricao: { fl: 80, tipo: "ABOVE" } }
+                        
                     ],
                     linhas: [
                         ["GNOME", "VERME", "KP217", "KP216", "KP214", "NILKA"],
@@ -625,8 +656,26 @@ export const cartasNavegacao = {
                     ]
                 }
             },
-            AIC: {},
-            SID: {}
+            IAC: {
+                "ILS15": {
+                    nome: "ILS RWY 15",
+                    cor: '#00ff7f',
+                    fixos: [
+                        {nome: "ATARA", lat: dmsParaDecimal(22,53,76.70,'S'), lon: dmsParaDecimal(47,17,38.30,'W'), restricao: { fl: 44, tipo: "AT"}, papel: "IF"},
+                        { nome: "NILKA", lat: dmsParaDecimal(22, 58, 53.30, 'S'), lon: dmsParaDecimal(47, 21, 35.0, 'W'), restricao: { fl: 65, tipo: "AT" }, papel: "IAF" },
+                        { nome: "SEBSU", lat: dmsParaDecimal(22,56,83.30,'S'), lon: dmsParaDecimal(47,13,10.00,'W'), restricao: { fl: 37, tipo: "AT"}, papel: "IAF"},
+                        { nome: "ITEDI", lat: dmsParaDecimal(22, 48, 88.30, 'S'), lon: dmsParaDecimal(47, 13, 30.0, 'W'), restricao: { fl: 60, tipo: "AT" }, papel: "IAF" },
+                        { nome: "RW15", lat: dmsParaDecimal(23, 0, 16.60, 'S'), lon: dmsParaDecimal(47, 9, 10.00, 'W'), restricao: { fl: 21, tipo: "AT" }, papel: "MAPT", isThreshold: true }
+                    ],
+                    linhas: [
+                        ["ITEDI", "ATARA"],
+                        ["NOBRE", "ATARA"],
+                        ["NILKA", "ATARA"],
+                        ["ATARA","SEBSU","RW15"]
+                    ]
+                }
+            },
+                        SID: {}
         },
         "33": {
             AIC: {},

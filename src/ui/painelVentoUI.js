@@ -135,10 +135,10 @@ export class PainelVentoController {
 
         el.innerHTML = `
             <!-- Seletor de Aeródromos (Pills) -->
-            <div class="selecao-pills">
-                <button class="pill-btn ${this.aeroIdAtivo === 'SBSP' ? 'ativa' : ''}" data-aero="SBSP">SBSP</button>
-                <button class="pill-btn ${this.aeroIdAtivo === 'SBKP' ? 'ativa' : ''}" data-aero="SBKP">SBKP</button>
-                <button class="pill-btn ${this.aeroIdAtivo === 'SBGR' ? 'ativa' : ''}" data-aero="SBGR">SBGR</button>
+            <div class="selecao-pills" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 85px; overflow-y: auto;">
+                ${Object.keys(windManager.aerodromos).map(aId => `
+                    <button class="pill-btn ${this.aeroIdAtivo === aId ? 'ativa' : ''}" data-aero="${aId}">${aId}</button>
+                `).join('')}
             </div>
 
             <!-- Seletor de Pistas do Aeródromo Selecionado -->

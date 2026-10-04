@@ -13,6 +13,7 @@
 
 import { state } from '../core/state.js';
 import { calcularRumoDistancia } from '../utils/utils.js';
+import { aerodromos as dadosAerodromos } from '../data/aerodromos.js';
 import { 
     normalizeHeading, 
     windFromDirectionToVector, 
@@ -119,43 +120,60 @@ export class WindManager {
             }
         ];
 
-        // Aeródromos com cabeceiras individuais (Seções 12, 13 e 14)
-        this.aerodromos = {
-            "SBSP": {
-                nome: "São Paulo / Congonhas",
-                raioNM: 8.0,
-                tetoFL: 40,
-                pistaAtiva: "17R",
-                cabeceiras: {
-                    "17R": { rumoPista: 170, fromDeg: 190, speedKt: 5, aleatorio: false, minDeg: 170, maxDeg: 210, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 190, _targetSpeedKt: 5 },
-                    "17L": { rumoPista: 170, fromDeg: 190, speedKt: 5, aleatorio: false, minDeg: 170, maxDeg: 210, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 190, _targetSpeedKt: 5 },
-                    "35L": { rumoPista: 350, fromDeg: 10,  speedKt: 5, aleatorio: false, minDeg: 350, maxDeg: 30,  minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 10,  _targetSpeedKt: 5 },
-                    "35R": { rumoPista: 350, fromDeg: 10,  speedKt: 5, aleatorio: false, minDeg: 350, maxDeg: 30,  minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 10,  _targetSpeedKt: 5 }
+        // Aeródromos e cabeceiras individuais 100% data-driven a partir de aerodromos.js
+        this.aerodromos = {};
+        if (Array.isArray(dadosAerodromos)) {
+            for (const a of dadosAerodromos) {
+                const cabMap = {};
+                let defaultPista = a.pistaPadrao || null;
+                if (a.pistas && Array.isArray(a.pistas)) {
+                    for (const pista of a.pistas) {
+                        if (pista.cabeceiras) {
+                            for (const [rwyKey, cabData] of Object.entries(pista.cabeceiras)) {
+                                if (!defaultPista) defaultPista = rwyKey;
+                                const rumo = cabData.frontCourseDeg !== undefined ? cabData.frontCourseDeg : (cabData.rumo !== undefined ? cabData.rumo : pista.rumo);
+                                let fromDeg = normalizeHeading(rumo + 20);
+                                let spd = 5;
+
+                                if (a.nome === "SBSP") {
+                                    fromDeg = (rwyKey.startsWith("35")) ? 10 : 190;
+                                    spd = 5;
+                                } else if (a.nome === "SBKP") {
+                                    fromDeg = (rwyKey.startsWith("33")) ? 330 : 150;
+                                    spd = 8;
+                                } else if (a.nome === "SBGR") {
+                                    fromDeg = (rwyKey.startsWith("28")) ? 280 : 100;
+                                    spd = 6;
+                                }
+
+                                cabMap[rwyKey] = {
+                                    rumoPista: rumo,
+                                    fromDeg: fromDeg,
+                                    speedKt: spd,
+                                    aleatorio: false,
+                                    minDeg: normalizeHeading(rumo - 20),
+                                    maxDeg: normalizeHeading(rumo + 40),
+                                    minSpeed: 3,
+                                    maxSpeed: 10,
+                                    gustKt: 0,
+                                    gustFrequency: 0,
+                                    _targetFromDeg: fromDeg,
+                                    _targetSpeedKt: spd
+                                };
+                            }
+                        }
+                    }
                 }
-            },
-            "SBKP": {
-                nome: "Campinas / Viracopos",
-                raioNM: 8.0,
-                tetoFL: 40,
-                pistaAtiva: "15",
-                cabeceiras: {
-                    "15": { rumoPista: 150, fromDeg: 150, speedKt: 8, aleatorio: false, minDeg: 130, maxDeg: 170, minSpeed: 4, maxSpeed: 12, gustKt: 0, gustFrequency: 0, _targetFromDeg: 150, _targetSpeedKt: 8 },
-                    "33": { rumoPista: 330, fromDeg: 330, speedKt: 8, aleatorio: false, minDeg: 310, maxDeg: 350, minSpeed: 4, maxSpeed: 12, gustKt: 0, gustFrequency: 0, _targetFromDeg: 330, _targetSpeedKt: 8 }
-                }
-            },
-            "SBGR": {
-                nome: "São Paulo / Guarulhos",
-                raioNM: 10.0,
-                tetoFL: 40,
-                pistaAtiva: "10L",
-                cabeceiras: {
-                    "10L": { rumoPista: 100, fromDeg: 100, speedKt: 6, aleatorio: false, minDeg: 80,  maxDeg: 120, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 100, _targetSpeedKt: 6 },
-                    "10R": { rumoPista: 100, fromDeg: 100, speedKt: 6, aleatorio: false, minDeg: 80,  maxDeg: 120, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 100, _targetSpeedKt: 6 },
-                    "28L": { rumoPista: 280, fromDeg: 280, speedKt: 6, aleatorio: false, minDeg: 260, maxDeg: 300, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 280, _targetSpeedKt: 6 },
-                    "28R": { rumoPista: 280, fromDeg: 280, speedKt: 6, aleatorio: false, minDeg: 260, maxDeg: 300, minSpeed: 3, maxSpeed: 10, gustKt: 0, gustFrequency: 0, _targetFromDeg: 280, _targetSpeedKt: 6 }
-                }
+
+                this.aerodromos[a.nome] = {
+                    nome: a.nomeCompleto || a.nome,
+                    raioNM: a.raioVentoNM || (a.nome === "SBGR" ? 10.0 : 8.0),
+                    tetoFL: a.tetoVentoFL || 40,
+                    pistaAtiva: defaultPista || (Object.keys(cabMap)[0] || "17R"),
+                    cabeceiras: cabMap
+                };
             }
-        };
+        }
 
         // Carrega configurações prévias do localStorage se existirem
         this.carregar();
@@ -179,12 +197,12 @@ export class WindManager {
         const fl = (typeof aero.flAtualNum === 'number') ? aero.flAtualNum : 0;
 
         // 1. AVALIAÇÃO TERMINAL LOCAL (Seção 14)
-        // Se a aeronave voa a 4.000 ft ou menos, verifica se está no raio de um dos aeródromos
-        if (fl <= 40) {
-            // Prioriza o aeródromo de destino da aeronave se cadastrado
-            const aeroDestId = aero.dest;
-            const aeroConfig = this.aerodromos[aeroDestId];
+        const aeroDestId = aero.dest;
+        const aeroConfig = aeroDestId ? this.aerodromos[aeroDestId] : null;
+        const tetoTerminal = aeroConfig ? (aeroConfig.tetoFL || 40) : 40;
 
+        if (fl <= tetoTerminal) {
+            // Prioriza o aeródromo de destino da aeronave se cadastrado
             if (aeroConfig && state.fixos && state.fixos[aeroDestId]) {
                 const nav = calcularRumoDistancia(aero, state.fixos[aeroDestId]);
                 if (nav.distanciaNM <= aeroConfig.raioNM) {
@@ -193,7 +211,8 @@ export class WindManager {
             } else {
                 // Se não tem destino configurado ou não atingiu o destino, verifica se sobrevoa algum outro aeródromo
                 for (const [aeroId, config] of Object.entries(this.aerodromos)) {
-                    if (state.fixos && state.fixos[aeroId]) {
+                    const tetoOutro = config.tetoFL || 40;
+                    if (fl <= tetoOutro && state.fixos && state.fixos[aeroId]) {
                         const nav = calcularRumoDistancia(aero, state.fixos[aeroId]);
                         if (nav.distanciaNM <= config.raioNM) {
                             return this._obterVentoCabeceira(config, aeroId, aero);

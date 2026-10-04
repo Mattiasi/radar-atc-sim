@@ -41,7 +41,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
             pertoPistaOuAero = true;
         }
     } else {
-        const destCoords = state.fixos ? (state.fixos[aero.dest] || state.fixos["SBSP"]) : null;
+        const destCoords = state.fixos ? (state.fixos[aero.dest] || state.fixos["SBSP"] || Object.values(state.fixos)[0]) : null;
         if (destCoords) {
             const navDest = calcularRumoDistancia(aero, destCoords);
             if (navDest && navDest.distanciaNM <= 3.0) {
@@ -170,7 +170,7 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
 
             if (!aero.desceuParaWp) aero.desceuParaWp = {};
 
-            let lookaheadLimit = (iterWpNome && isFixoIAC(iterWpNome)) ? 1 : 2;
+            let lookaheadLimit = (iterWpNome && isFixoIAC(iterWpNome, aero)) ? 1 : 2;
             for (let i = 0; i < lookaheadLimit; i++) {
                 if (!iterWpNome) break;
 
