@@ -1,7 +1,7 @@
 import { dmsParaDecimal, latCentro, lonCentro, geoParaDelta } from '../utils/utils.js';
 
 // Imports from the newly separated data files
-import { cartasNavegacao } from './cartas.js?v=2';
+import { cartasNavegacao } from './cartas.js?v=3';
 import { aerodromos } from './aerodromos.js';
 import { verticesSetor, verticesTMA, estruturaEspacoAereo } from './espacoAereo.js';
 import { radarLayerState } from '../core/state.js';

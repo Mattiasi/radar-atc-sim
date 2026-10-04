@@ -720,23 +720,21 @@ export const cartasNavegacao = {
                     nome: "RNP X 33",
                     cor: '#00ff7f',
                     fixos: [
-                        {nome: "KP209", lat: dmsParaDecimal(23,1,13.30,'S'), lon: dmsParaDecimal(46,56,41.70,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
-                        {nome: "KP191", lat: dmsParaDecimal(23,9,56.70,'S'), lon: dmsParaDecimal(46,55,30.00,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
-                        {nome: "KP192", lat: dmsParaDecimal(23,7,71.70,'S'), lon: dmsParaDecimal(46,57,86.70,'W'), restricao: { fl: 57, tipo: "AT"}},
-                        {nome: "UBKUP", lat: dmsParaDecimal(23,10,63.30,'S'), lon: dmsParaDecimal(47,4,48.30,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
-                        {nome: "KP107", lat: dmsParaDecimal(23,5,88.30,'S'), lon: dmsParaDecimal(47,0,45.00,'W'), restricao: { fl: 44, tipo: "AT"},papel: "IF",},
-                        {nome: "ARNIV", lat: dmsParaDecimal(23,4,5.00,'S'), lon: dmsParaDecimal(47,3,1.70,'W'), restricao: { fl: 36, tipo: "AT"},papel: "FAF", isFAF:true},
-                        {nome: "RWY33", lat: dmsParaDecimal(23,0,95.00,'S'), lon: dmsParaDecimal(47,7,35.00,'W'), restricao: { fl: 22, tipo: "BELOW"}, papel: "MAPT", isThreshold: true }
-
-
+                        {nome: "KP209", lat: dmsParaDecimal(23,1,13.30,'S'), lon: dmsParaDecimal(46,56,41.70,'W'), restricao: { fl: 65, tipo: "AT"}, papel: "IAF"},
+                        {nome: "KP191", lat: dmsParaDecimal(23, 9, 53.17, 'S'), lon: dmsParaDecimal(46, 55, 32.82, 'W'), restricao: { fl: 65, tipo: "AT"}, papel: "IAF"},
+                        {nome: "KP192", lat: dmsParaDecimal(23, 8, 3.35, 'S'), lon: dmsParaDecimal(46, 58, 8.48, 'W'), restricao: { fl: 57, tipo: "AT"}},
+                        {nome: "UBKUP", lat: dmsParaDecimal(23,10,63.30,'S'), lon: dmsParaDecimal(47,4,48.30,'W'), restricao: { fl: 65, tipo: "AT"}, papel: "IAF"},
+                        {nome: "KP107", lat: dmsParaDecimal(23, 6, 13.52, 'S'), lon: dmsParaDecimal(47, 0, 44.14, 'W'), restricao: { fl: 44, tipo: "AT"}, papel: "IF"},
+                        {nome: "ARNIV", lat: dmsParaDecimal(23, 4, 23.69, 'S'), lon: dmsParaDecimal(47, 3, 19.80, 'W'), restricao: { fl: 36, tipo: "AT"}, papel: "FAF", isFAF: true},
+                        {nome: "RWY33", lat: dmsParaDecimal(23, 1, 20.65, 'S'), lon: dmsParaDecimal(47, 7, 39.23, 'W'), restricao: { fl: 22, tipo: "BELOW"}, papel: "MAPT", isThreshold: true }
                     ],
                     linhas: [
-                        ["KP209","KP107"],
-                        ["UBKUP","KP107"],
-                        ["KP191", "KP192", "KP107"],
-                        ["KP107", "ARNIV","RWY33"]
+                        ["KP209", "KP107"],
+                        ["UBKUP", "KP107"],
+                        ["KP191", "KP192", "KP107", "ARNIV", "RWY33"]
                     ]
-                },},
+                }
+            },
             SID: {}
         }
     }
