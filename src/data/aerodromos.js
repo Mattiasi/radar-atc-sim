@@ -309,6 +309,17 @@ export const aerodromos = [
         altitudeTransicaoFt: 7000,
         raioVentoNM: 8.0,
         tetoVentoFL: 40,
+        prolongamento: {
+            tracosAntes: 4,
+            tracosDepois: 4,
+            tamanhoTracoNM: 1.0,
+            espacoNM: 1.0,
+            afastamentoNM: 0.5,
+            compNM: 1.33,
+            sepYNM: 0,
+            sepXNM: 0,
+            cor: '#ffffff'
+        },
             pistas: [
             {
                 id: "16/34",
@@ -433,17 +444,7 @@ export const aerodromos = [
         altitudeTransicaoFt: 7000,
         raioVentoNM: 8.0,
         tetoVentoFL: 40,
-        prolongamento: {
-            tracosAntes: 2,
-            tracosDepois: 2,
-            tamanhoTracoNM: 1.0,
-            espacoNM: 1.0,
-            afastamentoNM: 0.5,
-            compNM: 1.33,
-            sepYNM: 0,
-            sepXNM: 0,
-            cor: '#ffffff'
-        },
+        
         pistas: [
             {
                 id: "12/30",
