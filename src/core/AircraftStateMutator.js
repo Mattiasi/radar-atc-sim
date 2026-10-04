@@ -35,7 +35,9 @@ export const AircraftStateMutator = {
         }
 
         aero.modoLNAV = true;
-        aero.velManual = false; // LNAV habitualmente assume o perfil de velocidade gerenciada
+        if (!aero.velManual) {
+            aero.velManual = false; // LNAV habitualmente assume o perfil de velocidade gerenciada
+        }
         aero.flyByProtegido = null;
         aero.desceuParaWp = {};
         // console.log(`[STATE] ${aero.callsign}: LNAV ON -> DCT ${alvo}`);

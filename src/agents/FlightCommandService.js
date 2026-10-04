@@ -31,6 +31,9 @@ export class FlightCommandService {
         if (!aero || !level) return;
 
         const cmd = String(level).toUpperCase().trim();
+        if (aero.comandosAtivos) {
+            aero.comandosAtivos.altitude = cmd;
+        }
 
         if (cmd === "ILS") {
             AircraftStateMutator.ativarAutorizacaoILS(aero);
@@ -100,6 +103,10 @@ export class FlightCommandService {
         if (isNaN(proaNum) || proaNum < 0 || proaNum > 360) return;
         if (proaNum === 360) proaNum = 0;
 
+        if (aero.comandosAtivos) {
+            aero.comandosAtivos.heading = { proa: proaNum, ladoMaior: Boolean(ladoMaior) };
+        }
+
         if (aero.pilot) {
             aero.pilot.dispatch('LATERAL', 'HEADING', { heading: proaNum, maior: Boolean(ladoMaior) });
         } else {
@@ -115,6 +122,19 @@ export class FlightCommandService {
     setSpeed(aero, speedOrMode) {
         if (!aero) return;
         const modoStr = String(speedOrMode).toUpperCase().trim();
+
+        if (aero.comandosAtivos) {
+            if (modoStr === "MIN") {
+                aero.comandosAtivos.speed = { type: 'MIN' };
+            } else if (["AUTO", "NORM", "FREE", "FREEV", "RSM", "RSV", "RESUME", "VFREE"].includes(modoStr)) {
+                aero.comandosAtivos.speed = { type: 'AUTO' };
+            } else {
+                const vNum = parseInt(speedOrMode, 10);
+                if (!isNaN(vNum)) {
+                    aero.comandosAtivos.speed = { type: 'NUM', value: vNum };
+                }
+            }
+        }
 
         if (modoStr === "MIN") {
             AircraftStateMutator.definirModoVelocidade(aero, "MIN");
@@ -148,8 +168,18 @@ export class FlightCommandService {
         // Consulta dicionário de mnemônicas e fixos conhecidos
         const fixoAlvo = DIC_FIXOS_PADRAO[raw] || raw;
 
+        if (aero.comandosAtivos) {
+            aero.comandosAtivos.waypoint = fixoAlvo;
+        }
+
         let idx = (aero.rota && Array.isArray(aero.rota)) ? aero.rota.indexOf(fixoAlvo) : -1;
         let novaRotaCalculada = null;
+
+        // Se o fixo comandado já foi o último fixo comandado e já foi sobrevoado/passado na rota ativa,
+        // não deve inverter o sentido de voo para retornar a ele se a aeronave estiver em LNAV
+        if (aero.ultimoWpComandadoFixo === fixoAlvo && idx !== -1 && idx < aero.wpIndex && aero.modoLNAV) {
+            return;
+        }
 
         // Se o fixo comandado não está na rota atual, ou já ficou para trás,
         // ou a aeronave está fora de rota, reconstrói pelo grafo
@@ -166,6 +196,7 @@ export class FlightCommandService {
             return;
         }
         aero.ultimoWpComandadoTexto = novoWpPendente;
+        aero.ultimoWpComandadoFixo = fixoAlvo;
 
         if (aero.pilot) {
             aero.pilot.dispatch('LATERAL', 'DIRECT_TO', {

@@ -397,7 +397,9 @@ export class PilotAgent {
                 }
 
                 aero.modoLNAV = true;
-                aero.velManual = false;
+                if (!aero.velManual) {
+                    aero.velManual = false;
+                }
                 aero.flyByProtegido = null;
                 aero.desceuParaWp = {};
                 break;

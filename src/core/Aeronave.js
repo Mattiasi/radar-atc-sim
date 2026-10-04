@@ -239,6 +239,18 @@ export class Aeronave {
         this.textoLivre = textoLivre;            // Dados brutos digitados pelo operador no Scratchpad
         this.ultimoComandoTexto = "";            // Cache do último texto para evitar re-execução desnecessária de regex
         this.ultimoWpComandadoTexto = null;      // Evita reprocessar o mesmo comando de ponto em loop
+        this.ultimoWpComandadoFixo = null;       // Nome do último fixo comandado diretamente via ATC
+        this.comandosAtivos = {
+            waypoint: null,
+            heading: null,
+            speed: null,
+            altitude: null,
+            approach: null,
+            ils: null,
+            runway: null,
+            restriction: null,
+            speedbrakes: null
+        };
         
         this.historico = [];                     // Últimas 5 posições cartesianas para desenho dos ecos históricos (rasto)
         this.labelAngle = Math.PI / 4;           // Ângulo polar em radianos da linha guia da etiqueta (Leader line)
