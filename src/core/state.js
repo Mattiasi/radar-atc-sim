@@ -70,7 +70,7 @@ export const radarLayerState = {
         STAR: 0.8,
         SID: 0.8,
         IAC: 0.8,
-        ATCSMAC: 0.8
+        ATCSMAC: 0.0
     }
 };
 

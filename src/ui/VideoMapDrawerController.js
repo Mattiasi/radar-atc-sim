@@ -397,7 +397,7 @@ export class VideoMapDrawerController {
             { tipo: "STAR",    rotulo: "STAR (Chegada)",   valorPadrao: radarLayerState.opacity.STAR ?? 0.8 },
             { tipo: "SID",     rotulo: "SID (Saída)",      valorPadrao: radarLayerState.opacity.SID ?? 0.8 },
             { tipo: "IAC",     rotulo: "IAC (Aprox)",      valorPadrao: radarLayerState.opacity.IAC ?? 0.8 },
-            { tipo: "ATCSMAC", rotulo: "ATCSMAC (Setores)", valorPadrao: radarLayerState.opacity.ATCSMAC ?? 0.8 }
+            { tipo: "ATCSMAC", rotulo: "ATCSMAC (Setores)", valorPadrao: radarLayerState.opacity.ATCSMAC ?? 0.0 }
         ];
 
         canais.forEach(canal => {

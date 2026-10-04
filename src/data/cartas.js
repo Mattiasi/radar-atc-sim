@@ -124,8 +124,8 @@ export const cartasNavegacao = {
                         { nome: "RUSTE", lat: dmsParaDecimal(22, 46, 8.30, 'S'), lon: dmsParaDecimal(47, 30, 0, 'W'), restricao: { fl: 200, flMax: 240, tipo: "WINDOW" } },
                         { nome: "SP031", lat: dmsParaDecimal(22, 52, 95.0, 'S'), lon: dmsParaDecimal(47, 3, 58.30, 'W'), restricao: { fl: 200, tipo: "AT" } },
                         { nome: "ORESU", lat: dmsParaDecimal(23, 1, 45.0, 'S'), lon: dmsParaDecimal(47, 9, 35.0, 'W'), restricao: { fl: 130, flMax: 170, tipo: "WINDOW" } },
-                        { nome: "PRUMO", lat: dmsParaDecimal(23, 15, 16.70, 'S'), lon: dmsParaDecimal(47, 6, 31.70, 'W'), restricao: { fl: 120, tipo: "AT" } },
-                        { nome: "IROPU", lat: dmsParaDecimal(23, 25, 51.70, 'S'), lon: dmsParaDecimal(47, 4, 5.0, 'W') },
+                        { nome: "PRUMO", lat: dmsParaDecimal(23, 15, 10.10, 'S'), lon: dmsParaDecimal(47, 6, 19.99, 'W'), restricao: { fl: 120, tipo: "AT" } },
+                        { nome: "IROPU", lat: dmsParaDecimal(23, 25, 31.50, 'S'), lon: dmsParaDecimal(47, 4, 3.91, 'W') },
                         { nome: "KOMGU", lat: dmsParaDecimal(23, 33, 54.89, 'S'), lon: dmsParaDecimal(46, 49, 40.64, 'W'), restricao: { fl:  90, tipo: "AT" } },                     
                         { nome: "SP098", lat: dmsParaDecimal(23, 38, 18.92, 'S'), lon: dmsParaDecimal(46, 46, 37.85, 'W'), restricao: { fl:  90, tipo: "AT" }},
                        
@@ -143,9 +143,9 @@ export const cartasNavegacao = {
                     fixos: [
                         { nome: "OGTAL", lat: dmsParaDecimal(23, 51, 23.29, 'S'), lon: dmsParaDecimal(46, 37, 33.47, 'W'), restricao: { fl: 60, tipo: "AT" },papel: "IAF" },
                         {nome: "ESUNI", lat: dmsParaDecimal(23,51,25.00,'S'), lon: dmsParaDecimal(46,27,16.70,'W'), restricao: { fl: 60, tipo: "AT"},papel: "IAF"},
-                        {nome: "USITO", lat: dmsParaDecimal(23,47,65.00,'S'), lon: dmsParaDecimal(46,32,10,'W'), restricao: { fl: "53", tipo: "AT"},papel: "IF"},
+                        {nome: "USITO", lat: dmsParaDecimal(23, 48, 5.00, 'S'), lon: dmsParaDecimal(46, 32, 10.00, 'W'), restricao: { fl: 53, tipo: "AT"}, papel: "IF"},
                         {nome: "SURBU", lat: dmsParaDecimal(23,42,30.00,'S'), lon: dmsParaDecimal(46,36,0,'W'), restricao: { fl: 42, tipo: "AT"},papel: "FAF",isFAF: true},
-                        {nome: "RW35L", lat: dmsParaDecimal(23,38,5.00,'S'), lon: dmsParaDecimal(46,39,6.70,'W'), restricao: { fl: 26, tipo: "AT"}, papel: "MAPT", isThreshold: true}
+                        {nome: "RW35L", lat: dmsParaDecimal(23, 37, 59.81, 'S'), lon: dmsParaDecimal(46, 39, 6.99, 'W'), restricao: { fl: 26, tipo: "AT"}, papel: "MAPT", isThreshold: true}
 
                     ],
                     linhas: [
@@ -545,7 +545,7 @@ export const cartasNavegacao = {
                     fixos: [
                         { nome: "UTKUG", lat: dmsParaDecimal(23, 18, 6.70, 'S'), lon: dmsParaDecimal(46, 14, 51.70, 'W'), restricao: { fl: 60, tipo: "AT" }, papel: "IAF" },
                         { nome: "ETIKO", lat: dmsParaDecimal(23, 23, 3.30, 'S'), lon: dmsParaDecimal(46, 17, 8.30, 'W'), restricao: { fl: 50, tipo: "AT" }, papel: "IF" },
-                        { nome: "VUSNI", lat: dmsParaDecimal(23, 24, 45.00, 'S'), lon: dmsParaDecimal(46, 22, 30.00, 'W'), restricao: { fl: 40, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "VUSNI", lat: dmsParaDecimal(23, 24, 31.89, 'S'), lon: dmsParaDecimal(46, 22, 33.86, 'W'), restricao: { fl: 40, tipo: "AT" }, papel: "FAF", isFAF: true },
                         { nome: "RW28L", lat: dmsParaDecimal(23, 25, 52.02, 'S'), lon: dmsParaDecimal(46, 27, 31.02, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
                     ],
                     linhas: [
@@ -634,9 +634,9 @@ export const cartasNavegacao = {
                     nome: "ILS RWY 15",
                     cor: '#00ff7f',
                     fixos: [
-                        {nome: "ATARA", lat: dmsParaDecimal(22,53,76.70,'S'), lon: dmsParaDecimal(47,17,38.30,'W'), restricao: { fl: 44, tipo: "AT"}, papel: "IF"},
+                        {nome: "ATARA", lat: dmsParaDecimal(22, 54, 17.47, 'S'), lon: dmsParaDecimal(47, 17, 39.01, 'W'), restricao: { fl: 44, tipo: "AT"}, papel: "IF"},
                         { nome: "NILKA", lat: dmsParaDecimal(22, 58, 53.30, 'S'), lon: dmsParaDecimal(47, 21, 35.0, 'W'), restricao: { fl: 65, tipo: "AT" }, papel: "IAF" },
-                        { nome: "SEBSU", lat: dmsParaDecimal(22,56,83.30,'S'), lon: dmsParaDecimal(47,13,10.00,'W'), restricao: { fl: 37, tipo: "AT"}, papel: "IAF"},
+                        { nome: "SEBSU", lat: dmsParaDecimal(22, 57, 25.64, 'S'), lon: dmsParaDecimal(47, 13, 12.31, 'W'), restricao: { fl: 37, tipo: "AT"}, papel: "IAF"},
                         { nome: "ITEDI", lat: dmsParaDecimal(22, 48, 88.30, 'S'), lon: dmsParaDecimal(47, 13, 30.0, 'W'), restricao: { fl: 60, tipo: "AT" }, papel: "IAF" },
                         { nome: "RW15", lat: dmsParaDecimal(23, 0, 16.60, 'S'), lon: dmsParaDecimal(47, 9, 10.00, 'W'), restricao: { fl: 21, tipo: "AT" }, papel: "MAPT", isThreshold: true }
                     ],

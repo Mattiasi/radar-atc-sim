@@ -336,7 +336,7 @@ export function desenharMapaBase() {
     // 1 e 2. Linhas tracejadas e altitudes da ATCSMAC (com controle reativo de opacidade)
     const alphaATCSMAC = (state.radarLayers && state.radarLayers.opacity && state.radarLayers.opacity.ATCSMAC !== undefined)
         ? state.radarLayers.opacity.ATCSMAC
-        : 0.8;
+        : 0.0;
 
     if (alphaATCSMAC > 0.01) {
         state.ctx.save();
