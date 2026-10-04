@@ -450,20 +450,7 @@ export const cartasNavegacao = {
                         ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
                     ]
                 },
-                "RNPY10R": {
-                    nome: "RNP Y RWY 10R",
-                    cor: '#00ff7f',
-                    fixos: [
-                        { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
-                        { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
-                        { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
-                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
-                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
-                    ],
-                    linhas: [
-                        ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
-                    ]
-                }
+                
             },
             AIC: {},
             SID: {}
@@ -728,7 +715,28 @@ export const cartasNavegacao = {
                     ]
                 }
             },
-            AIC: {},
+            AIC: {
+                "RNP X 33": {
+                    nome: "RNP X 33",
+                    cor: '#00ff7f',
+                    fixos: [
+                        {nome: "KP209", lat: dmsParaDecimal(23,1,13.30,'S'), lon: dmsParaDecimal(46,56,41.70,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
+                        {nome: "KP191", lat: dmsParaDecimal(23,9,56.70,'S'), lon: dmsParaDecimal(46,55,30.00,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
+                        {nome: "KP192", lat: dmsParaDecimal(23,7,71.70,'S'), lon: dmsParaDecimal(46,57,86.70,'W'), restricao: { fl: 57, tipo: "AT"}},
+                        {nome: "UBKUP", lat: dmsParaDecimal(23,10,63.30,'S'), lon: dmsParaDecimal(47,4,48.30,'W'), restricao: { fl: 65, tipo: "AT"},papel: "IAF"},
+                        {nome: "KP107", lat: dmsParaDecimal(23,5,88.30,'S'), lon: dmsParaDecimal(47,0,45.00,'W'), restricao: { fl: 44, tipo: "AT"},papel: "IF",},
+                        {nome: "ARNIV", lat: dmsParaDecimal(23,4,5.00,'S'), lon: dmsParaDecimal(47,3,1.70,'W'), restricao: { fl: 36, tipo: "AT"},papel: "FAF", isFAF:true},
+                        {nome: "RWY33", lat: dmsParaDecimal(23,0,95.00,'S'), lon: dmsParaDecimal(47,7,35.00,'W'), restricao: { fl: 22, tipo: "BELOW"}, papel: "MAPT", isThreshold: true }
+
+
+                    ],
+                    linhas: [
+                        ["KP209","KP107"],
+                        ["UBKUP","KP107"],
+                        ["KP191", "KP192", "KP107"],
+                        ["KP107", "ARNIV","RWY33"]
+                    ]
+                },},
             SID: {}
         }
     }

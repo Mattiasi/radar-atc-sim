@@ -23,7 +23,8 @@ export const verticesTMA = [
     { nome: "TMA20", lat: dmsParaDecimal(23,  4,  3.30, 'S'), lon: dmsParaDecimal(47, 43, 63.30, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA21", lat: dmsParaDecimal(22, 51, 60.00, 'S'), lon: dmsParaDecimal(47, 38, 73.30, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA22", lat: dmsParaDecimal(22, 42, 26.70, 'S'), lon: dmsParaDecimal(47, 35, 10.00, 'W'), restricao: { fl: null, tipo: "" } },
-    { nome: "TMA23", lat: dmsParaDecimal(22, 38, 78.30, 'S'), lon: dmsParaDecimal(47, 26, 43.30, 'W'), restricao: { fl: null, tipo: "" } }
+    { nome: "TMA23", lat: dmsParaDecimal(22, 38, 78.30, 'S'), lon: dmsParaDecimal(47, 26, 43.30, 'W'), restricao: { fl: null, tipo: "" } },
+    
 ];
 
 export const verticesSetor = [
