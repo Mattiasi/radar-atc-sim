@@ -15,7 +15,7 @@
 
 import { correcaoLon, geoParaDelta } from '../utils/utils.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
-import { aerodromos } from '../data/data.js';
+import { aerodromos, cartasNavegacao } from '../data/data.js';
 import { state } from '../core/state.js';
 import { verificarTouchdown, processarRolloutESumico } from './LandingRolloutManager.js';
 
@@ -147,30 +147,107 @@ export function getRunwayILS(aircraft) {
     const aerodromo = aerodromos.find(a => a.nome === destName);
     if (!aerodromo || !aerodromo.pistas) return null;
 
-    const runwayId = aircraft.assigned_runway || aircraft.pistaAtribuida;
+    // 1. Se atribuído explicitamente via ATC (ex: comando RWY 28L ou ILS 28L)
+    let runwayId = aircraft.assigned_runway;
 
-    // 1. Se a aeronave tem pista atribuída, valida estritamente a cabeceira solicitada
+    // 2. Se não foi atribuído explicitamente, descobre a cabeceira a partir da carta STAR/IAC ativa
+    if (!runwayId && aircraft.cartaNome && typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[destName]) {
+        for (const [cabKey, cabObj] of Object.entries(cartasNavegacao[destName])) {
+            for (const catObj of Object.values(cabObj)) {
+                if (catObj && typeof catObj === 'object' && Object.values(catObj).some(c => c.nome === aircraft.cartaNome)) {
+                    runwayId = cabKey;
+                    break;
+                }
+            }
+            if (runwayId) break;
+        }
+    }
+
+    // 3. Se não foi descoberto, descobre a partir dos fixos da rota da aeronave
+    if (!runwayId && aircraft.rota && Array.isArray(aircraft.rota) && typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[destName]) {
+        for (const [cabKey, cabObj] of Object.entries(cartasNavegacao[destName])) {
+            const iacGrp = cabObj.IAC || cabObj.AIC;
+            if (iacGrp) {
+                for (const c of Object.values(iacGrp)) {
+                    if (c.fixos && c.fixos.some(f => aircraft.rota.includes(f.nome))) {
+                        runwayId = cabKey;
+                        break;
+                    }
+                }
+            }
+            if (runwayId) break;
+        }
+    }
+
+    // 4. Se não foi descoberto, verifica as cabeceiras ativas no Vídeo Mapa para este destino
+    if (!runwayId && state.radarLayers && state.radarLayers.activeRunways) {
+        const prefix = `${destName}-`;
+        for (const rwyKey of state.radarLayers.activeRunways) {
+            if (rwyKey.startsWith(prefix)) {
+                const candidate = rwyKey.split("-")[1];
+                for (const pista of aerodromo.pistas) {
+                    if (pista.cabeceiras && pista.cabeceiras[candidate] && pista.cabeceiras[candidate].ils && pista.cabeceiras[candidate].ils.enabled) {
+                        runwayId = candidate;
+                        break;
+                    }
+                }
+                if (runwayId) break;
+            }
+        }
+    }
+
+    // 5. Fallback para pistaAtribuida da aeronave (se tiver ILS habilitado)
+    if (!runwayId && aircraft.pistaAtribuida) {
+        for (const pista of aerodromo.pistas) {
+            if (pista.cabeceiras && pista.cabeceiras[aircraft.pistaAtribuida]) {
+                const cab = pista.cabeceiras[aircraft.pistaAtribuida];
+                if (cab.ils && cab.ils.enabled) {
+                    runwayId = aircraft.pistaAtribuida;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 6. Se ainda não resolveu, avalia qual cabeceira com ILS a aeronave está convergindo geometricamente
+    if (!runwayId) {
+        const candidatos = [];
+        for (const pista of aerodromo.pistas) {
+            if (!pista.cabeceiras) continue;
+            for (const [rId, cab] of Object.entries(pista.cabeceiras)) {
+                if (cab && cab.ils && cab.ils.enabled) {
+                    candidatos.push({ rId, pista, cab });
+                }
+            }
+        }
+
+        if (candidatos.length === 1) {
+            runwayId = candidatos[0].rId;
+        } else if (candidatos.length > 1) {
+            let melhorCand = null;
+            let menorErro = Infinity;
+
+            for (const cand of candidatos) {
+                const dados = montarDadosILS(aerodromo, cand.pista, cand.cab, cand.rId);
+                const geom = calculateILSGeometry(aircraft.deltaLat, aircraft.deltaLon, dados.threshold.deltaLat, dados.threshold.deltaLon, dados.front_course_deg);
+                const hdgErr = Math.abs(normalize_angle(dados.front_course_deg - aircraft.proa));
+                if (geom.along_track_nm > 0 && hdgErr < 90 && hdgErr < menorErro) {
+                    menorErro = hdgErr;
+                    melhorCand = cand.rId;
+                }
+            }
+
+            runwayId = melhorCand || candidatos[0].rId;
+        }
+    }
+
+    // Valida a cabeceira selecionada e monta os dados ILS
     if (runwayId) {
         for (const pista of aerodromo.pistas) {
             if (!pista.cabeceiras) continue;
             const cabeceira = pista.cabeceiras[runwayId];
-            if (cabeceira) {
-                if (cabeceira.ils && cabeceira.ils.enabled) {
-                    return montarDadosILS(aerodromo, pista, cabeceira, runwayId);
-                }
-                // Pista atribuída explicitamente, mas não possui ILS habilitado
-                return null;
-            }
-        }
-        return null;
-    }
-
-    // 2. Fallback data-driven: se nenhuma pista foi atribuída, procura a primeira cabeceira com ILS habilitado
-    for (const pista of aerodromo.pistas) {
-        if (!pista.cabeceiras) continue;
-        for (const [rId, cabeceira] of Object.entries(pista.cabeceiras)) {
             if (cabeceira && cabeceira.ils && cabeceira.ils.enabled) {
-                return montarDadosILS(aerodromo, pista, cabeceira, rId);
+                return montarDadosILS(aerodromo, pista, cabeceira, runwayId);
             }
         }
     }

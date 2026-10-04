@@ -357,7 +357,7 @@ export function desenharMapaBase() {
                 const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
                 const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
                 const groupKey = `${aerodromoKey}-${numPista}`;
-                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                const estaAtiva = Boolean(state.radarLayers.activeRunways && (state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey)));
                 // Se a cabeceira não estiver ativa, oculta imediatamente
                 if (!estaAtiva) return;
 
@@ -437,7 +437,7 @@ export function desenharMapaBase() {
                 const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
                 const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
                 const groupKey = `${aerodromoKey}-${numPista}`;
-                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                const estaAtiva = Boolean(state.radarLayers.activeRunways && (state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey)));
                 if (!estaAtiva) return;
 
                 Object.entries(cabeceira).forEach(([catKey, categoria]) => {
@@ -481,7 +481,7 @@ export function desenharMapaBase() {
                 const runwayKey = `${aerodromoKey}-${cabeceiraKey}`;
                 const numPista = cabeceiraKey.replace(/[^0-9]/g, '');
                 const groupKey = `${aerodromoKey}-${numPista}`;
-                const estaAtiva = state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey);
+                const estaAtiva = Boolean(state.radarLayers.activeRunways && (state.radarLayers.activeRunways.has(groupKey) || state.radarLayers.activeRunways.has(runwayKey)));
                 if (!estaAtiva) return;
 
                 Object.entries(cabeceira).forEach(([catKey, categoria]) => {

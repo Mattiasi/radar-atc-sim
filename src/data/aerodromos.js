@@ -197,7 +197,18 @@ export const aerodromos = [
                         rumo: 276,
                         frontCourseDeg: 276,
                         elevacaoFt: 2461,
-                        ils: { enabled: false, loc_valid: false, gs_valid: false }
+                        ils: {
+                            ident: "ISG",
+                            freq: "111.5",
+                            front_course_deg: 276,
+                            gs_angle_deg: 3.0,
+                            loc_max_distance_nm: 30.0,
+                            gs_max_distance_nm: 30.0,
+                            loc_capture_angle_deg: 45.0,
+                            loc_valid: true,
+                            gs_valid: true,
+                            enabled: true
+                        }
                     }
                 }
             },

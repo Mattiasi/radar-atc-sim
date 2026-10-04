@@ -39,8 +39,8 @@ export class PainelFluxoController {
         // Se state.configFluxo.esteiras ainda não estiver inicializado
         if (!state.configFluxo.esteiras || !Array.isArray(state.configFluxo.esteiras)) {
             state.configFluxo.esteiras = [
-                { id: "esteira_1", ativo: false, fixo: "OGTAL", separacao: 15 },
-                { id: "esteira_2", ativo: false, fixo: "PRUMO", separacao: 15 }
+                { id: "esteira_1", ativo: false, fixo: "OGTAL|SBSP|OGTAL 2A", separacao: 15 },
+                { id: "esteira_2", ativo: false, fixo: "VUNOX|SBGR|VUNOX 1A", separacao: 15 }
             ];
         }
 
@@ -77,8 +77,6 @@ export class PainelFluxoController {
         const opcoesSeparacao = [5, 8, 10, 12, 15, 18, 20, 25];
 
         state.configFluxo.esteiras.forEach((esteira) => {
-            // Se o fixo atualmente configurado na esteira não estiver mais disponível nas cabeceiras ativas,
-            // e existirem fixos disponíveis, seleciona o primeiro fixo ativo automaticamente
             const fixoValido = todosFixos.find(obj => obj.id === esteira.fixo || (esteira.fixo && obj.id.startsWith(esteira.fixo)));
             if (fixoValido) {
                 esteira.fixo = fixoValido.id;
@@ -95,18 +93,14 @@ export class PainelFluxoController {
             chkContainer.className = 'chk-esteira-container';
             const chk = document.createElement('input');
             chk.type = 'checkbox';
-            chk.checked = esteira.ativo && (todosFixos.length > 0);
-            if (todosFixos.length === 0) {
-                esteira.ativo = false;
-                chk.disabled = true;
-            }
+            chk.checked = Boolean(esteira.ativo);
             chk.addEventListener('change', () => {
                 esteira.ativo = chk.checked;
             });
             chk.addEventListener('mousedown', (e) => e.stopPropagation());
             chkContainer.appendChild(chk);
 
-            // 2. Select Fixo (apenas fixos das cabeceiras ativas no Vídeo Mapa)
+            // 2. Select Fixo
             const selFixo = document.createElement('select');
             selFixo.className = 'sel-fixo';
             selFixo.style.backgroundColor = '#222';
@@ -114,13 +108,13 @@ export class PainelFluxoController {
             selFixo.style.fontWeight = 'bold';
             
             if (todosFixos.length === 0) {
-                const optEmpty = document.createElement('option');
-                optEmpty.value = "";
-                optEmpty.textContent = "Nenhuma cabeceira ativa";
-                optEmpty.disabled = true;
-                optEmpty.selected = true;
-                selFixo.appendChild(optEmpty);
-                selFixo.disabled = true;
+                const optVazio = document.createElement('option');
+                optVazio.value = "";
+                optVazio.textContent = "Ative uma cabeceira no Vídeo Mapa";
+                optVazio.disabled = true;
+                optVazio.selected = true;
+                optVazio.style.color = '#888';
+                selFixo.appendChild(optVazio);
             } else {
                 todosFixos.forEach(obj => {
                     const opt = document.createElement('option');
@@ -129,7 +123,7 @@ export class PainelFluxoController {
                     opt.style.color = obj.cor;
                     opt.style.fontWeight = 'bold';
                     opt.style.backgroundColor = '#1a1a1a';
-                    if (obj.id === esteira.fixo) opt.selected = true;
+                    if (obj.id === esteira.fixo || (esteira.fixo && obj.id.startsWith(esteira.fixo))) opt.selected = true;
                     selFixo.appendChild(opt);
                 });
             }
@@ -187,14 +181,13 @@ export class PainelFluxoController {
 
     _adicionarNovaEsteira() {
         const todosFixos = obterTodosFixosProcedimentos(true);
-        if (todosFixos.length === 0) return;
         const fixosUsados = new Set(state.configFluxo.esteiras.map(e => e.fixo));
         let fixoEscolhido = todosFixos.find(f => !fixosUsados.has(f.id));
-        let fixoId = fixoEscolhido ? fixoEscolhido.id : todosFixos[0].id;
+        let fixoId = fixoEscolhido ? fixoEscolhido.id : (todosFixos[0] ? todosFixos[0].id : "");
 
         state.configFluxo.esteiras.push({
             id: 'esteira_' + Date.now(),
-            ativo: true,
+            ativo: false,
             fixo: fixoId,
             separacao: 15
         });

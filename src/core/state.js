@@ -46,8 +46,8 @@ export const state = {
     // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO DATA-DRIVEN) ---
     configFluxo: {
         esteiras: [
-            { id: "esteira_1", ativo: true, fixo: "OGTAL|SBSP|OGTAL 2A", separacao: 15 },
-            { id: "esteira_2", ativo: true, fixo: "VUNOX|SBGR|VUNOX 1A", separacao: 15 }
+            { id: "esteira_1", ativo: false, fixo: "OGTAL|SBSP|OGTAL 2A", separacao: 15 },
+            { id: "esteira_2", ativo: false, fixo: "VUNOX|SBGR|VUNOX 1A", separacao: 15 }
         ]
     },
 
@@ -64,11 +64,8 @@ export const state = {
  * Estado reativo centralizado das camadas de vídeo-mapa e controle de opacidade.
  */
 export const radarLayerState = {
-    activeRunways: new Set(["SBSP-17", "SBSP-17R", "SBGR-10", "SBGR-10R", "SBGR-10L"]), // Chave única por pista ativa
-    activeCharts: new Set([
-        "OGTAL 2A", "ORESU 1A", "RNP Y RWY 17R", "RNP 17",
-        "VUNOX 1A", "EDMUS 2A", "MOLLE 1A", "RNP Y RWY 10R", "RNP 10"
-    ]), // Nomes das cartas/STARs ativas individualmente
+    activeRunways: new Set(), // Nenhuma pista ativa por padrão ao iniciar a página
+    activeCharts: new Set(),   // Nenhuma carta ativa por padrão ao iniciar a página
     opacity: {
         STAR: 0.8,
         SID: 0.8,

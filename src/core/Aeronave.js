@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
-import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData, obterRestricaoFixoParaAeronave } from '../data/data.js';
+import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData, obterRestricaoFixoParaAeronave, cartasNavegacao } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
 import { windManager } from '../physics/windManager.js';
 import { calculateWindCorrectionAngle, normalizeHeading } from '../physics/windMath.js';
@@ -258,19 +258,37 @@ export class Aeronave {
         
         let pistaPadrao = null;
 
+        // 0. Se uma carta foi informada (ex: STAR/IAC), busca a cabeceira correspondente nas cartas
+        if (cartaNome && typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[dest]) {
+            for (const [cabKey, cabObj] of Object.entries(cartasNavegacao[dest])) {
+                for (const catObj of Object.values(cabObj)) {
+                    if (catObj && typeof catObj === 'object' && Object.values(catObj).some(c => c.nome === cartaNome)) {
+                        pistaPadrao = cabKey;
+                        break;
+                    }
+                }
+                if (pistaPadrao) break;
+            }
+        }
+
         // 1. Tenta obter a pista ativa a partir do Video Mapa (radarLayerState)
-        if (state.radarLayers && state.radarLayers.activeRunways) {
+        if (!pistaPadrao && state.radarLayers && state.radarLayers.activeRunways) {
             const prefixo = dest + "-";
             for (const rwyKey of state.radarLayers.activeRunways) {
                 if (rwyKey.startsWith(prefixo)) {
-                    pistaPadrao = rwyKey.split("-")[1];
-                    // Se a chave for algo como "17" e precisarmos da específica "17R", o modelo já cuidará ou pegamos a primeira.
-                    // Para evitar pegar chaves de grupo (ex: "SBSP-17") se tiver a específica ("SBSP-17R"), preferimos as específicas.
-                    if (pistaPadrao.length > 2) {
-                        break; // Ex: "17R" tem length 3, achou específica, quebra o loop
+                    const cand = rwyKey.split("-")[1];
+                    pistaPadrao = cand;
+                    if (cand.length > 2) {
+                        break; // Ex: "17R" ou "28L"
                     }
                 }
             }
+        }
+
+        // Se pistaPadrao for número de grupo (ex: "28" ou "17"), busca a cabeceira específica
+        if (pistaPadrao && pistaPadrao.length <= 2 && typeof cartasNavegacao === 'object' && cartasNavegacao && cartasNavegacao[dest]) {
+            const match = Object.keys(cartasNavegacao[dest]).find(k => k.startsWith(pistaPadrao));
+            if (match) pistaPadrao = match;
         }
 
         // 2. Fallback caso não haja pista ativa no Video Mapa

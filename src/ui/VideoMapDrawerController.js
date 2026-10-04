@@ -269,7 +269,7 @@ export class VideoMapDrawerController {
                         const chkCarta = document.createElement('input');
                         chkCarta.type = 'checkbox';
                         chkCarta.dataset.cartaNome = cartaObj.nome;
-                        const cartaAtiva = radarLayerState.activeCharts ? radarLayerState.activeCharts.has(cartaObj.nome) : true;
+                        const cartaAtiva = radarLayerState.activeCharts ? radarLayerState.activeCharts.has(cartaObj.nome) : false;
                         chkCarta.checked = cartaAtiva;
                         chksCartas.push(chkCarta);
 

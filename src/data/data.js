@@ -293,7 +293,7 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = n
                             carta.linhas.forEach(linha => {
                                 for (let i = 0; i < linha.length - 1; i++) {
                                     if (cartaNome && carta.nome === cartaNome) {
-                                        conexoes[linha[i]] = linha[i + 1];
+                                        if (!conexoes[linha[i]]) conexoes[linha[i]] = linha[i + 1];
                                     } else if (isAtiva && !conexoes[linha[i]]) {
                                         conexoes[linha[i]] = linha[i + 1];
                                     } else if (!conexoes[linha[i]]) {
@@ -336,12 +336,15 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = n
  * @returns {Array<Object>} Lista de objetos de fixos disponíveis
  */
 export function obterTodosFixosProcedimentos(apenasAtivos = true) {
+    if (apenasAtivos && (!radarLayerState || !radarLayerState.activeRunways || radarLayerState.activeRunways.size === 0)) {
+        return [];
+    }
     const fixos = [];
     const fixosUnicos = new Set();
-    const filtrarPorAtivas = apenasAtivos && 
+    const filtrarPorAtivas = Boolean(apenasAtivos && 
                              radarLayerState && 
                              radarLayerState.activeRunways && 
-                             radarLayerState.activeRunways.size > 0;
+                             radarLayerState.activeRunways.size > 0);
 
     if (cartasNavegacao && typeof cartasNavegacao === 'object') {
         Object.entries(cartasNavegacao).forEach(([dest, aerodromo]) => {
@@ -356,7 +359,12 @@ export function obterTodosFixosProcedimentos(apenasAtivos = true) {
                     return; // Ignora cartas de cabeceiras desativadas
                 }
 
-                Object.values(cabeceira).forEach(categoria => {
+                Object.entries(cabeceira).forEach(([catKey, categoria]) => {
+                    // Exclui estritamente cartas de aproximação (AIC / IAC) e SID dos seletores de fluxo
+                    if (catKey === 'AIC' || catKey === 'IAC' || catKey === 'SID') {
+                        return;
+                    }
+                    if (!categoria || typeof categoria !== 'object') return;
                     Object.values(categoria).forEach(carta => {
                         // Se estiver filtrando por ativas, verifica se a carta em si está ativa (se activeCharts estiver definido)
                         if (filtrarPorAtivas && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
@@ -429,7 +437,7 @@ export function obterDestinoPorFixoECarta(fixoNome, cartaNome = null) {
  */
 export function isFixoDeCabeceiraAtiva(fixoNome, dest, cartaNome = null) {
     if (!radarLayerState || !radarLayerState.activeRunways || radarLayerState.activeRunways.size === 0) {
-        return true;
+        return false;
     }
 
     if (!cartasNavegacao || !cartasNavegacao[dest]) return false;
@@ -491,7 +499,9 @@ export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP", cartaNom
                         if (carta.linhas) {
                             carta.linhas.forEach(linha => {
                                 for (let i = 1; i < linha.length; i++) {
-                                    if (cartaNome && carta.nome === cartaNome) { conexoesInversas[linha[i]] = linha[i - 1]; } else if (!conexoesInversas[linha[i]]) {
+                                    if (cartaNome && carta.nome === cartaNome) {
+                                        if (!conexoesInversas[linha[i]]) conexoesInversas[linha[i]] = linha[i - 1];
+                                    } else if (!conexoesInversas[linha[i]]) {
                                         conexoesInversas[linha[i]] = linha[i - 1];
                                     }
                                 }

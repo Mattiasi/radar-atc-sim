@@ -465,23 +465,7 @@ export const cartasNavegacao = {
                     ]
                 }
             },
-            AIC: {
-                "ILS10R": {
-                    nome: "ILS RWY 10R",
-                    cor: '#00ff7f',
-                    fixos: [
-                        { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
-                        { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
-                        { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
-                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
-                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
-                    ],
-                    linhas: [
-                        ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
-                    ]
-                },
-            
-            },
+            AIC: {},
             SID: {}
         },
         "10L": {
@@ -566,7 +550,22 @@ export const cartasNavegacao = {
                         ["BUXUK", "GR071", "GR072", "MOLLE"]
                     ]
                 }
-},
+            },
+            IAC: {
+                "ILS28L": {
+                    nome: "ILS RWY 28L",
+                    cor: '#00ff7f',
+                    fixos: [
+                        { nome: "UTKUG", lat: dmsParaDecimal(23, 18, 6.70, 'S'), lon: dmsParaDecimal(46, 14, 51.70, 'W'), restricao: { fl: 60, tipo: "AT" }, papel: "IAF" },
+                        { nome: "ETIKO", lat: dmsParaDecimal(23, 23, 3.30, 'S'), lon: dmsParaDecimal(46, 17, 8.30, 'W'), restricao: { fl: 50, tipo: "AT" }, papel: "IF" },
+                        { nome: "VUSNI", lat: dmsParaDecimal(23, 24, 45.00, 'S'), lon: dmsParaDecimal(46, 22, 30.00, 'W'), restricao: { fl: 40, tipo: "AT" }, papel: "FAF", isFAF: true },
+                        { nome: "RW28L", lat: dmsParaDecimal(23, 25, 52.02, 'S'), lon: dmsParaDecimal(46, 27, 31.02, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
+                    ],
+                    linhas: [
+                        ["UTKUG", "ETIKO", "VUSNI", "RW28L"]
+                    ]
+                }
+            },
             AIC: {},
             SID: {}
         },
