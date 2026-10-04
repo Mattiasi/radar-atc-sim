@@ -684,10 +684,10 @@ export const cartasNavegacao = {
                         { nome: "KP153", lat: dmsParaDecimal(23, 22, 35.0, 'S'), lon: dmsParaDecimal(46, 4, 78.30, 'W'), restricao: { fl: 230, tipo: "AT" } },
                         { nome: "KP154", lat: dmsParaDecimal(23, 27, 46.70, 'S'), lon: dmsParaDecimal(46, 22, 98.30, 'W'), restricao: { fl: 180, tipo: "AT" } },
                         { nome: "KP213", lat: dmsParaDecimal(23, 17, 43.30, 'S'), lon: dmsParaDecimal(46, 38, 40.0, 'W'), restricao: { fl: 120, tipo: "AT" } },
-                        { nome: "KP231", lat: dmsParaDecimal(23, 11, 86.70, 'S'), lon: dmsParaDecimal(46, 43, 30.0, 'W'), restricao: { fl: 100, tipo: "AT" } }
+                        { nome: "KP231", lat: dmsParaDecimal(23, 11, 86.70, 'S'), lon: dmsParaDecimal(46, 43, 30.0, 'W'), restricao: { fl: 80, flMax: 90, tipo: "WINDOW"  } }
                     ],
                     linhas: [
-                        ["EDMUS", "NIBVO", "KP153", "KP154", "KP213", "KP231"]
+                        ["EDMUS", "NIBVO", "KP153", "KP154", "KP213", "KP231","KP191"]
                     ]
                 },
 
