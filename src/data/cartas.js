@@ -480,20 +480,7 @@ export const cartasNavegacao = {
                         ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
                     ]
                 },
-                "RNPY10R": {
-                    nome: "RNP Y RWY 10R",
-                    cor: '#00ff7f',
-                    fixos: [
-                        { nome: "LOMEN", lat: dmsParaDecimal(23, 25, 36.86, 'S'), lon: dmsParaDecimal(46, 42, 17.85, 'W'), restricao: { fl: 60, tipo: "AT" } },
-                        { nome: "GR202", lat: dmsParaDecimal(23, 27, 5.79, 'S'), lon: dmsParaDecimal(46, 39, 56.15, 'W'), restricao: { fl: 51, tipo: "AT" } },
-                        { nome: "LUTPO", lat: dmsParaDecimal(23, 28, 34.68, 'S'), lon: dmsParaDecimal(46, 37, 34.40, 'W'), restricao: { fl: 45, tipo: "AT" } },
-                        { nome: "OPSER", lat: dmsParaDecimal(23, 27, 44.10, 'S'), lon: dmsParaDecimal(46, 34, 26.45, 'W'), restricao: { fl: 41, tipo: "AT" }, papel: "FAF", isFAF: true },
-                        { nome: "RW10R", lat: dmsParaDecimal(23, 26, 19.67, 'S'), lon: dmsParaDecimal(46, 29, 13.30, 'W'), restricao: { fl: 25, tipo: "AT" }, papel: "MAPT", isThreshold: true }
-                    ],
-                    linhas: [
-                        ["LOMEN", "GR202", "LUTPO", "OPSER", "RW10R"]
-                    ]
-                }
+            
             },
             SID: {}
         },

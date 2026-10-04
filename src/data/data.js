@@ -3,10 +3,10 @@ import { dmsParaDecimal, latCentro, lonCentro, geoParaDelta } from '../utils/uti
 // Imports from the newly separated data files
 import { cartasNavegacao } from './cartas.js?v=2';
 import { aerodromos } from './aerodromos.js';
-import { verticesSetor, estruturaEspacoAereo } from './espacoAereo.js';
+import { verticesSetor, verticesTMA, estruturaEspacoAereo } from './espacoAereo.js';
 import { radarLayerState } from '../core/state.js';
 
-export { cartasNavegacao, aerodromos, verticesSetor, estruturaEspacoAereo };
+export { cartasNavegacao, aerodromos, verticesSetor, verticesTMA, estruturaEspacoAereo };
 
 /**
  * Agregação dinâmica para compatibilidade total com o motor do simulador:

@@ -170,6 +170,32 @@ export function desenharLinhaATCSMAC(caminhoArray) {
 }
 
 /**
+ * Desenha a fronteira externa dos limites da Terminal (TMA) em linha contínua branca.
+ * Mantém estilo contínuo branco sem controle de brilho/opacidade no vídeo mapa.
+ * @param {Array<string>} caminhoArray - Array ordenado dos nomes dos vértices TMA
+ */
+export function desenharLimiteTMA(caminhoArray) {
+    if (!caminhoArray || caminhoArray.length < 2) return;
+    const p0 = pegarCoordenadaTela(caminhoArray[0]);
+    if (!p0) return;
+
+    state.ctx.save();
+    state.ctx.strokeStyle = '#ffffff'; // Linha branca
+    state.ctx.lineWidth = 1.5;
+    state.ctx.setLineDash([]);        // Linha contínua
+    state.ctx.globalAlpha = 1.0;       // Brilho fixo / sem opção de controle de opacidade
+
+    state.ctx.beginPath();
+    state.ctx.moveTo(p0.x, p0.y);
+    for (let i = 1; i < caminhoArray.length; i++) {
+        const pt = pegarCoordenadaTela(caminhoArray[i]);
+        if (pt) state.ctx.lineTo(pt.x, pt.y);
+    }
+    state.ctx.stroke();
+    state.ctx.restore();
+}
+
+/**
  * Calcula o ponto central de um polígono (área restrita/setor) e escreve o texto de altitude lá dentro.
  */
 export function escreverAltitudeArea(pontosFronteira, altitudeTexto) {
@@ -302,6 +328,11 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor, l
  * (mapa, limites, rotas, fixos e respetivas restrições).
  */
 export function desenharMapaBase() {
+    // 0. Limites da Terminal (TMA) - Linha contínua branca fixa, sem controle de brilho
+    if (estruturaEspacoAereo.limiteTMA) {
+        desenharLimiteTMA(estruturaEspacoAereo.limiteTMA);
+    }
+
     // 1 e 2. Linhas tracejadas e altitudes da ATCSMAC (com controle reativo de opacidade)
     const alphaATCSMAC = (state.radarLayers && state.radarLayers.opacity && state.radarLayers.opacity.ATCSMAC !== undefined)
         ? state.radarLayers.opacity.ATCSMAC
