@@ -221,17 +221,28 @@ export function escreverAltitudeArea(pontosFronteira, altitudeTexto) {
 }
 
 /**
- * Desenha uma linha contínua de rota no radar (ex: STARs).
+ * Desenha uma linha contínua ou tracejada de rota no radar (ex: STARs contínuas, SIDs tracejadas).
+ * @param {Array} caminhoArray - Array de identificadores dos fixos da rota.
+ * @param {string} cor - Cor em formato hexadecimal ou rgba.
+ * @param {boolean|Array<number>} [tracejada=false] - Se deve ser tracejada ou array de padrão [dash, gap].
  */
-export function desenharCaminho(caminhoArray, cor) {
+export function desenharCaminho(caminhoArray, cor, tracejada = false) {
     state.ctx.strokeStyle = cor; 
     state.ctx.lineWidth = 1; 
+    if (tracejada) {
+        state.ctx.setLineDash(Array.isArray(tracejada) ? tracejada : [6, 6]);
+    } else {
+        state.ctx.setLineDash([]);
+    }
     state.ctx.beginPath();
     state.ctx.moveTo(pegarCoordenadaTela(caminhoArray[0]).x, pegarCoordenadaTela(caminhoArray[0]).y);
     for (let i = 1; i < caminhoArray.length; i++) {
         state.ctx.lineTo(pegarCoordenadaTela(caminhoArray[i]).x, pegarCoordenadaTela(caminhoArray[i]).y);
     }
     state.ctx.stroke();
+    if (tracejada) {
+        state.ctx.setLineDash([]);
+    }
 }
 
 /**
@@ -374,8 +385,10 @@ export function desenharMapaBase() {
                             if (carta.linhas && carta.cor) {
                                 state.ctx.save();
                                 state.ctx.globalAlpha = alpha;
+                                const isTracejada = (catType === 'SID') || Boolean(carta.tracejada);
+                                const dashPattern = carta.dashPattern || (isTracejada ? [6, 6] : false);
                                 carta.linhas.forEach(linha => {
-                                    desenharCaminho(linha, carta.cor);
+                                    desenharCaminho(linha, carta.cor, dashPattern);
                                 });
                                 state.ctx.restore();
                             }
