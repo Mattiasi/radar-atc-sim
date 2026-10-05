@@ -25,6 +25,7 @@ export const verticesTMA = [
     { nome: "TMA22", lat: dmsParaDecimal(22, 42, 26.70, 'S'), lon: dmsParaDecimal(47, 35, 10.00, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA23", lat: dmsParaDecimal(22, 38, 78.30, 'S'), lon: dmsParaDecimal(47, 26, 43.30, 'W'), restricao: { fl: null, tipo: "" } },
     
+    
 ];
 
 export const verticesSetor = [
@@ -49,6 +50,7 @@ export const verticesSetor = [
 
 export const estruturaEspacoAereo = {
     limiteTMA: [
+        
         "TMA1", "TMA2", "TMA3", "TMA4", "TMA5", "TMA6", "TMA7", "TMA8", "TMA9", "TMA10",
         "TMA11", "TMA12", "TMA13", "TMA14", "TMA15", "TMA16", "TMA17", "TMA18", "TMA19", "TMA20",
         "TMA21", "TMA22", "TMA23", "TMA1"

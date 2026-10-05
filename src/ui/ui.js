@@ -27,6 +27,10 @@ export class PainelFluxoController {
         this.btnAdicionarFluxo = null;
         this.sliderVelocidade = null;
         this.labelVelocidade = null;
+        this.btnToggle = null;
+        this.painel = null;
+        this.btnFechar = null;
+        this.aberto = false;
     }
 
     inicializar() {
@@ -34,8 +38,31 @@ export class PainelFluxoController {
         this.btnAdicionarFluxo = document.getElementById('btnAdicionarFluxo');
         this.sliderVelocidade = document.getElementById('sliderVelocidade');
         this.labelVelocidade = document.getElementById('labelVelocidade');
+        this.btnToggle = document.getElementById('btnToggleFluxo');
+        this.painel = document.getElementById('painelFluxo');
+        this.btnFechar = document.getElementById('btnFecharFluxo');
 
-        if (!this.containerEsteiras) return;
+        if (!this.containerEsteiras || !this.painel) return;
+
+        // Controle de abertura e fechamento retrátil (igual ao controle de vento)
+        if (this.btnToggle) {
+            this.btnToggle.addEventListener('mousedown', (e) => e.stopPropagation());
+            this.btnToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggle();
+            });
+        }
+
+        if (this.painel) {
+            this.painel.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.btnFechar) {
+            this.btnFechar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.fechar();
+            });
+        }
 
         // Se state.configFluxo.esteiras ainda não estiver inicializado
         if (!state.configFluxo.esteiras || !Array.isArray(state.configFluxo.esteiras)) {
@@ -66,7 +93,39 @@ export class PainelFluxoController {
             state.fatorVelocidade = parseFloat(this.sliderVelocidade.value) || 1.0;
         }
 
+        // Atalho Escape para fechar se o painel estiver aberto
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.aberto) {
+                this.fechar();
+            }
+        });
+
         this.renderizarEsteiras();
+    }
+
+    toggle() {
+        if (this.aberto) {
+            this.fechar();
+        } else {
+            this.abrir();
+        }
+    }
+
+    abrir() {
+        this.aberto = true;
+        if (this.painel) this.painel.style.display = 'block';
+        if (this.btnToggle) this.btnToggle.classList.add('ativo');
+        this.renderizarEsteiras();
+    }
+
+    fechar() {
+        this.aberto = false;
+        if (this.painel) this.painel.style.display = 'none';
+        if (this.btnToggle) this.btnToggle.classList.remove('ativo');
+    }
+
+    estaAberto() {
+        return this.aberto;
     }
 
     renderizarEsteiras() {

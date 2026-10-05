@@ -10,10 +10,28 @@
     <button id="btnHamburgerDrawer" class="btn-hamburger-atc" title="Menu Vídeo-Mapa e Brilho">&#9776;</button>
     <div id="painelVideoMapaDrawer" class="drawer-atc recolhido"></div>
 
-    <div id="painelFluxo">
+    <!-- BOTÃO E PAINEL DE CONTROLE DE FLUXO ATC -->
+    <button id="btnToggleFluxo" class="btn-topo-fluxo" title="Controle de Fluxo e Esteiras">
+        <svg class="icone-relogio" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Fluxo</span>
+    </button>
+
+    <div id="painelFluxo" class="painel-fluxo-flutuante" style="display: none;">
         <div class="cabecalho-painel-fluxo">
-            <h3>CONTROLE DE FLUXO</h3>
-            <button id="btnAdicionarFluxo" class="btn-adicionar-fluxo" title="Adicionar nova esteira de tráfego">+ FLUXO</button>
+            <div class="cabecalho-fluxo-titulo">
+                <svg class="icone-relogio" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <h3>CONTROLE DE FLUXO</h3>
+            </div>
+            <div class="cabecalho-fluxo-acoes">
+                <button id="btnAdicionarFluxo" class="btn-adicionar-fluxo" title="Adicionar nova esteira de tráfego">+ FLUXO</button>
+                <button id="btnFecharFluxo" class="btn-fechar-fluxo" title="Fechar painel [Esc]">✕</button>
+            </div>
         </div>
         <div id="containerEsteiras"></div>
         <div class="divisor-painel"></div>

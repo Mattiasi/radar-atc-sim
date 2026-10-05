@@ -133,31 +133,115 @@ canvas {
 /* =========================================================
    PAINEL DE CONTROLO DE FLUXO E ESTEIRA (Canto Superior Esquerdo)
    ========================================================= */
+.btn-topo-fluxo {
+    position: absolute;
+    top: 12px;
+    left: 54px;
+    background-color: rgba(43, 43, 43, 0.9);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 0 12px;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 15;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    user-select: none;
+}
+
+.btn-topo-fluxo:hover {
+    background-color: #00ffff;
+    color: #000;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.btn-topo-fluxo.ativo {
+    background-color: #00ffff;
+    color: #000;
+    font-weight: bold;
+}
+
+.icone-relogio {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
 #painelFluxo {
     position: absolute;        /* Fica a flutuar por cima do canvas */
-    top: 12px;                 /* Alinhado com o botão hambúrguer */
-    left: 56px;                /* Posicionado logo à direita do botão hambúrguer */
-    background-color: rgba(43, 43, 43, 0.85); /* Fundo cinza escuro com 85% de opacidade */
+    top: 52px;                 /* Posicionado logo abaixo do botão de fluxo */
+    left: 54px;                /* Alinhado com o botão de fluxo */
+    background-color: rgba(28, 28, 28, 0.95); /* Fundo cinza escuro com 95% de opacidade como o vento */
     border: 1px solid #00ffff;
-    padding: 10px 15px;
-    border-radius: 4px;
-    z-index: 10;               /* Fica acima do Canvas, mas abaixo do Menu de Níveis (100) */
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    padding: 12px 16px;
+    border-radius: 6px;
+    z-index: 20;               /* Fica acima do Canvas */
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    font-family: monospace;
+    min-width: 320px;
+    max-width: 480px;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
 }
+
+#painelFluxo::-webkit-scrollbar { width: 6px; }
+#painelFluxo::-webkit-scrollbar-track { background: #1c1c1c; }
+#painelFluxo::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+#painelFluxo::-webkit-scrollbar-thumb:hover { background: #00ffff; }
 
 .cabecalho-painel-fluxo {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
     gap: 10px;
 }
 
-.cabecalho-painel-fluxo h3 {
+.cabecalho-fluxo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #00ffff;
+}
+
+.cabecalho-fluxo-titulo h3 {
     margin: 0;
     font-size: 13px;
     color: #00ffff;
     letter-spacing: 0.5px;
+}
+
+.cabecalho-fluxo-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-fechar-fluxo {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: monospace;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.btn-fechar-fluxo:hover {
+    color: #ff5555;
 }
 
 .btn-adicionar-fluxo {
@@ -168,7 +252,7 @@ canvas {
     font-family: monospace;
     font-size: 11px;
     font-weight: bold;
-    padding: 2px 7px;
+    padding: 3px 8px;
     cursor: pointer;
     transition: all 0.15s ease;
 }
@@ -1106,4 +1190,262 @@ canvas {
     border: 1px solid #ffffff;
     box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
     cursor: pointer;
+}
+
+/* ============================================================================
+ * FERRAMENTA DE INSPEÇÃO DE COORDENADAS ATC (TECLA C)
+ * ============================================================================ */
+
+/* Cursor crosshair 100% PRETO quando o modo de coordenadas estiver ativo */
+body.modo-coordenadas-ativo,
+body.modo-coordenadas-ativo #radarCanvas,
+body.modo-coordenadas-ativo canvas {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cline x1='12' y1='0' x2='12' y2='25' stroke='black' stroke-width='2'/%3E%3Cline x1='0' y1='12' x2='25' y2='12' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 12 12, crosshair !important;
+}
+
+.banner-coordenadas-atc {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(10, 24, 34, 0.94);
+    border: 1px solid #000000;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.8);
+    color: #e0f7fa;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 8px 18px;
+    border-radius: 6px;
+    pointer-events: auto;
+    letter-spacing: 0.5px;
+    animation: fadeInBanner 0.2s ease;
+}
+
+@keyframes fadeInBanner {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.banner-coordenadas-atc strong {
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1px 6px;
+    border-radius: 3px;
+    border: 1px solid #000000;
+}
+
+.icone-mira {
+    color: #000000;
+    background: #ffffff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.btn-fechar-banner {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 2px 7px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-fechar-banner:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.card-coordenadas-atc {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    width: 330px;
+    max-width: calc(100vw - 48px);
+    background: rgba(10, 18, 25, 0.95);
+    border: 2px solid #000000;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #d0f0fd;
+    backdrop-filter: blur(5px);
+    pointer-events: auto;
+    overflow: hidden;
+    animation: fadeInCard 0.2s ease;
+}
+
+@keyframes fadeInCard {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-coordenadas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #111a22;
+    border-bottom: 2px solid #000000;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #00ffff;
+}
+
+.card-coordenadas-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-fechar-coord {
+    background: transparent;
+    border: none;
+    color: #88c0d0;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.btn-fechar-coord:hover {
+    color: #ff5555;
+}
+
+.card-coordenadas-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.coord-grade-principal {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.coord-bloco {
+    background: rgba(5, 12, 18, 0.75);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.coord-label {
+    font-size: 9px;
+    color: #78a5b8;
+    letter-spacing: 0.8px;
+    font-weight: bold;
+}
+
+.coord-valor {
+    font-size: 15px;
+    font-weight: bold;
+    color: #00ffff;
+    letter-spacing: 0.8px;
+    text-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
+}
+
+.coord-info-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    padding: 6px 10px;
+    background: rgba(18, 28, 36, 0.6);
+    border-radius: 4px;
+    border: 1px dashed rgba(0, 255, 255, 0.25);
+}
+
+.coord-extra-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.coord-sublabel {
+    color: #8da4b0;
+    font-size: 10px;
+}
+
+.coord-subvalor {
+    color: #e0f7fa;
+    font-weight: 500;
+    font-size: 11px;
+}
+
+.coord-codigo-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.coord-codigo {
+    font-size: 10px;
+    background: #060b10;
+    border: 1px solid #1a303d;
+    color: #00ff88;
+    padding: 6px 8px;
+    border-radius: 3px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+
+.coord-botoes-acao {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.btn-coord-acao {
+    flex: 1;
+    padding: 6px 10px;
+    background: #0a2533;
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-coord-acao:hover {
+    background: #00ffff;
+    color: #000000;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+}
+
+.coord-feedback-msg {
+    font-size: 11px;
+    color: #00ff88;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px 0;
 }

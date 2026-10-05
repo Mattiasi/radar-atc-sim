@@ -1,7 +1,7 @@
 import { state } from '../core/state.js';
 import { correcaoLon } from '../utils/utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
-import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI } from './ui.js';
+import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI, painelFluxoUI } from './ui.js';
 import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 import { coordinateToolController, CURSOR_CROSSHAIR_PRETO } from './CoordinateToolController.js';
 
@@ -491,11 +491,15 @@ export function configurarEventosUsuario() {
             desenharRadar();
         }
         
-        // TECLA ESCAPE: Cancela modo de coordenadas ou vetor ativo em criação
+        // TECLA ESCAPE: Cancela modo de coordenadas, painel de fluxo aberto ou vetor ativo em criação
         if (e.key === 'Escape') {
             if (state.modoCoordenadas) {
                 coordinateToolController.desativar();
                 desenharRadar();
+                return;
+            }
+            if (painelFluxoUI.estaAberto()) {
+                painelFluxoUI.fechar();
                 return;
             }
             if (state.vetorAtivo) {
