@@ -1366,11 +1366,12 @@ export const cartasNavegacao = {
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
                         { nome: "KP257", lat: dmsParaDecimal(22, 57, 70, 'S'), lon: dmsParaDecimal(47, 26, 70, 'W') },
                         { nome: "ASETA", lat: dmsParaDecimal(23, 17, 13.3, 'S'), lon: dmsParaDecimal(48, 5, 73.3, 'W'), restricao: { fl: 200, tipo: "ABOVE" } },
-                        {nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W')}
+                        {nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W')},
+                        {nome: "KP274", lat: dmsParaDecimal(23,2,49.17,'S'), lon: dmsParaDecimal(47,43,12.68,'W')}
 
                     ],
                     linhas: [
-                        ["RWY15","KP144", "KP257", "ASETA"]
+                        ["RWY15","KP144", "KP257", "KP274","ASETA"]
                     ]
                 },
                 "EGEVA_1B": {
@@ -1380,10 +1381,11 @@ export const cartasNavegacao = {
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
                         { nome: "KP257", lat: dmsParaDecimal(22, 57, 70, 'S'), lon: dmsParaDecimal(47, 26, 70, 'W') },
                         { nome: "EGEVA", lat: dmsParaDecimal(23, 8, 38.3, 'S'), lon: dmsParaDecimal(48, 33, 68.3, 'W'), restricao: { fl: 230, tipo: "ABOVE" } },
-                        {nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W')}
+                        {nome: "KP144", lat: dmsParaDecimal(22,58,15.00,'S'), lon: dmsParaDecimal(47,18,83.30,'W')},
+                        {nome: "KP274", lat: dmsParaDecimal(23,2,49.17,'S'), lon: dmsParaDecimal(47,43,12.68,'W')}
                     ],
                     linhas: [
-                        ["RWY15", "KP144","KP257", "EGEVA"]
+                        ["RWY15", "KP144","KP257", "KP274", "EGEVA"]
                     ]
                 },
                 "SOVSI_1A": {

@@ -4,6 +4,7 @@ import { painelVentoUI } from './painelVentoUI.js';
 import { obterTodosFixosProcedimentos } from '../data/data.js';
 import { menuRazaoController } from './RadarTagController.js';
 import { flightCommandService } from '../agents/FlightCommandService.js';
+import { coordinateToolController } from './CoordinateToolController.js';
 
 /**
  * ============================================================================
@@ -735,7 +736,7 @@ export const scratchpadUI = new ScratchpadController();
 export const menuNivelUI = new MenuNivelController();
 export const menuProaUI = new MenuProaController();
 export const menuVelocidadeUI = new MenuVelocidadeController();
-export { painelVentoUI, menuRazaoController };
+export { painelVentoUI, menuRazaoController, coordinateToolController };
 
 /**
  * Função de inicialização central da camada de interface gráfica DOM.
@@ -748,4 +749,6 @@ export function inicializarUI() {
     menuProaUI.inicializar();
     menuVelocidadeUI.inicializar();
     painelVentoUI.inicializar();
+    coordinateToolController.inicializar();
 }
+

@@ -131,3 +131,49 @@ export function isFixoDePista(nome) {
     if (/^R\d{2}[LRC]?([A-Z]{2})?$/i.test(nome)) return true;
     return false;
 }
+
+/**
+ * Converte coordenadas decimais para o formato Graus, Minutos e Segundos (DMS).
+ * Suporta formatação completa de aviação civil (DMS, DMM e código Javascript).
+ * 
+ * @param {number} grausDecimais - Latitude ou Longitude em formato decimal
+ * @param {boolean} isLatitude - True para Latitude (-90 a 90), False para Longitude (-180 a 180)
+ * @returns {Object} { graus, minutos, segundos, direcao, textoDMS, textoDMM, codigoJS }
+ */
+export function decimalParaDMS(grausDecimais, isLatitude = true) {
+    const direcao = isLatitude 
+        ? (grausDecimais < 0 ? 'S' : 'N') 
+        : (grausDecimais < 0 ? 'W' : 'E');
+    
+    let absVal = Math.abs(grausDecimais);
+    let graus = Math.floor(absVal);
+    let minTotal = (absVal - graus) * 60;
+    let minutos = Math.floor(minTotal);
+    let segundos = (minTotal - minutos) * 60;
+
+    // Arredondamento para 2 casas decimais e ajuste de carry
+    segundos = Math.round(segundos * 100) / 100;
+    if (segundos >= 60) {
+        segundos = 0;
+        minutos += 1;
+    }
+    if (minutos >= 60) {
+        minutos = 0;
+        graus += 1;
+    }
+
+    const grauPad = isLatitude ? 2 : 3;
+    const strGrau = String(graus).padStart(grauPad, '0');
+    const strMin = String(minutos).padStart(2, '0');
+    const strSeg = segundos.toFixed(2).padStart(5, '0');
+
+    return {
+        graus,
+        minutos,
+        segundos,
+        direcao,
+        textoDMS: `${strGrau}° ${strMin}' ${strSeg}" ${direcao}`,
+        textoDMM: `${strGrau}° ${minTotal.toFixed(2).padStart(5, '0')}' ${direcao}`,
+        codigoJS: `dmsParaDecimal(${graus}, ${minutos}, ${segundos.toFixed(2)}, '${direcao}')`
+    };
+}

@@ -58,6 +58,10 @@ export const state = {
     aeronaves: [],             // Array com todas as instâncias ativas da classe Aeronave (tráfegos vivos na frequência)
     windManager: null,         // Gerenciador do sistema físico e meteorológico de vento
 
+    // --- FERRAMENTA DE LEITURA DE COORDENADAS (TECLA C) ---
+    modoCoordenadas: false,          // True quando a mira (crosshair) de coordenadas estiver ativa
+    pontoCoordenadaCapturado: null,  // Objeto com { deltaLat, deltaLon, lat, lon, dmsLat, dmsLon }
+
     // --- CONTROLE DE CAMADAS DE VÍDEO-MAPA E BRILHO (STATE PATTERN) ---
     radarLayers: null          // Inicializado abaixo com radarLayerState
 };

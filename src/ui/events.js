@@ -3,6 +3,7 @@ import { correcaoLon } from '../utils/utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
 import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI } from './ui.js';
 import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
+import { coordinateToolController, CURSOR_CROSSHAIR_PRETO } from './CoordinateToolController.js';
 
 /**
  * ============================================================================
@@ -77,8 +78,17 @@ export function configurarEventosUsuario() {
                 menuVelocidadeUI.fechar();
             }
             
-            // Ignora cliques que atingiram painéis HTML flutuantes, botões de topo, scratchpad ou menus
-            if (e.target.closest('#painelFluxo') || e.target.closest('#painelVento') || e.target.closest('#btnToggleFluxo') || e.target.closest('#btnToggleVento') || e.target.closest('#menuProa') || e.target.closest('#menuVelocidade') || e.target.closest('#menuNivel') || (scratchpadUI.el && e.target === scratchpadUI.el)) return;
+            // Ignora cliques que atingiram painéis HTML flutuantes, botões de topo, scratchpad, menus ou ferramenta de coordenadas
+            if (e.target.closest('#painelFluxo') || e.target.closest('#painelVento') || e.target.closest('#btnToggleFluxo') || e.target.closest('#btnToggleVento') || e.target.closest('#menuProa') || e.target.closest('#menuVelocidade') || e.target.closest('#menuNivel') || e.target.closest('#cardCoordenadas') || e.target.closest('#bannerModoCoordenadas') || (scratchpadUI.el && e.target === scratchpadUI.el)) return;
+
+            // 1.0. FERRAMENTA DE LEITURA DE COORDENADAS (TECLA C)
+            if (state.modoCoordenadas) {
+                coordinateToolController.capturar(e.clientX, e.clientY);
+                state.arrastando = true;
+                state.cliqueInicialX = e.clientX - state.offsetX;
+                state.cliqueInicialY = e.clientY - state.offsetY;
+                return;
+            }
 
             // 1.1. FERRAMENTA DE MEDIÇÃO / VETOR EM ANDAMENTO (Criado pela tecla 'O')
             if (state.vetorAtivo) {
@@ -241,8 +251,10 @@ export function configurarEventosUsuario() {
         state.mouseTelaX = e.clientX; 
         state.mouseTelaY = e.clientY;
         
-        // 0. Atualização do cursor do mouse: se passar sobre vetor fixo, cursor vira pointer
-        if (!state.arrastando && !state.aeroArrastandoLabel && !state.vetorAtivo) {
+        // 0. Atualização do cursor do mouse: se mira de coordenadas ativa, mantém crosshair preto
+        if (state.modoCoordenadas) {
+            state.canvas.style.cursor = CURSOR_CROSSHAIR_PRETO;
+        } else if (!state.arrastando && !state.aeroArrastandoLabel && !state.vetorAtivo) {
             if (state.vetoresFixos.length > 0 && pegarVetorProximo(e.clientX, e.clientY) !== -1) {
                 state.canvas.style.cursor = 'pointer';
             } else {
@@ -290,6 +302,14 @@ export function configurarEventosUsuario() {
 
     state.canvas.addEventListener('mouseup', (e) => {
         if (e.button === 0) {
+            // 0. Modo de coordenadas ativo (Tecla C): encerra qualquer arraste e mantém o cursor em crosshair preto
+            if (state.modoCoordenadas) {
+                state.arrastando = false;
+                state.canvas.style.cursor = CURSOR_CROSSHAIR_PRETO;
+                desenharRadar();
+                return;
+            }
+
             // 1. Finalização ou arraste durante Vetor Ativo de medição
             if (state.vetorAtivo && state.cliqueVetorAtivoX !== null) {
                 if (!state.arrastouVetorAtivo) {
@@ -348,7 +368,7 @@ export function configurarEventosUsuario() {
         state.aeroClicadoCallsign = null;
         state.cliqueVetorAtivoX = null;
         state.arrastouVetorAtivo = false;
-        state.canvas.style.cursor = 'default';
+        state.canvas.style.cursor = state.modoCoordenadas ? CURSOR_CROSSHAIR_PRETO : 'default';
     });
 
     // Desabilita o menu de contexto nativo do navegador no botão direito
@@ -379,10 +399,17 @@ export function configurarEventosUsuario() {
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (e) => {
         // Ignora atalhos globais se o usuário estiver digitando em campos de texto
-        if (scratchpadUI.estaAtivo() || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return; 
+        if (scratchpadUI.estaAtivo() || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return; 
 
         const tecla = e.key.toUpperCase();
         
+        // TECLA 'C': Alterna ferramenta de mira e captura de coordenadas geográficas
+        if (tecla === 'C') {
+            coordinateToolController.toggle();
+            desenharRadar();
+            return;
+        }
+
         // TECLAS 0-9: Configura a extensão do vetor de velocidade / paliteiro em minutos
         if (tecla >= '0' && tecla <= '9') { 
             state.minutosPaliteiro = parseInt(tecla, 10); 
@@ -464,8 +491,13 @@ export function configurarEventosUsuario() {
             desenharRadar();
         }
         
-        // TECLA ESCAPE: Cancela vetor ativo em criação
+        // TECLA ESCAPE: Cancela modo de coordenadas ou vetor ativo em criação
         if (e.key === 'Escape') {
+            if (state.modoCoordenadas) {
+                coordinateToolController.desativar();
+                desenharRadar();
+                return;
+            }
             if (state.vetorAtivo) {
                 state.vetorAtivo = null;
                 state.cliqueVetorAtivoX = null;

@@ -1023,6 +1023,9 @@ export function desenharRadar() {
     
     // 4. No topo de tudo, renderiza vetores ativos criados pelo controlador
     desenharVetores();
+
+    // 5. Renderiza a mira e rótulo de coordenadas (Tecla C)
+    desenharMiraCoordenadas();
     } catch (e) {
         console.error("Crash during render:", e);
         state.ctx.fillStyle = '#000000';
@@ -1039,4 +1042,81 @@ export function desenharRadar() {
             });
         }
     }
+}
+
+/**
+ * Renderiza a mira (crosshair) e o rótulo de coordenadas capturado pela ferramenta da Tecla C.
+ */
+export function desenharMiraCoordenadas() {
+    if (!state.pontoCoordenadaCapturado) return;
+
+    const pt = deltaParaTela(state.pontoCoordenadaCapturado);
+    const { dmsLat, dmsLon } = state.pontoCoordenadaCapturado;
+
+    state.ctx.save();
+
+    // 1. Mira / Crosshair de Alta Visibilidade (Preto #000000)
+    state.ctx.strokeStyle = '#000000';
+    state.ctx.fillStyle = '#000000';
+    state.ctx.lineWidth = 2;
+    state.ctx.setLineDash([]);
+
+    // Círculo central
+    state.ctx.beginPath();
+    state.ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
+    state.ctx.stroke();
+
+    // Ponto central
+    state.ctx.beginPath();
+    state.ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+    state.ctx.fill();
+
+    // Ticks do crosshair (4 direções)
+    state.ctx.beginPath();
+    state.ctx.moveTo(pt.x, pt.y - 18);
+    state.ctx.lineTo(pt.x, pt.y - 5);
+    state.ctx.moveTo(pt.x, pt.y + 5);
+    state.ctx.lineTo(pt.x, pt.y + 18);
+    state.ctx.moveTo(pt.x - 18, pt.y);
+    state.ctx.lineTo(pt.x - 5, pt.y);
+    state.ctx.moveTo(pt.x + 5, pt.y);
+    state.ctx.lineTo(pt.x + 18, pt.y);
+    state.ctx.stroke();
+
+    // 2. Caixa de Texto com as Coordenadas ao lado da mira (Preto sobre fundo claro para máximo contraste)
+    const txtLat = dmsLat ? dmsLat.textoDMS : '';
+    const txtLon = dmsLon ? dmsLon.textoDMS : '';
+
+    state.ctx.font = 'bold 11px monospace';
+    const larguraLat = state.ctx.measureText(txtLat).width;
+    const larguraLon = state.ctx.measureText(txtLon).width;
+    const boxLargura = Math.max(larguraLat, larguraLon) + 16;
+    const boxAltura = 34;
+
+    // Ajusta lado se estiver próximo à borda direita da tela
+    let boxX = pt.x + 16;
+    if (boxX + boxLargura > state.canvas.width - 10) {
+        boxX = pt.x - boxLargura - 16;
+    }
+    let boxY = pt.y - 17;
+    if (boxY < 10) boxY = 10;
+    if (boxY + boxAltura > state.canvas.height - 10) boxY = state.canvas.height - boxAltura - 10;
+
+    // Fundo da caixa
+    state.ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    state.ctx.fillRect(boxX, boxY, boxLargura, boxAltura);
+
+    // Borda da caixa
+    state.ctx.strokeStyle = '#000000';
+    state.ctx.lineWidth = 1.5;
+    state.ctx.strokeRect(boxX, boxY, boxLargura, boxAltura);
+
+    // Texto das coordenadas
+    state.ctx.fillStyle = '#000000';
+    state.ctx.textAlign = 'left';
+    state.ctx.textBaseline = 'middle';
+    state.ctx.fillText(txtLat, boxX + 8, boxY + 10);
+    state.ctx.fillText(txtLon, boxX + 8, boxY + 24);
+
+    state.ctx.restore();
 }
