@@ -357,6 +357,7 @@ export class Aeronave {
             deltaLat: this.deltaLat, 
             deltaLon: this.deltaLon,
             track: (this.track !== undefined) ? this.track : this.proa,
+            proa: this.proa,
             groundSpeed: (this.groundSpeed !== undefined) ? this.groundSpeed : this.vel,
             nivAtual: this.nivAtual,
             currentVS: 0,

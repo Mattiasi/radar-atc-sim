@@ -123,8 +123,10 @@ export function estaLinhasExtrasVisiveis(aero) {
 export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaProa = false, estaSelecionadaVel = false) {
     if (!estaLinhasExtrasVisiveis(aero)) return;
 
-    // 1º Espaço: Proa Real (3 dígitos)
-    let proaRealNum = Math.round(aero.proa !== undefined ? aero.proa : 0);
+    // 1º Espaço: Proa Real (3 dígitos) atualizada a cada 4 segundos pela varredura do radar
+    const radarSnap = aero.posicaoRadar || aero;
+    let proaRef = (radarSnap.proa !== undefined && radarSnap.proa !== null) ? radarSnap.proa : aero.proa;
+    let proaRealNum = Math.round(proaRef !== undefined ? proaRef : 0);
     if (proaRealNum <= 0) proaRealNum = 360;
     while (proaRealNum > 360) proaRealNum -= 360;
     const proaRealStr = String(proaRealNum).padStart(3, '0');
