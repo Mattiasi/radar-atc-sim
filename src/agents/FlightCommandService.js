@@ -95,7 +95,7 @@ export class FlightCommandService {
      * Comanda proa magnética à aeronave (vetoração radar ATC).
      * @param {Object} aero - Instância da aeronave
      * @param {number|string} heading - Proa (0 a 360)
-     * @param {boolean} [ladoMaior=false] - Força curva pelo arco maior (+)
+     * @param {boolean|string} [ladoMaior=false] - Força curva pelo arco maior (+) ou lado específico ('E'/'D')
      */
     setHeading(aero, heading, ladoMaior = false) {
         if (!aero) return;
@@ -103,14 +103,89 @@ export class FlightCommandService {
         if (isNaN(proaNum) || proaNum < 0 || proaNum > 360) return;
         if (proaNum === 360) proaNum = 0;
 
+        let direcao = null;
+        let maior = false;
+        if (ladoMaior === 'E' || ladoMaior === 'D') {
+            direcao = ladoMaior;
+        } else if (ladoMaior === '+' || ladoMaior === true) {
+            maior = true;
+        }
+
+        aero.ladoCurvaComandada = direcao;
+        aero.modoHolding = null;
+
         if (aero.comandosAtivos) {
-            aero.comandosAtivos.heading = { proa: proaNum, ladoMaior: Boolean(ladoMaior) };
+            aero.comandosAtivos.heading = { proa: proaNum, ladoMaior: maior, direcao: direcao, ladoMaiorOuDirecao: direcao || maior };
+            aero.comandosAtivos.holding = null;
         }
 
         if (aero.pilot) {
-            aero.pilot.dispatch('LATERAL', 'HEADING', { heading: proaNum, maior: Boolean(ladoMaior) });
+            aero.pilot.dispatch('LATERAL', 'HEADING', { heading: proaNum, maior: maior, direcao: direcao });
         } else {
-            AircraftStateMutator.ativarModoProa(aero, proaNum, Boolean(ladoMaior));
+            AircraftStateMutator.ativarModoProa(aero, proaNum, direcao || maior);
+        }
+    }
+
+    /**
+     * Comanda órbita padrão de 1 minuto por perna (Holding Pattern).
+     * @param {Object} aero - Instância da aeronave
+     * @param {'E'|'D'|'<'|'>'} [lado='D'] - Sentido da curva ('E' / '<' ou 'D' / '>')
+     */
+    setHolding(aero, lado = 'D') {
+        if (!aero) return;
+        const ladoNorm = (lado === 'E' || lado === '<') ? 'E' : 'D';
+
+        let inbound = Math.round(aero.proa !== undefined ? aero.proa : 0);
+        if (inbound <= 0) inbound = 360;
+        while (inbound > 360) inbound -= 360;
+
+        let outbound = (inbound + 180) % 360;
+        if (outbound === 0) outbound = 360;
+
+        aero.modoLNAV = false;
+        aero.wpOffRoute = null;
+        aero.curvaForcada = true;
+        aero.direcaoCurva = (ladoNorm === 'E') ? -1 : 1;
+        aero.ladoCurvaComandada = ladoNorm;
+
+        aero.modoHolding = {
+            ativo: true,
+            lado: ladoNorm,
+            inboundHeading: inbound,
+            outboundHeading: outbound,
+            fase: 'TURN_OUTBOUND',
+            timerLeg: 0
+        };
+
+        if (aero.comandosAtivos) {
+            aero.comandosAtivos.heading = null;
+            aero.comandosAtivos.holding = { lado: ladoNorm };
+        }
+
+        if (aero.pilot) {
+            aero.pilot.dispatch('LATERAL', 'HEADING', { heading: outbound, maior: false, direcao: ladoNorm });
+        } else {
+            AircraftStateMutator.ativarModoProa(aero, outbound, ladoNorm);
+        }
+    }
+
+    /**
+     * Retorna a aeronave para o modo LNAV (seguimento de rota do plano de voo).
+     * @param {Object} aero - Instância da aeronave
+     */
+    resumeRoute(aero) {
+        if (!aero) return;
+        aero.modoLNAV = true;
+        aero.curvaForcada = false;
+        aero.direcaoCurva = 0;
+        aero.ladoCurvaComandada = null;
+        aero.modoHolding = null;
+        if (aero.comandosAtivos) {
+            aero.comandosAtivos.heading = null;
+            aero.comandosAtivos.holding = null;
+        }
+        if (aero.pilot) {
+            aero.pilot.dispatch('LATERAL', 'ROUTE', {});
         }
     }
 
@@ -168,8 +243,10 @@ export class FlightCommandService {
         // Consulta dicionário de mnemônicas e fixos conhecidos
         const fixoAlvo = DIC_FIXOS_PADRAO[raw] || raw;
 
+        aero.modoHolding = null;
         if (aero.comandosAtivos) {
             aero.comandosAtivos.waypoint = fixoAlvo;
+            aero.comandosAtivos.holding = null;
         }
 
         let idx = (aero.rota && Array.isArray(aero.rota)) ? aero.rota.indexOf(fixoAlvo) : -1;

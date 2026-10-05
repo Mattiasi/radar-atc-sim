@@ -1,7 +1,7 @@
 import { state } from '../core/state.js';
 import { correcaoLon } from '../utils/utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
-import { scratchpadUI, menuNivelUI } from './ui.js';
+import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI } from './ui.js';
 import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 
 /**
@@ -63,16 +63,22 @@ export function configurarEventosUsuario() {
     state.canvas.addEventListener('mousedown', (e) => {
         if (e.button === 0) { // Botão esquerdo do mouse
             
-            // Fecha menu dropdown de Flight Level e de Razão Vertical se abertos
+            // Fecha menu dropdown de Flight Level, Razão Vertical, Proa e Velocidade se abertos
             if (menuNivelUI.estaAberto()) {
                 menuNivelUI.fechar();
             }
             if (menuRazaoController.estaAberto()) {
                 menuRazaoController.fechar();
             }
+            if (menuProaUI.estaAberto()) {
+                menuProaUI.fechar();
+            }
+            if (menuVelocidadeUI.estaAberto()) {
+                menuVelocidadeUI.fechar();
+            }
             
-            // Ignora cliques que atingiram painéis HTML flutuantes, botões de topo ou o scratchpad
-            if (e.target.closest('#painelFluxo') || e.target.closest('#painelVento') || e.target.closest('#btnToggleFluxo') || e.target.closest('#btnToggleVento') || (scratchpadUI.el && e.target === scratchpadUI.el)) return;
+            // Ignora cliques que atingiram painéis HTML flutuantes, botões de topo, scratchpad ou menus
+            if (e.target.closest('#painelFluxo') || e.target.closest('#painelVento') || e.target.closest('#btnToggleFluxo') || e.target.closest('#btnToggleVento') || e.target.closest('#menuProa') || e.target.closest('#menuVelocidade') || e.target.closest('#menuNivel') || (scratchpadUI.el && e.target === scratchpadUI.el)) return;
 
             // 1.1. FERRAMENTA DE MEDIÇÃO / VETOR EM ANDAMENTO (Criado pela tecla 'O')
             if (state.vetorAtivo) {
@@ -113,6 +119,31 @@ export function configurarEventosUsuario() {
                         scratchpadUI.confirmar();
                         menuRazaoController.abrir(aero, e.clientX, e.clientY);
                         return;
+                    } else if (linhasExtras && e.clientY >= ly + 26 && e.clientY < ly + 38) {
+                        // Linha 5 da etiqueta: Proa Real, Proa Autorizada e Velocidade Autorizada
+                        let clicouNaProa = false;
+                        let clicouNaVel = false;
+
+                        if (isRight) {
+                            if (e.clientX >= lx + 36 && e.clientX <= lx + 66) clicouNaProa = true;
+                            else if (e.clientX >= lx + 67 && e.clientX <= lx + 105) clicouNaVel = true;
+                        } else {
+                            if (e.clientX >= lx - 70 && e.clientX <= lx - 40) clicouNaProa = true;
+                            else if (e.clientX >= lx - 39 && e.clientX <= lx - 5) clicouNaVel = true;
+                        }
+
+                        if (clicouNaProa) {
+                            scratchpadUI.confirmar();
+                            menuProaUI.abrir(aero, e.clientX, e.clientY);
+                            return;
+                        } else if (clicouNaVel) {
+                            scratchpadUI.confirmar();
+                            menuVelocidadeUI.abrir(aero, e.clientX, e.clientY);
+                            return;
+                        } else {
+                            state.aeroClicadoCallsign = null;
+                            state.aeroArrastandoLabel = aero;
+                        }
                     } else if (e.clientY >= ly + 12 && e.clientY <= ly + 26) { 
                         // Linha 4 da etiqueta: Scratchpad / Texto Livre (só abre se clicar especificamente nesta linha)
                         clicouEmTextoAtivo = true;

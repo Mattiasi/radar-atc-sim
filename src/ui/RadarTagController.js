@@ -77,6 +77,8 @@ export function formatarLinhaRazaoModo(aero) {
  */
 export function estaLinhasExtrasVisiveis(aero) {
     if (!aero) return false;
+    if (aero.expandida) return true;
+
     const vMode = aero.verticalMode
         || (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
         || VERTICAL_MODES.AUTO;
@@ -101,12 +103,134 @@ export function estaLinhasExtrasVisiveis(aero) {
         aero.clampedAtStructural ||
         (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural)
     );
-    return Boolean(aero.expandida || ehModificacaoManualATC);
+    return Boolean(ehModificacaoManualATC);
+}
+
+/**
+ * Renderiza a 5ª linha da etiqueta radar no Canvas.
+ * Formato com 3 espaços horizontais:
+ * - 1º espaço: Proa Real mantida pela aeronave (ex: 120, 090)
+ * - 2º espaço: Proa Autorizada pelo ATC (ex: 180, ou --- em LNAV) com highlight ao abrir seletor
+ * - 3º espaço: Velocidade Autorizada pelo ATC (ex: 210, MIN, ou --- em AUTO) com highlight ao abrir seletor
+ * @param {CanvasRenderingContext2D} ctx - Contexto 2D do Canvas
+ * @param {Object} aero - Instância da aeronave
+ * @param {number} textX - Posição X âncora do texto
+ * @param {number} ly - Posição Y âncora da etiqueta
+ * @param {boolean} isRight - True se a etiqueta está à direita do blip
+ * @param {boolean} [estaSelecionadaProa=false] - True se o menu de proa está aberto
+ * @param {boolean} [estaSelecionadaVel=false] - True se o menu de velocidade está aberto
+ */
+export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaProa = false, estaSelecionadaVel = false) {
+    if (!estaLinhasExtrasVisiveis(aero)) return;
+
+    // 1º Espaço: Proa Real (3 dígitos)
+    let proaRealNum = Math.round(aero.proa !== undefined ? aero.proa : 0);
+    if (proaRealNum <= 0) proaRealNum = 360;
+    while (proaRealNum > 360) proaRealNum -= 360;
+    const proaRealStr = String(proaRealNum).padStart(3, '0');
+
+    // 2º Espaço: Proa Autorizada (se houver comando ativo ou fora de LNAV ou Órbita HLD)
+    let proaAutStr = '---';
+    if (aero.modoHolding && aero.modoHolding.ativo) {
+        proaAutStr = (aero.modoHolding.lado === 'E') ? 'HLD<' : 'HLD>';
+    } else if (aero.comandosAtivos && aero.comandosAtivos.heading && aero.comandosAtivos.heading.proa !== undefined && aero.comandosAtivos.heading.proa !== null) {
+        let pd = aero.comandosAtivos.heading.proa;
+        if (pd <= 0) pd = 360;
+        while (pd > 360) pd -= 360;
+        proaAutStr = String(pd).padStart(3, '0');
+    } else if (!aero.modoLNAV && aero.proaDestino !== null && aero.proaDestino !== undefined) {
+        let pd = Math.round(aero.proaDestino);
+        if (pd <= 0) pd = 360;
+        while (pd > 360) pd -= 360;
+        proaAutStr = String(pd).padStart(3, '0');
+    }
+
+    // 3º Espaço: Velocidade Autorizada (MIN, manual ou ---)
+    let velAutStr = '---';
+    if (aero.comandosAtivos && aero.comandosAtivos.speed) {
+        if (aero.comandosAtivos.speed.type === 'MIN') {
+            velAutStr = 'MIN';
+        } else if (aero.comandosAtivos.speed.type === 'NUM' && aero.comandosAtivos.speed.value) {
+            velAutStr = String(aero.comandosAtivos.speed.value);
+        }
+    } else if (aero.velocidadeMinima) {
+        velAutStr = 'MIN';
+    } else if (aero.velManual && aero.velComando) {
+        velAutStr = String(Math.round(aero.velComando));
+    }
+
+    const posY = ly + 37;
+
+    ctx.save();
+    ctx.font = '11px monospace';
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = 'left';
+
+    const corPadrao = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
+
+    if (isRight) {
+        // Coluna 1: Proa Real
+        const col1X = textX;
+        ctx.fillStyle = corPadrao;
+        ctx.fillText(proaRealStr, col1X, posY);
+
+        // Coluna 2: Proa Autorizada / HLD
+        const col2X = textX + 30;
+        if (estaSelecionadaProa) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col2X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(proaAutStr, col2X, posY);
+
+        // Coluna 3: Velocidade Autorizada
+        const col3X = textX + 60;
+        if (estaSelecionadaVel) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col3X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(velAutStr, col3X, posY);
+    } else {
+        const startX = textX - 86;
+
+        // Coluna 1: Proa Real
+        const col1X = startX;
+        ctx.fillStyle = corPadrao;
+        ctx.fillText(proaRealStr, col1X, posY);
+
+        // Coluna 2: Proa Autorizada / HLD
+        const col2X = startX + 30;
+        if (estaSelecionadaProa) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col2X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(proaAutStr, col2X, posY);
+
+        // Coluna 3: Velocidade Autorizada
+        const col3X = startX + 60;
+        if (estaSelecionadaVel) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col3X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(velAutStr, col3X, posY);
+    }
+
+    ctx.restore();
 }
 
 /**
  * Renderiza a 6ª linha na etiqueta de dados no Canvas do radar (Razão vertical e Modo de escolha).
- * A 5ª linha fica intencionalmente vazia (reservada para uso futuro).
  * As linhas 5 e 6 só são exibidas se expandidas pelo controlador ou se houver modificação ativa.
  * Quando o modo APP estiver ativo, a razão e o modo APP não são renderizados.
  * @param {CanvasRenderingContext2D} ctx - Contexto 2D do Canvas
@@ -142,7 +266,7 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
     // Linha 2: ly - 2 (Alt/CFL)
     // Linha 3: ly + 11 (GS/Dest)
     // Linha 4: ly + 24 (Scratchpad)
-    // Linha 5: ly + 37 (Vazia - reservada)
+    // Linha 5: ly + 37 (Proa Real, Proa Aut, Vel Aut)
     // Linha 6: ly + 50 (Razão Vertical e Modo)
     const posY = ly + 50;
 
@@ -165,9 +289,6 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
     ctx.fillText(textoCompleto, posX, posY);
     ctx.restore();
 }
-
-// Alias de compatibilidade
-export const renderizarLinha5 = renderizarLinha6;
 
 /**
  * Controlador do Menu Dropdown Flutuante de Razão Vertical (ATC Interaction).

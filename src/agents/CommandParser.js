@@ -69,14 +69,28 @@ export class CommandParser {
             }
         }
 
-        // 2. PROA (HEADING)
-        const matchProa = texto.match(/\bH(\d{3})(\+?)\b/);
+        // 2. PROA (HEADING) - aceita H250, H250E, H250D, H250+, 250H, 250HE, 250HD, 250H+
+        const matchProa = texto.match(/\b(?:H(\d{3})([ED\+]?)|\b(\d{3})H([ED\+]?))\b/i);
         let headingCmd = null;
         if (matchProa) {
+            const numStr = matchProa[1] || matchProa[3];
+            const modStr = (matchProa[2] || matchProa[4] || '').toUpperCase();
+            const ladoOuDir = (modStr === 'E' || modStr === 'D') ? modStr : (modStr === '+');
             headingCmd = {
-                proa: parseInt(matchProa[1], 10),
-                ladoMaior: (matchProa[2] === '+')
+                proa: parseInt(numStr, 10),
+                ladoMaior: (modStr === '+'),
+                direcao: (modStr === 'E' || modStr === 'D') ? modStr : null,
+                ladoMaiorOuDirecao: ladoOuDir
             };
+        }
+
+        // 2.1 HOLDING PATTERN (HLD, HLD<, HLD>, HLDE, HLDD)
+        const matchHold = texto.match(/\bHLD([<>ED]?)(?=\s|$)/i);
+        let holdingCmd = null;
+        if (matchHold) {
+            const modHold = (matchHold[1] || '').toUpperCase();
+            const ladoHold = (modHold === '<' || modHold === 'E') ? 'E' : 'D';
+            holdingCmd = { lado: ladoHold };
         }
 
         // 3. WAYPOINT / DIRETO A FIXO (DIRECT-TO)
@@ -114,13 +128,22 @@ export class CommandParser {
             }
         }
 
-        // Execução Lateral: Proa vs Waypoint
-        if (headingCmd) {
+        // Execução Lateral: Holding vs Proa vs Waypoint
+        if (holdingCmd) {
+            const prevHold = aero.comandosAtivos.holding;
+            const isNewHold = !prevHold || prevHold.lado !== holdingCmd.lado || !aero.modoHolding;
+            if (isNewHold) {
+                flightCommandService.setHolding(aero, holdingCmd.lado);
+                aero.comandosAtivos.holding = { ...holdingCmd };
+                aero.comandosAtivos.heading = null;
+            }
+        } else if (headingCmd) {
             const prevHdg = aero.comandosAtivos.heading;
-            const isNewHdg = !prevHdg || prevHdg.proa !== headingCmd.proa || prevHdg.ladoMaior !== headingCmd.ladoMaior;
+            const isNewHdg = !prevHdg || prevHdg.proa !== headingCmd.proa || prevHdg.ladoMaiorOuDirecao !== headingCmd.ladoMaiorOuDirecao || aero.modoHolding;
             if (isNewHdg) {
-                flightCommandService.setHeading(aero, headingCmd.proa, headingCmd.ladoMaior);
+                flightCommandService.setHeading(aero, headingCmd.proa, headingCmd.ladoMaiorOuDirecao);
                 aero.comandosAtivos.heading = { ...headingCmd };
+                aero.comandosAtivos.holding = null;
             }
         } else if (wpTarget) {
             // Só executa se for um novo fixo (diferente do último fixo comandado)

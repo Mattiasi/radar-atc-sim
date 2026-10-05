@@ -143,6 +143,8 @@ export class Aeronave {
         this.proaDestino = proa;                 // Proa alvo que a aeronave está buscando atingir
         this.curvaForcada = false;               // Flag booleana: ativa quando uma curva pelo arco maior (+) está em execução
         this.direcaoCurva = 0;                   // Sentido atual da curva: -1 (Esquerda), 1 (Direita), 0 (Asas niveladas)
+        this.ladoCurvaComandada = null;          // Sentido de curva instruído pelo ATC ('E', 'D' ou null)
+        this.modoHolding = null;                 // Estrutura de órbita padrão de 1 min: { ativo, lado, inboundHeading, outboundHeading, fase, timerLeg }
         
         // --- 4. GESTÃO DE VELOCIDADE INDICADA (IAS) ---
         this.vel = vel;                          // Velocidade atual em nós (Ground Speed simulada)
@@ -243,6 +245,7 @@ export class Aeronave {
         this.comandosAtivos = {
             waypoint: null,
             heading: null,
+            holding: null,
             speed: null,
             altitude: null,
             approach: null,
@@ -737,6 +740,77 @@ export class Aeronave {
     }
 
     /**
+     * Atualiza a máquina de estados da órbita padrão (Holding Pattern).
+     * Perna padrão: 1 minuto (60 segundos) cada perna reta.
+     * Curvas de 180° com taxa padrão para o lado instruído ('E' / '<' ou 'D' / '>').
+     * @param {number} dtSec - Delta time em segundos
+     */
+    atualizarHolding(dtSec) {
+        if (!this.modoHolding || !this.modoHolding.ativo) return;
+        const hold = this.modoHolding;
+        const dirCurva = (hold.lado === 'E') ? -1 : 1;
+
+        this.modoLNAV = false;
+        this.wpOffRoute = null;
+
+        switch (hold.fase) {
+            case 'TURN_OUTBOUND':
+                this.proaDestino = hold.outboundHeading;
+                this.direcaoCurva = dirCurva;
+                this.curvaForcada = true;
+                this.ladoCurvaComandada = hold.lado;
+                let difOut = Math.abs(this.proa - hold.outboundHeading);
+                if (difOut > 180) difOut = 360 - difOut;
+                if (difOut <= 2.5) {
+                    this.proa = hold.outboundHeading;
+                    hold.fase = 'OUTBOUND_LEG';
+                    hold.timerLeg = 0;
+                    this.curvaForcada = false;
+                    this.direcaoCurva = 0;
+                }
+                break;
+
+            case 'OUTBOUND_LEG':
+                this.proaDestino = hold.outboundHeading;
+                this.curvaForcada = false;
+                this.direcaoCurva = 0;
+                hold.timerLeg += dtSec;
+                if (hold.timerLeg >= 60) {
+                    hold.fase = 'TURN_INBOUND';
+                    hold.timerLeg = 0;
+                }
+                break;
+
+            case 'TURN_INBOUND':
+                this.proaDestino = hold.inboundHeading;
+                this.direcaoCurva = dirCurva;
+                this.curvaForcada = true;
+                this.ladoCurvaComandada = hold.lado;
+                let difIn = Math.abs(this.proa - hold.inboundHeading);
+                if (difIn > 180) difIn = 360 - difIn;
+                if (difIn <= 2.5) {
+                    this.proa = hold.inboundHeading;
+                    hold.fase = 'INBOUND_LEG';
+                    hold.timerLeg = 0;
+                    this.curvaForcada = false;
+                    this.direcaoCurva = 0;
+                }
+                break;
+
+            case 'INBOUND_LEG':
+                this.proaDestino = hold.inboundHeading;
+                this.curvaForcada = false;
+                this.direcaoCurva = 0;
+                hold.timerLeg += dtSec;
+                if (hold.timerLeg >= 60) {
+                    hold.fase = 'TURN_OUTBOUND';
+                    hold.timerLeg = 0;
+                }
+                break;
+        }
+    }
+
+    /**
      * Motor lógico principal (Main Tick). Recebe o delta time e executa
      * sequencialmente algoritmos de navegação preditiva, atrasos, vetores físicos e cinemática de posição.
      * @param {number} dtSec - Delta time em segundos decorrido desde o último frame de cálculo.
@@ -760,7 +834,7 @@ export class Aeronave {
         }
 
         // =========================================================================
-        // ETAPA 1: NAVEGACAO LATERAL AUTOMATICA (LNAV) & TRANSI��ES DE WAYPOINT (FLY-BY)
+        // ETAPA 1: NAVEGACAO LATERAL AUTOMATICA (LNAV) & TRANSIÇÕES DE WAYPOINT (FLY-BY)
         // =========================================================================
         navInfo = updateLNAV(this, dtSec, state, restricoesFixos);
 
@@ -777,8 +851,11 @@ export class Aeronave {
         }
 
         // =========================================================================
-        // ETAPA 3: FISICA DE VOO LATERAL & FLY-BY
+        // ETAPA 3: FISICA DE VOO LATERAL & FLY-BY & ÓRBITA PADRÃO (HLD)
         // =========================================================================
+        if (this.modoHolding && this.modoHolding.ativo) {
+            this.atualizarHolding(dtSec);
+        }
         updateLateralPhysics(this, dtSec);
         updateFlyByProtection(this, state);
 

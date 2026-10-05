@@ -15,11 +15,31 @@ export const AircraftStateMutator = {
     // MUTAÇÕES LATERAIS (LNAV / HEADING)
     // ------------------------------------------------------------------------
     
-    ativarModoProa(aero, proaMagnética, forcarCurvaLadoMaior = false) {
+    ativarModoProa(aero, proaMagnética, ladoMaiorOuDirecao = false) {
         aero.modoLNAV = false;
         aero.proaDestino = proaMagnética;
-        aero.curvaForcada = forcarCurvaLadoMaior;
-        // console.log(`[STATE] ${aero.callsign}: LNAV OFF -> HDG ${proaMagnética}`);
+
+        let difCurta = proaMagnética - aero.proa;
+        while (difCurta <= -180) difCurta += 360;
+        while (difCurta > 180) difCurta -= 360;
+
+        if (ladoMaiorOuDirecao === 'E') {
+            aero.direcaoCurva = -1;
+            aero.curvaForcada = (difCurta > 0);
+            aero.ladoCurvaComandada = 'E';
+        } else if (ladoMaiorOuDirecao === 'D') {
+            aero.direcaoCurva = 1;
+            aero.curvaForcada = (difCurta < 0);
+            aero.ladoCurvaComandada = 'D';
+        } else if (ladoMaiorOuDirecao === true || ladoMaiorOuDirecao === '+') {
+            aero.curvaForcada = true;
+            aero.direcaoCurva = (difCurta > 0) ? -1 : 1;
+            aero.ladoCurvaComandada = null;
+        } else {
+            aero.curvaForcada = false;
+            aero.direcaoCurva = (difCurta > 0) ? 1 : (difCurta < 0 ? -1 : 0);
+            aero.ladoCurvaComandada = null;
+        }
     },
 
     ativarModoDiretoFixo(aero, alvo, isIndex = false, novaRotaRecalculada = null) {

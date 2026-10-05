@@ -35,6 +35,8 @@ export const state = {
     aeroEditandoTexto: null,   // Instância da Aeronave com o bloco de texto (scratchpad) ativo
     aeroEditandoNivel: null,   // Instância da Aeronave com o menu flutuante de Flight Level (FL) aberto
     aeroEditandoRazao: null,   // Instância da Aeronave com o menu flutuante de Razão Vertical aberto
+    aeroEditandoProa: null,    // Instância da Aeronave com o menu flutuante de Proa aberto
+    aeroEditandoVelocidade: null, // Instância da Aeronave com o menu flutuante de Velocidade aberto
     arrastouLabel: false,      // Trava lógica para diferenciar um clique rápido (para editar texto) de um arraste longo (para mover a etiqueta)
     labelClickX: 0,            // Coordenada X de onde a etiqueta foi agarrada (para calcular a distância do arraste)
     labelClickY: 0,            // Coordenada Y de onde a etiqueta foi agarrada

@@ -125,32 +125,48 @@ export function obterRestricaoFixoParaAeronave(fixoNome, destOuAero = null, cart
             return 0;
         });
 
-        // Primeiro tenta encontrar em cartas que estejam ativas no Vídeo Mapa (ou carta específica)
-        for (const [, cabeceira] of cabeceirasEntries) {
-            for (const categoria of Object.values(cabeceira)) {
-                if (!categoria) continue;
-                for (const c of Object.values(categoria)) {
-                    if (carta && c.nome !== carta) continue;
-                    // Se carta específica não foi informada, prioriza cartas ativas no Vídeo Mapa
-                    if (!carta && radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
-                        if (!radarLayerState.activeCharts.has(c.nome)) continue;
-                    }
-                    if (c.fixos && Array.isArray(c.fixos)) {
-                        const f = c.fixos.find(item => item.nome === fixoNome);
-                        if (f && f.restricao) {
-                            return f.restricao;
+        // 1. Se uma carta específica foi informada ou atribuída à aeronave, ela é autoridade absoluta
+        if (carta) {
+            for (const [, cabeceira] of cabeceirasEntries) {
+                for (const categoria of Object.values(cabeceira)) {
+                    if (!categoria) continue;
+                    for (const c of Object.values(categoria)) {
+                        if (c.nome === carta || c.nome.replace(/\s+/g, '_') === carta.replace(/\s+/g, '_')) {
+                            if (c.fixos && Array.isArray(c.fixos)) {
+                                const f = c.fixos.find(item => item.nome === fixoNome);
+                                if (f) {
+                                    return f.restricao || null;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Se não encontrou nas cartas ativas, faz busca geral de fallback
+        // 2. Se nenhuma carta específica foi informada, prioriza cartas ativas no Vídeo Mapa
+        if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+            for (const [, cabeceira] of cabeceirasEntries) {
+                for (const categoria of Object.values(cabeceira)) {
+                    if (!categoria) continue;
+                    for (const c of Object.values(categoria)) {
+                        if (!radarLayerState.activeCharts.has(c.nome)) continue;
+                        if (c.fixos && Array.isArray(c.fixos)) {
+                            const f = c.fixos.find(item => item.nome === fixoNome);
+                            if (f && f.restricao) {
+                                return f.restricao;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Se não encontrou nas cartas ativas, faz busca nas cabeceiras ordenadas
         for (const [, cabeceira] of cabeceirasEntries) {
             for (const categoria of Object.values(cabeceira)) {
                 if (!categoria) continue;
                 for (const c of Object.values(categoria)) {
-                    if (carta && c.nome !== carta) continue;
                     if (c.fixos && Array.isArray(c.fixos)) {
                         const f = c.fixos.find(item => item.nome === fixoNome);
                         if (f && f.restricao) {

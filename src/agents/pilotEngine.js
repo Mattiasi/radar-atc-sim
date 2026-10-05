@@ -371,13 +371,28 @@ export class PilotAgent {
                 while (difCurta <= -180) difCurta += 360;
                 while (difCurta > 180) difCurta -= 360;
 
+                const direcao = task.params.direcao;
+
                 if (difCurta === 0) {
                     aero.direcaoCurva = 0;
                     aero.curvaForcada = false;
+                    aero.ladoCurvaComandada = null;
+                } else if (direcao === 'E') {
+                    aero.direcaoCurva = -1;
+                    aero.curvaForcada = (difCurta > 0);
+                    aero.ladoCurvaComandada = 'E';
+                } else if (direcao === 'D') {
+                    aero.direcaoCurva = 1;
+                    aero.curvaForcada = (difCurta < 0);
+                    aero.ladoCurvaComandada = 'D';
                 } else if (ladoMaior) {
                     aero.direcaoCurva = (difCurta > 0) ? -1 : 1;
+                    aero.curvaForcada = true;
+                    aero.ladoCurvaComandada = null;
                 } else {
                     aero.direcaoCurva = (difCurta > 0) ? 1 : -1;
+                    aero.curvaForcada = false;
+                    aero.ladoCurvaComandada = null;
                 }
                 break;
             }

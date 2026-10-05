@@ -15,24 +15,82 @@ canvas {
 }
 
 /* =========================================================
-   MENU DE CONTEXTO (DROPDOWN DE NÍVEIS DE VOO)
+   MENUS DE CONTEXTO (DROPDOWNS: NÍVEIS DE VOO, PROA E VELOCIDADE)
    ========================================================= */
-#menuNivel {
+#menuNivel, #menuVelocidade {
     position: absolute;        /* Permite que o JavaScript coloque o menu exatamente nas coordenadas do clique do rato (X, Y) */
     background-color: #2b2b2b;
     border: 1px solid #00ffff; /* Borda ciano para combinar com o tema do radar */
     color: white;
     font-family: monospace;
     font-size: 13px;
-    max-height: 160px;         /* Limita a altura do menu. Se a lista de níveis passar disso, cria barra de rolagem */
+    max-height: 160px;         /* Limita a altura do menu. Se a lista passar disso, cria barra de rolagem */
     overflow-y: auto;          /* Ativa a rolagem vertical automaticamente se necessário */
     z-index: 100;              /* Força o menu a ficar por cima de TUDO no ecrã (canvas = 0, painel = 10) */
     box-shadow: 2px 2px 8px rgba(0,0,0,0.6); /* Cria uma leve sombra para dar efeito 3D flutuante */
-    display: none;             /* Começa escondido. O JavaScript altera para 'block' quando o utilizador clica no FL */
+    display: none;             /* Começa escondido */
     border-radius: 4px;        /* Arredonda levemente os cantos */
+    min-width: 55px;
 }
 
-/* Cada opção individual dentro do menu de níveis */
+#menuProa {
+    position: absolute;
+    background-color: #2b2b2b;
+    border: 1px solid #00ffff;
+    color: white;
+    font-family: monospace;
+    font-size: 13px;
+    z-index: 100;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    display: none;
+    border-radius: 4px;
+    min-width: 55px;
+    overflow: hidden;
+}
+
+.menu-proa-lista {
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.menu-proa-footer {
+    display: flex;
+    border-top: 1px solid rgba(0, 255, 255, 0.3);
+    background-color: #222222;
+    padding: 3px 4px;
+    gap: 4px;
+    justify-content: center;
+}
+
+.btn-curva {
+    flex: 1;
+    background-color: #1a1a1a;
+    color: #00ffff;
+    border: 1px solid #444;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 3px 0;
+    text-align: center;
+    transition: all 0.15s ease;
+}
+
+.btn-curva:hover {
+    background-color: #00ffff;
+    color: #000;
+    border-color: #00ffff;
+}
+
+.btn-curva.ativo {
+    background-color: #00ffff;
+    color: #000;
+    border-color: #00ffff;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
+}
+
+/* Cada opção individual dentro dos menus */
 .menu-item {
     padding: 6px 12px;
     cursor: pointer;           /* Muda o rato para a "mãozinha" para indicar que é clicável */
@@ -46,11 +104,31 @@ canvas {
     font-weight: bold;
 }
 
-/* Estilização personalizada da barra de rolagem do menu (Apenas visível em browsers baseados em WebKit como Chrome/Edge/Safari) */
-#menuNivel::-webkit-scrollbar { width: 8px; }
-#menuNivel::-webkit-scrollbar-track { background: #2b2b2b; }
-#menuNivel::-webkit-scrollbar-thumb { background: #666; border-radius: 4px; }
-#menuNivel::-webkit-scrollbar-thumb:hover { background: #888; } /* Fica mais claro quando passa o rato na barra */
+/* Estilização personalizada da barra de rolagem dos menus */
+#menuNivel::-webkit-scrollbar,
+#menuVelocidade::-webkit-scrollbar,
+.menu-proa-lista::-webkit-scrollbar {
+    width: 8px;
+}
+
+#menuNivel::-webkit-scrollbar-track,
+#menuVelocidade::-webkit-scrollbar-track,
+.menu-proa-lista::-webkit-scrollbar-track {
+    background: #2b2b2b;
+}
+
+#menuNivel::-webkit-scrollbar-thumb,
+#menuVelocidade::-webkit-scrollbar-thumb,
+.menu-proa-lista::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 4px;
+}
+
+#menuNivel::-webkit-scrollbar-thumb:hover,
+#menuVelocidade::-webkit-scrollbar-thumb:hover,
+.menu-proa-lista::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
 
 /* =========================================================
    PAINEL DE CONTROLO DE FLUXO E ESTEIRA (Canto Superior Esquerdo)

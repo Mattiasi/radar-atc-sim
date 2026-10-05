@@ -309,6 +309,33 @@ export class ScratchpadController {
 }
 
 /**
+ * Atualiza, substitui ou remove um token de comando específico (HEADING ou SPEED) no texto do Scratchpad (4ª linha).
+ * @param {string} textoAtual - Texto atual do scratchpad
+ * @param {'HEADING'|'SPEED'} tipo - Tipo de token a gerenciar
+ * @param {string|null} novoToken - Novo token (ex: '180H', '180HE', '210K', 'MIN') ou null/LNAV/AUTO para remover
+ * @returns {string} Texto resultante
+ */
+export function atualizarTokenScratchpad(textoAtual, tipo, novoToken) {
+    let partes = (textoAtual || "").trim().split(/\s+/).filter(Boolean);
+
+    if (tipo === 'HEADING') {
+        const regexHdg = /^(?:H\d{3}[ED\+]?|\d{3}H[ED\+]?|HLD[<>ED]?)$/i;
+        partes = partes.filter(p => !regexHdg.test(p));
+        if (novoToken && novoToken !== 'LNAV') {
+            partes.push(novoToken.toUpperCase());
+        }
+    } else if (tipo === 'SPEED') {
+        const regexSpd = /^(?:\d{2,3}K|V\d{2,3}|MIN|AUTO)$/i;
+        partes = partes.filter(p => !regexSpd.test(p));
+        if (novoToken && novoToken !== 'AUTO') {
+            partes.push(novoToken.toUpperCase());
+        }
+    }
+
+    return partes.join(' ');
+}
+
+/**
  * Adiciona ou remove um token de uma string delimitada por espaços.
  * @param {string} texto
  * @param {string} token
@@ -344,6 +371,7 @@ export class MenuNivelController {
             document.body.appendChild(this.menu);
         }
 
+        this.menu.onmousedown = (e) => e.stopPropagation();
         this.menu.innerHTML = '';
 
         this.niveis.forEach(nv => {
@@ -378,8 +406,19 @@ export class MenuNivelController {
     abrir(aero, x, y) {
         if (!this.menu) return;
         state.aeroEditandoNivel = aero;
-        this.menu.style.left = (x - 20) + 'px';
-        this.menu.style.top = (y + 10) + 'px';
+        if (typeof menuProaUI !== 'undefined' && menuProaUI && menuProaUI.estaAberto()) menuProaUI.fechar();
+        if (typeof menuVelocidadeUI !== 'undefined' && menuVelocidadeUI && menuVelocidadeUI.estaAberto()) menuVelocidadeUI.fechar();
+        if (typeof menuRazaoController !== 'undefined' && menuRazaoController && menuRazaoController.estaAberto()) menuRazaoController.fechar();
+
+        this.menu.style.position = 'absolute';
+        this.menu.style.zIndex = '100';
+        let topPos = y + 10;
+        if (topPos + 170 > window.innerHeight) {
+            topPos = Math.max(10, y - 170);
+        }
+        let leftPos = Math.max(10, Math.min(x - 20, window.innerWidth - 75));
+        this.menu.style.left = leftPos + 'px';
+        this.menu.style.top = topPos + 'px';
         this.menu.style.display = 'block';
     }
 
@@ -394,10 +433,308 @@ export class MenuNivelController {
     }
 }
 
+/**
+ * Encapsula o menu dropdown flutuante de seleção de Proas (Headings) e Curva (E/D) - 5ª Linha da Etiqueta.
+ */
+export class MenuProaController {
+    constructor() {
+        this.menu = null;
+        this.listaEl = null;
+        this.btnCurvaE = null;
+        this.btnCurvaD = null;
+        this.ladoCurva = null; // 'E', 'D', ou null
+        this.proas = [];
+        // Gera proas de 10 em 10 de 360 a 010, mais LNAV
+        for (let hdg = 360; hdg >= 10; hdg -= 10) {
+            this.proas.push(String(hdg).padStart(3, '0'));
+        }
+        this.proas.push('HLD');
+    }
+
+    inicializar() {
+        let menuExistente = document.getElementById('menuProa');
+        if (menuExistente) {
+            this.menu = menuExistente;
+        } else {
+            this.menu = document.createElement('div');
+            this.menu.id = 'menuProa';
+            document.body.appendChild(this.menu);
+        }
+
+        this.menu.style.position = 'absolute';
+        this.menu.style.zIndex = '100';
+        this.menu.onmousedown = (e) => e.stopPropagation();
+        this.menu.innerHTML = '';
+
+        // Lista de proas com rolagem vertical
+        this.listaEl = document.createElement('div');
+        this.listaEl.className = 'menu-proa-lista';
+
+        this.proas.forEach(hdg => {
+            let item = document.createElement('div');
+            item.className = 'menu-item';
+            item.innerText = hdg;
+
+            item.onmousedown = (e) => {
+                if (state.aeroEditandoProa) {
+                    const aero = state.aeroEditandoProa;
+
+                    if (hdg === 'HLD') {
+                        const lado = this.ladoCurva || 'D';
+                        const token = (lado === 'E') ? 'HLD<' : 'HLD>';
+
+                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'HEADING', token);
+                        if (state.aeroEditandoTexto === aero) {
+                            const el = document.getElementById('inputTextoLivre');
+                            if (el) el.value = aero.textoLivre;
+                        }
+
+                        flightCommandService.setHolding(aero, lado);
+                    } else {
+                        const proaNum = parseInt(hdg, 10);
+                        const lado = this.ladoCurva; // 'E', 'D' ou null
+                        let token = `H${hdg}`;
+                        if (lado) token += lado;
+
+                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'HEADING', token);
+                        if (state.aeroEditandoTexto === aero) {
+                            const el = document.getElementById('inputTextoLivre');
+                            if (el) el.value = aero.textoLivre;
+                        }
+
+                        flightCommandService.setHeading(aero, proaNum, lado || false);
+
+                        if (aero.comandosAtivos) {
+                            aero.comandosAtivos.heading = {
+                                proa: proaNum,
+                                ladoMaior: false,
+                                direcao: lado,
+                                ladoMaiorOuDirecao: lado || false
+                            };
+                            aero.comandosAtivos.holding = null;
+                        }
+                    }
+                }
+
+                this.fechar();
+                desenharRadar();
+                e.stopPropagation();
+            };
+
+            this.listaEl.appendChild(item);
+        });
+
+        this.menu.appendChild(this.listaEl);
+
+        // Rodapé com botões de curva [ E ] e [ D ] lado a lado
+        const footerEl = document.createElement('div');
+        footerEl.className = 'menu-proa-footer';
+
+        this.btnCurvaE = document.createElement('button');
+        this.btnCurvaE.type = 'button';
+        this.btnCurvaE.className = 'btn-curva';
+        this.btnCurvaE.innerText = 'E';
+        this.btnCurvaE.title = 'Curva pela Esquerda';
+        this.btnCurvaE.onmousedown = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.toggleLadoCurva('E');
+        };
+
+        this.btnCurvaD = document.createElement('button');
+        this.btnCurvaD.type = 'button';
+        this.btnCurvaD.className = 'btn-curva';
+        this.btnCurvaD.innerText = 'D';
+        this.btnCurvaD.title = 'Curva pela Direita';
+        this.btnCurvaD.onmousedown = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.toggleLadoCurva('D');
+        };
+
+        footerEl.appendChild(this.btnCurvaE);
+        footerEl.appendChild(this.btnCurvaD);
+        this.menu.appendChild(footerEl);
+    }
+
+    toggleLadoCurva(lado) {
+        if (this.ladoCurva === lado) {
+            this.ladoCurva = null;
+        } else {
+            this.ladoCurva = lado;
+        }
+        this.atualizarBotoesCurva();
+    }
+
+    atualizarBotoesCurva() {
+        if (this.btnCurvaE) {
+            this.btnCurvaE.classList.toggle('ativo', this.ladoCurva === 'E');
+        }
+        if (this.btnCurvaD) {
+            this.btnCurvaD.classList.toggle('ativo', this.ladoCurva === 'D');
+        }
+    }
+
+    abrir(aero, x, y) {
+        if (!this.menu) return;
+        state.aeroEditandoProa = aero;
+        this.ladoCurva = null;
+        this.atualizarBotoesCurva();
+
+        if (typeof menuNivelUI !== 'undefined' && menuNivelUI && menuNivelUI.estaAberto()) menuNivelUI.fechar();
+        if (typeof menuVelocidadeUI !== 'undefined' && menuVelocidadeUI && menuVelocidadeUI.estaAberto()) menuVelocidadeUI.fechar();
+        if (typeof menuRazaoController !== 'undefined' && menuRazaoController && menuRazaoController.estaAberto()) menuRazaoController.fechar();
+
+        this.menu.style.position = 'absolute';
+        this.menu.style.zIndex = '100';
+        let topPos = y + 10;
+        if (topPos + 170 > window.innerHeight) {
+            topPos = Math.max(10, y - 170);
+        }
+        let leftPos = Math.max(10, Math.min(x - 20, window.innerWidth - 75));
+        this.menu.style.left = leftPos + 'px';
+        this.menu.style.top = topPos + 'px';
+        this.menu.style.display = 'block';
+
+        // Rola até a proa atual ou comandada aproximada internamente
+        if (this.listaEl && aero) {
+            const proaAlvo = Math.round((aero.proaDestino !== null && aero.proaDestino !== undefined && !aero.modoLNAV) ? aero.proaDestino : aero.proa);
+            const proaRound = Math.round(proaAlvo / 10) * 10;
+            const items = this.listaEl.querySelectorAll('.menu-item');
+            for (let el of items) {
+                if (parseInt(el.innerText, 10) === proaRound) {
+                    this.listaEl.scrollTop = el.offsetTop - (this.listaEl.clientHeight / 2) + (el.clientHeight / 2);
+                    break;
+                }
+            }
+        }
+    }
+
+    fechar() {
+        if (!this.menu) return;
+        this.menu.style.display = 'none';
+        state.aeroEditandoProa = null;
+    }
+
+    estaAberto() {
+        return Boolean(this.menu && this.menu.style.display === 'block');
+    }
+}
+
+/**
+ * Encapsula o menu dropdown flutuante de seleção de Velocidades (AUTO, MIN, 160 a 310) - 5ª Linha da Etiqueta.
+ */
+export class MenuVelocidadeController {
+    constructor() {
+        this.menu = null;
+        this.velocidades = [];
+        for (let spd = 310; spd >= 160; spd -= 10) {
+            this.velocidades.push(String(spd));
+        }
+        this.velocidades.push("MIN");
+        this.velocidades.push("AUTO");
+    }
+
+    inicializar() {
+        let menuExistente = document.getElementById('menuVelocidade');
+        if (menuExistente) {
+            this.menu = menuExistente;
+        } else {
+            this.menu = document.createElement('div');
+            this.menu.id = 'menuVelocidade';
+            document.body.appendChild(this.menu);
+        }
+
+        this.menu.style.position = 'absolute';
+        this.menu.style.zIndex = '100';
+        this.menu.onmousedown = (e) => e.stopPropagation();
+        this.menu.innerHTML = '';
+
+        this.velocidades.forEach(spd => {
+            let item = document.createElement('div');
+            item.className = 'menu-item';
+            item.innerText = spd;
+
+            item.onmousedown = (e) => {
+                if (state.aeroEditandoVelocidade) {
+                    const aero = state.aeroEditandoVelocidade;
+
+                    if (spd === 'AUTO') {
+                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', null);
+                        flightCommandService.setSpeed(aero, 'AUTO');
+                    } else if (spd === 'MIN') {
+                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', 'MIN');
+                        flightCommandService.setSpeed(aero, 'MIN');
+                    } else {
+                        const numSpd = parseInt(spd, 10);
+                        const token = `${numSpd}K`;
+                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', token);
+                        flightCommandService.setSpeed(aero, numSpd);
+                    }
+
+                    if (state.aeroEditandoTexto === aero) {
+                        const el = document.getElementById('inputTextoLivre');
+                        if (el) el.value = aero.textoLivre;
+                    }
+                }
+
+                this.fechar();
+                desenharRadar();
+                e.stopPropagation();
+            };
+
+            this.menu.appendChild(item);
+        });
+    }
+
+    abrir(aero, x, y) {
+        if (!this.menu) return;
+        state.aeroEditandoVelocidade = aero;
+
+        if (typeof menuNivelUI !== 'undefined' && menuNivelUI && menuNivelUI.estaAberto()) menuNivelUI.fechar();
+        if (typeof menuProaUI !== 'undefined' && menuProaUI && menuProaUI.estaAberto()) menuProaUI.fechar();
+        if (typeof menuRazaoController !== 'undefined' && menuRazaoController && menuRazaoController.estaAberto()) menuRazaoController.fechar();
+
+        this.menu.style.position = 'absolute';
+        this.menu.style.zIndex = '100';
+        let topPos = y + 10;
+        if (topPos + 170 > window.innerHeight) {
+            topPos = Math.max(10, y - 170);
+        }
+        let leftPos = Math.max(10, Math.min(x - 20, window.innerWidth - 75));
+        this.menu.style.left = leftPos + 'px';
+        this.menu.style.top = topPos + 'px';
+        this.menu.style.display = 'block';
+
+        if (aero) {
+            const spdAtual = aero.velComando || Math.round(aero.vel);
+            const items = this.menu.querySelectorAll('.menu-item');
+            for (let el of items) {
+                if (parseInt(el.innerText, 10) === spdAtual) {
+                    this.menu.scrollTop = el.offsetTop - (this.menu.clientHeight / 2) + (el.clientHeight / 2);
+                    break;
+                }
+            }
+        }
+    }
+
+    fechar() {
+        if (!this.menu) return;
+        this.menu.style.display = 'none';
+        state.aeroEditandoVelocidade = null;
+    }
+
+    estaAberto() {
+        return Boolean(this.menu && this.menu.style.display === 'block');
+    }
+}
+
 // Controladores instanciados (Singletons)
 export const painelFluxoUI = new PainelFluxoController();
 export const scratchpadUI = new ScratchpadController();
 export const menuNivelUI = new MenuNivelController();
+export const menuProaUI = new MenuProaController();
+export const menuVelocidadeUI = new MenuVelocidadeController();
 export { painelVentoUI, menuRazaoController };
 
 /**
@@ -408,5 +745,7 @@ export function inicializarUI() {
     scratchpadUI.inicializar();
     menuNivelUI.inicializar();
     menuRazaoController.inicializar();
+    menuProaUI.inicializar();
+    menuVelocidadeUI.inicializar();
     painelVentoUI.inicializar();
 }

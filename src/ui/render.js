@@ -2,7 +2,7 @@ import { state } from '../core/state.js';
 import { correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from '../data/data.js';
 import { scratchpadUI } from './ui.js';
-import { renderizarLinha6, estaLinhasExtrasVisiveis } from './RadarTagController.js';
+import { renderizarLinha5, renderizarLinha6, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 
 /**
  * Procura um fixo pelo nome e devolve a sua coordenada exata no ecrã (Canvas X/Y).
@@ -502,11 +502,14 @@ export function desenharMapaBase() {
                                     const existente = fixosParaDesenhar.get(nome);
                                     if (existente) {
                                         existente.alpha = Math.max(existente.alpha, alpha);
+                                        if (!existente.restricao && f.restricao) {
+                                            existente.restricao = f.restricao;
+                                        }
                                     } else {
                                         fixosParaDesenhar.set(nome, {
                                             nome: nome,
                                             cor: carta.cor || '#ff9900',
-                                            restricao: f.restricao || restricoesFixos[nome],
+                                            restricao: f.restricao || null,
                                             alpha: alpha
                                         });
                                     }
@@ -997,7 +1000,9 @@ export function desenharRadar() {
             state.ctx.fillText(aero.textoLivre || "", textX, ly + 24);
         }
 
-        // LINHA 5: Vazia por enquanto (reservada)
+        // LINHA 5: Proa Real, Proa Autorizada e Velocidade Autorizada
+        renderizarLinha5(state.ctx, aero, textX, ly, isRight, aero === state.aeroEditandoProa, aero === state.aeroEditandoVelocidade);
+
         // LINHA 6: Razão Vertical Mantida e Modo Vertical (AUTO, ATC-R, EXPD)
         // Renderizada em ly + 50 somente se expandida ou sob modificação ativa do controlador
         renderizarLinha6(state.ctx, aero, textX, ly, isRight, aero === state.aeroEditandoRazao);
