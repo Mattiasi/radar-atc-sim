@@ -23,6 +23,7 @@ import {
 } from './windMath.js';
 
 const STORAGE_KEY = 'ATC_WIND_SETTINGS_V1';
+const AERODROMOS_VENTO = ['SBSP', 'SBGR', 'SBKP'];
 
 export class WindManager {
     constructor() {
@@ -124,6 +125,8 @@ export class WindManager {
         this.aerodromos = {};
         if (Array.isArray(dadosAerodromos)) {
             for (const a of dadosAerodromos) {
+                // Apenas os aeródromos principais da TMA-SP possuem vento local configurável
+                if (!AERODROMOS_VENTO.includes(a.nome)) continue;
                 const cabMap = {};
                 let defaultPista = a.pistaPadrao || null;
                 if (a.pistas && Array.isArray(a.pistas)) {
@@ -296,13 +299,67 @@ export class WindManager {
             }
         });
 
-        // 2. Atualiza cabeceiras locais com aleatório ativado
+        // 2. Sincroniza a pista ativa com o Vídeo-Mapa e atualiza o vento local.
+        // O vento é UM SÓ por aeródromo (fenômeno físico): a cabeceira ativa define
+        // o setor aleatório (sempre contra a proa de pouso) e as demais cabeceiras espelham o valor.
+        this.sincronizarComVideoMapa();
         Object.values(this.aerodromos).forEach(aero => {
+            const cabAtiva = aero.cabeceiras[aero.pistaAtiva];
+            if (!cabAtiva) return;
+            const aleatorio = Object.values(aero.cabeceiras).some(c => c.aleatorio);
+            if (aleatorio) {
+                this._aplicarSetorContraVento(cabAtiva);
+                this._atualizarItemAleatorio(cabAtiva, dt);
+            }
             Object.values(aero.cabeceiras).forEach(cab => {
-                if (cab.aleatorio) {
-                    this._atualizarItemAleatorio(cab, dt);
-                }
+                if (cab === cabAtiva) return;
+                cab.fromDeg = cabAtiva.fromDeg;
+                cab.speedKt = cabAtiva.speedKt;
+                cab._targetFromDeg = cabAtiva.fromDeg;
+                cab._targetSpeedKt = cabAtiva.speedKt;
             });
+        });
+    }
+
+    /**
+     * Restringe o setor aleatório da cabeceira para que o vento seja sempre de proa
+     * (ou de proa com componente cruzada), já que a aeronave pousa contra o vento.
+     * @private
+     */
+    _aplicarSetorContraVento(cab) {
+        const rumo = cab.rumoPista || 0;
+        cab.minDeg = normalizeHeading(rumo - 40);
+        cab.maxDeg = normalizeHeading(rumo + 40);
+        if (cab._targetFromDeg !== undefined) {
+            const dif = Math.abs(((cab._targetFromDeg - rumo + 540) % 360) - 180);
+            if (dif > 40) cab._targetFromDeg = undefined; // força novo alvo dentro do setor
+        }
+    }
+
+    /**
+     * Lê as pistas ativas no Vídeo-Mapa (state.radarLayers.activeRunways, chaves "SBSP-17" / "SBSP-17R")
+     * e define a pista ativa de cada aeródromo. Ao trocar de cabeceira, o vento é invertido
+     * para soprar contra a nova cabeceira de pouso.
+     */
+    sincronizarComVideoMapa() {
+        const ativas = state.radarLayers && state.radarLayers.activeRunways;
+        if (!ativas || ativas.size === 0) return;
+
+        Object.entries(this.aerodromos).forEach(([icao, aero]) => {
+            const chaveAtiva = Object.keys(aero.cabeceiras).find(k => {
+                const num = k.replace(/[^0-9]/g, '');
+                return ativas.has(`${icao}-${k}`) || ativas.has(`${icao}-${num}`);
+            });
+            if (!chaveAtiva || chaveAtiva === aero.pistaAtiva) return;
+
+            aero.pistaAtiva = chaveAtiva;
+            const cab = aero.cabeceiras[chaveAtiva];
+            const dif = Math.abs(((cab.fromDeg - cab.rumoPista + 540) % 360) - 180);
+            if (dif > 90) {
+                // Vento estava de cauda para a nova cabeceira -> passa a ser de proa
+                cab.fromDeg = normalizeHeading(cab.rumoPista + (Math.random() * 40 - 20));
+            }
+            cab._targetFromDeg = undefined;
         });
     }
 

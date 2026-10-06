@@ -60,6 +60,10 @@ export class PainelVentoController {
 
     abrir() {
         this.aberto = true;
+        windManager.sincronizarComVideoMapa();
+        const aeroSel = windManager.aerodromos[this.aeroIdAtivo] || Object.values(windManager.aerodromos)[0];
+        if (!windManager.aerodromos[this.aeroIdAtivo]) this.aeroIdAtivo = Object.keys(windManager.aerodromos)[0];
+        if (aeroSel && aeroSel.pistaAtiva) this.rwyIdAtivo = aeroSel.pistaAtiva;
         this.container.style.display = 'block';
         this.btnToggle.classList.add('ativo');
         this.renderizar();
