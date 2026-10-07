@@ -913,31 +913,7 @@ export const cartasNavegacao = {
                         ["GR232", "ISOXO", "ORIMU", "VUMEV", "NUXEL"]
                     ]
                 },
-                "AKRER_3A": {
-                    nome: "AKRER 3A",
-                    cor: '#fbff00',
-                    fixos: [
-                        {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
-                        { nome: "ISNAP", lat: dmsParaDecimal(23, 27, 60, 'S'), lon: dmsParaDecimal(46, 34, 68.3, 'W') },
-                        { nome: "GR048", lat: dmsParaDecimal(23, 29, 23.3, 'S'), lon: dmsParaDecimal(46, 41, 6.7, 'W'), restricao: { fl: 60, tipo: "ABOVE" } },
-                        { nome: "AKRER", lat: dmsParaDecimal(23, 33, 98.3, 'S'), lon: dmsParaDecimal(46, 59, 63.3, 'W'), restricao: { fl: 80, tipo: "BELOW" } },
-                        { nome: "GR219", lat: dmsParaDecimal(23, 36, 46.7, 'S'), lon: dmsParaDecimal(47, 9, 43.3, 'W') },
-                        { nome: "XOGOD", lat: dmsParaDecimal(23, 31, 58.3, 'S'), lon: dmsParaDecimal(47, 28, 93.3, 'W'), restricao: { fl: 100, tipo: "BELOW" } },
-                        { nome: "UMRAR", lat: dmsParaDecimal(23, 28, 5, 'S'), lon: dmsParaDecimal(47, 41, 46.7, 'W'), restricao: { fl: 110, tipo: "BELOW" } },
-                        { nome: "UBRAM", lat: dmsParaDecimal(23, 26, 73.3, 'S'), lon: dmsParaDecimal(47, 46, 15, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
-                        { nome: "ASETA", lat: dmsParaDecimal(23, 17, 13.3, 'S'), lon: dmsParaDecimal(48, 5, 73.3, 'W') },
-                        { nome: "EGEVA", lat: dmsParaDecimal(23, 8, 38.3, 'S'), lon: dmsParaDecimal(48, 33, 68.3, 'W') },
-                        { nome: "SOVSI", lat: dmsParaDecimal(24, 6, 31.7, 'S'), lon: dmsParaDecimal(47, 28, 31.7, 'W') },
-                        { nome: "UBSOD", lat: dmsParaDecimal(24, 15, 70, 'S'), lon: dmsParaDecimal(47, 8, 65, 'W') },
-                        { nome: "MADNI", lat: dmsParaDecimal(24, 36, 43.3, 'S'), lon: dmsParaDecimal(47, 0, 53.3, 'W') }
-                    ],
-                    linhas: [
-                        ["RW10L", "ISNAP", "GR048", "AKRER", "GR219", "XOGOD", "UMRAR", "UBRAM", "ASETA", "EGEVA"],
-                        ["GR219", "SOVSI"],
-                        ["GR219", "UBSOD"],
-                        ["GR219", "MADNI"]
-                    ]
-                },
+        
                 "XOLUS_1A": {
                     nome: "XOLUS 1A",
                     cor: '#fbff00',
@@ -1011,31 +987,7 @@ export const cartasNavegacao = {
                         ["GR232", "ISOXO", "ORIMU", "VUMEV", "NUXEL"]
                     ]
                 },
-                "AKRER_3A": {
-                    nome: "AKRER 3A",
-                    cor: '#fbff00',
-                    fixos: [
-                        {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
-                        { nome: "ISNAP", lat: dmsParaDecimal(23, 27, 60, 'S'), lon: dmsParaDecimal(46, 34, 68.3, 'W') },
-                        { nome: "GR048", lat: dmsParaDecimal(23, 29, 23.3, 'S'), lon: dmsParaDecimal(46, 41, 6.7, 'W'), restricao: { fl: 60, tipo: "ABOVE" } },
-                        { nome: "AKRER", lat: dmsParaDecimal(23, 33, 98.3, 'S'), lon: dmsParaDecimal(46, 59, 63.3, 'W'), restricao: { fl: 80, tipo: "BELOW" } },
-                        { nome: "GR219", lat: dmsParaDecimal(23, 36, 46.7, 'S'), lon: dmsParaDecimal(47, 9, 43.3, 'W') },
-                        { nome: "XOGOD", lat: dmsParaDecimal(23, 31, 58.3, 'S'), lon: dmsParaDecimal(47, 28, 93.3, 'W'), restricao: { fl: 100, tipo: "BELOW" } },
-                        { nome: "UMRAR", lat: dmsParaDecimal(23, 28, 5, 'S'), lon: dmsParaDecimal(47, 41, 46.7, 'W'), restricao: { fl: 110, tipo: "BELOW" } },
-                        { nome: "UBRAM", lat: dmsParaDecimal(23, 26, 73.3, 'S'), lon: dmsParaDecimal(47, 46, 15, 'W'), restricao: { fl: 120, tipo: "ABOVE" } },
-                        { nome: "ASETA", lat: dmsParaDecimal(23, 17, 13.3, 'S'), lon: dmsParaDecimal(48, 5, 73.3, 'W') },
-                        { nome: "EGEVA", lat: dmsParaDecimal(23, 8, 38.3, 'S'), lon: dmsParaDecimal(48, 33, 68.3, 'W') },
-                        { nome: "SOVSI", lat: dmsParaDecimal(24, 6, 31.7, 'S'), lon: dmsParaDecimal(47, 28, 31.7, 'W') },
-                        { nome: "UBSOD", lat: dmsParaDecimal(24, 15, 70, 'S'), lon: dmsParaDecimal(47, 8, 65, 'W') },
-                        { nome: "MADNI", lat: dmsParaDecimal(24, 36, 43.3, 'S'), lon: dmsParaDecimal(47, 0, 53.3, 'W') }
-                    ],
-                    linhas: [
-                        ["RW10L", "ISNAP", "GR048", "AKRER", "GR219", "XOGOD", "UMRAR", "UBRAM", "ASETA", "EGEVA"],
-                        ["GR219", "SOVSI"],
-                        ["GR219", "UBSOD"],
-                        ["GR219", "MADNI"]
-                    ]
-                },
+              
                 "XOLUS_1A": {
                     nome: "XOLUS 1A",
                     cor: '#fbff00',
@@ -1100,15 +1052,15 @@ export const cartasNavegacao = {
                         { nome: "NIBVO", lat: dmsParaDecimal(23, 13, 60, 'S'), lon: dmsParaDecimal(45, 33, 35, 'W')  },
                         { nome: "KP153", lat: dmsParaDecimal(23, 22, 35, 'S'), lon: dmsParaDecimal(46, 4, 78.3, 'W'), restricao: { fl: 260, tipo: "BELOW"  } },
                         { nome: "KP154", lat: dmsParaDecimal(23, 27, 46.7, 'S'), lon: dmsParaDecimal(46, 22, 98.3, 'W')  },
-                        { nome: "KP213", lat: dmsParaDecimal(23, 17, 43.3, 'S'), lon: dmsParaDecimal(46, 38, 40, 'W'), restricao: { fl: 140, tipo: "BELOW"  } },
-                        { nome: "KP212", lat: dmsParaDecimal(23, 14, 31.7, 'S'), lon: dmsParaDecimal(46, 41, 15, 'W'), restricao: { fl: 130, tipo: "BELOW"  } },
-                        { nome: "KP211", lat: dmsParaDecimal(23, 11, 20, 'S'), lon: dmsParaDecimal(46, 43, 88.3, 'W'), restricao: { fl: 120, tipo: "BELOW"  } },
+                        { nome: "KP213", lat: dmsParaDecimal(23, 17, 43.3, 'S'), lon: dmsParaDecimal(46, 38, 40, 'W'), restricao: { fl: 140, tipo: "ABOVE"  } },
+                        { nome: "KP212", lat: dmsParaDecimal(23, 14, 31.7, 'S'), lon: dmsParaDecimal(46, 41, 15, 'W'), restricao: { fl: 130, tipo: "ABOVE"  } },
+                        { nome: "KP211", lat: dmsParaDecimal(23, 11, 20, 'S'), lon: dmsParaDecimal(46, 43, 88.3, 'W'), restricao: { fl: 120, tipo: "ABOVE"  } },
                         { nome: "KP208", lat: dmsParaDecimal(23, 1, 81.7, 'S'), lon: dmsParaDecimal(46, 52, 13.3, 'W')  },
-                        { nome: "KP209", lat: dmsParaDecimal(23, 1, 13.3, 'S'), lon: dmsParaDecimal(46, 56, 41.7, 'W'), restricao: { fl: 110, tipo: "ABOVE"  } },
-                        { nome: "KP207", lat: dmsParaDecimal(22, 55, 58.3, 'S'), lon: dmsParaDecimal(47, 4, 6.7, 'W'), restricao: { fl: 90, tipo: "BELOW"  } },
-                        { nome: "ENTIT", lat: dmsParaDecimal(22, 25, 5, 'S'), lon: dmsParaDecimal(46, 39, 46.7, 'W'), restricao: { fl: 190, tipo: "ABOVE"  } },
-                        { nome: "KP203", lat: dmsParaDecimal(22, 33, 93.3, 'S'), lon: dmsParaDecimal(46, 52, 3.3, 'W'), restricao: { fl: 110, tipo: "ABOVE"  } },
-                        { nome: "KP204", lat: dmsParaDecimal(22, 38, 80, 'S'), lon: dmsParaDecimal(46, 58, 93.3, 'W'), restricao: { fl: 90, tipo: "ABOVE"  } }
+                        { nome: "KP209", lat: dmsParaDecimal(23, 1, 13.3, 'S'), lon: dmsParaDecimal(46, 56, 41.7, 'W'), restricao: { fl: 110, tipo: "BELOW"  } },
+                        { nome: "KP207", lat: dmsParaDecimal(22, 55, 58.3, 'S'), lon: dmsParaDecimal(47, 4, 6.7, 'W'), restricao: { fl: 90, tipo: "ABOVE"  } },
+                        { nome: "ENTIT", lat: dmsParaDecimal(22, 25, 5, 'S'), lon: dmsParaDecimal(46, 39, 46.7, 'W'), restricao: { fl: 190, tipo: "BELOW"  } },
+                        { nome: "KP203", lat: dmsParaDecimal(22, 33, 93.3, 'S'), lon: dmsParaDecimal(46, 52, 3.3, 'W'), restricao: { fl: 110, tipo: "BELOW"  } },
+                        { nome: "KP204", lat: dmsParaDecimal(22, 38, 80, 'S'), lon: dmsParaDecimal(46, 58, 93.3, 'W'), restricao: { fl: 90, tipo: "BELOW"  } }
                         
                     ],
                     linhas: [
@@ -1181,9 +1133,9 @@ export const cartasNavegacao = {
                     cor: '#54f161',
                     fixos: [
                         { nome: "RWY33",lat: dmsParaDecimal(23, 1, 20.65, 'S'),lon: dmsParaDecimal(47, 7, 39.23, 'W') },
-                        { nome: "KP241", lat: dmsParaDecimal(23, 0, 31.7, 'S'), lon: dmsParaDecimal(47, 1, 13.3, 'W'), restricao: { fl: 100, tipo: "BELOW" } },
-                        { nome: "EGBEN", lat: dmsParaDecimal(22, 54, 23.3, 'S'), lon: dmsParaDecimal(46, 56, 15, 'W'), restricao: { fl: 130, tipo: "ABOVE" } },
-                        { nome: "DEXIB", lat: dmsParaDecimal(22, 45, 93.3, 'S'), lon: dmsParaDecimal(47, 1, 26.7, 'W') },
+                        { nome: "KP241", lat: dmsParaDecimal(23, 0, 31.7, 'S'), lon: dmsParaDecimal(47, 1, 13.3, 'W')},
+                        { nome: "EGBEN", lat: dmsParaDecimal(22, 54, 23.3, 'S'), lon: dmsParaDecimal(46, 56, 15, 'W'), restricao: { fl: 80, tipo: "BELOW" } },
+                        { nome: "DEXIB", lat: dmsParaDecimal(22, 45, 93.3, 'S'), lon: dmsParaDecimal(47, 1, 26.7, 'W'),restricao: { fl: 100, tipo: "ABOVE" } },
                         { nome: "KP237", lat: dmsParaDecimal(22, 39, 13.3, 'S'), lon: dmsParaDecimal(47, 5, 0, 'W'), restricao: { fl: 100, tipo: "BELOW" } },
                         { nome: "ISMOB", lat: dmsParaDecimal(21, 47, 35, 'S'), lon: dmsParaDecimal(47, 11, 81.7, 'W'), restricao: { fl: 130, tipo: "ABOVE" } },
                         { nome: "KP179", lat: dmsParaDecimal(22, 17, 10, 'S'), lon: dmsParaDecimal(47, 17, 5, 'W') },
@@ -1192,7 +1144,7 @@ export const cartasNavegacao = {
                         { nome: "KP242", lat: dmsParaDecimal(22, 46, 45, 'S'), lon: dmsParaDecimal(46, 48, 93.3, 'W') },
                         { nome: "KP243", lat: dmsParaDecimal(22, 44, 31.7, 'S'), lon: dmsParaDecimal(46, 46, 61.7, 'W') },
                         { nome: "URRAO", lat: dmsParaDecimal(22, 40, 81.7, 'S'), lon: dmsParaDecimal(46, 42, 76.7, 'W') },
-                        { nome: "KP244", lat: dmsParaDecimal(22, 40, 98.3, 'S'), lon: dmsParaDecimal(46, 23, 28.3, 'W') },
+                        { nome: "KP244", lat: dmsParaDecimal(22, 40, 98.3, 'S'), lon: dmsParaDecimal(46, 23, 28.3, 'W'),restricao: { fl: 190, tipo: "ABOVE" } },
                         { nome: "KONVI", lat: dmsParaDecimal(22, 41, 6.7, 'S'), lon: dmsParaDecimal(46, 10, 55, 'W'), restricao: { fl: 130, tipo: "ABOVE" } },
                         {nome: "NUXEL", lat: dmsParaDecimal(22,16,98.30,'S'), lon: dmsParaDecimal(45,49,30.00,'W')}
                     ],

@@ -553,7 +553,7 @@ export function desenharMapaBase() {
             state.ctx.fill();
 
             // Nome do fixo
-            state.ctx.font = '12px Arial'; 
+            state.ctx.font = '10px monospace'; 
             state.ctx.fillStyle = corFixo;
             state.ctx.fillText(nome, pt.x + 8, pt.y + 4);
 
