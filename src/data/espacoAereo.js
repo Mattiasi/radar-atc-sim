@@ -7,6 +7,11 @@ export const verticesTMA = [
     { nome: "TMA4",  lat: dmsParaDecimal(22, 49, 20.00, 'S'), lon: dmsParaDecimal(45, 59, 95.00, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA5",  lat: dmsParaDecimal(22, 58, 48.30, 'S'), lon: dmsParaDecimal(45, 55, 55.00, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA6",  lat: dmsParaDecimal(23,  3, 13.30, 'S'), lon: dmsParaDecimal(45, 40,  1.70, 'W'), restricao: { fl: null, tipo: "" } },
+    { nome: "TMA24",  lat: dmsParaDecimal(23,  7, 34, 'S'), lon: dmsParaDecimal(45, 41,  24, 'W'), restricao: { fl: null, tipo: "" } },
+    { nome: "TMA25",  lat: dmsParaDecimal(23, 15, 59.39, 'S'), lon: dmsParaDecimal(45, 33, 19.03, 'W')},
+    { nome: "TMA26",  lat: dmsParaDecimal(23,  24, 15, 'S'), lon: dmsParaDecimal(45, 43,  44, 'W'), restricao: { fl: null, tipo: "" } },
+    { nome: "TMA27",  lat: dmsParaDecimal(23,  24, 32, 'S'), lon: dmsParaDecimal(45, 54,  23, 'W'), restricao: { fl: null, tipo: "" } },
+    { nome: "TMA28",  lat: dmsParaDecimal(23,  9, 41, 'S'), lon: dmsParaDecimal(46, 8,  30, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA7",  lat: dmsParaDecimal(23,  2, 31.70, 'S'), lon: dmsParaDecimal(45, 36, 33.30, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA8",  lat: dmsParaDecimal(23, 14, 86.70, 'S'), lon: dmsParaDecimal(45, 33, 26.70, 'W'), restricao: { fl: null, tipo: "" } },
     { nome: "TMA9",  lat: dmsParaDecimal(23, 18, 53.30, 'S'), lon: dmsParaDecimal(45, 32, 36.70, 'W'), restricao: { fl: null, tipo: "" } },
@@ -51,7 +56,7 @@ export const verticesSetor = [
 export const estruturaEspacoAereo = {
     limiteTMA: [
         
-        "TMA1", "TMA2", "TMA3", "TMA4", "TMA5", "TMA6", "TMA7", "TMA8", "TMA9", "TMA10",
+        "TMA1", "TMA2", "TMA3", "TMA4", "TMA5","TMA28", "TMA27","TMA26","TMA25","TMA24", "TMA6","TMA5","TMA6", "TMA7", "TMA8", "TMA9", "TMA10",
         "TMA11", "TMA12", "TMA13", "TMA14", "TMA15", "TMA16", "TMA17", "TMA18", "TMA19", "TMA20",
         "TMA21", "TMA22", "TMA23", "TMA1"
     ],
