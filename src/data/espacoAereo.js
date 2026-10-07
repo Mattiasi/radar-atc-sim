@@ -49,7 +49,7 @@ export const verticesSetor = [
     { nome: "PT_55",  lat: dmsParaDecimal(23, 39, 11.95, 'S'), lon: dmsParaDecimal(46, 59, 30.54, 'W') },
     { nome: "PT_58",  lat: dmsParaDecimal(23, 29, 53.00, 'S'), lon: dmsParaDecimal(46, 57, 36.63, 'W') },
     { nome: "PT_59",  lat: dmsParaDecimal(23, 35, 42.62, 'S'), lon: dmsParaDecimal(46, 53, 35.90, 'W') },
-    { nome: "PT_43",  lat: dmsParaDecimal(23, 32, 56.81, 'S'), lon: dmsParaDecimal(46, 46, 51.82, 'W') },
+    { nome: "PT_43",  lat: dmsParaDecimal(23, 32, 56.81, 'S'), lon: dmsParaDecimal(46, 46, 51.82, 'W'),},
     ...verticesTMA
 ];
 
