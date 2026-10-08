@@ -40,6 +40,25 @@ export function telaParaDelta(x, y) {
 }
 
 /**
+ * Formata um valor de altitude/nível de restrição.
+ * Se >= 90 (FL090 ou superior): retorna no formato "FLxxx" (ex: FL090, FL100, FL140).
+ * Se < 90 (abaixo do FL090): retorna em pés (ex: 80 -> 8000', 75 -> 7500', 55 -> 5500').
+ * @param {number|string} fl - Nível ou altitude
+ * @returns {string}
+ */
+export function formatarNivelOuAltitude(fl) {
+    if (fl === null || fl === undefined) return '';
+    const num = Number(fl);
+    if (isNaN(num)) return String(fl);
+    if (num >= 90) {
+        return 'FL' + Math.round(num).toString().padStart(3, '0');
+    } else {
+        const emPes = num >= 500 ? Math.round(num) : Math.round(num * 100);
+        return emPes.toString() + "'";
+    }
+}
+
+/**
  * Determina se um fixo representa um limiar/cabeceira de pista (ex: RW10R, RWY15, R10RGR, R15KP, etc.).
  * Fixos de pista devem ficar invisíveis no radar (não desenha o triângulo, nome ou restrição sobre o asfalto).
  * @param {string} nome - Nome do fixo
@@ -562,24 +581,19 @@ export function desenharMapaBase() {
 
             // Restrições de altitude da carta
             const res = fixoObj.restricao;
-            if (res) {
+            if (res && res.fl !== null && res.fl !== undefined) {
+                let txtFl = '';
                 if (res.tipo === "WINDOW") {
-                    let txtFl = "FL" + (res.flMax || res.fl).toString().padStart(3, '0') + "-FL" + res.fl.toString().padStart(3, '0');
-                    state.ctx.font = '10px monospace';
-                    state.ctx.fillStyle = '#000000';
-                    state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
-                } else if (res.fl > 80) {
-                    let txtFl = "FL" + res.fl.toString().padStart(3, '0');
+                    const maxStr = formatarNivelOuAltitude(res.flMax || res.fl);
+                    const minStr = formatarNivelOuAltitude(res.fl);
+                    txtFl = `${maxStr}-${minStr}`;
+                } else {
+                    txtFl = formatarNivelOuAltitude(res.fl);
                     if (res.tipo === "ABOVE") txtFl += "+";
                     else if (res.tipo === "BELOW") txtFl += "-";
-                    
-                    state.ctx.font = '10px monospace';
-                    state.ctx.fillStyle = '#000000';
-                    state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
-                } else if (res.fl < 75) {
-                    let txtFl = res.fl.toString().padEnd(4, '0') + "'";
-                    if (res.tipo === "ABOVE") txtFl += "+";
-                    else if (res.tipo === "BELOW") txtFl += "-";
+                }
+
+                if (txtFl) {
                     state.ctx.font = '10px monospace';
                     state.ctx.fillStyle = '#000000';
                     state.ctx.fillText(txtFl, pt.x + 8, pt.y + 16);
