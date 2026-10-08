@@ -29,6 +29,12 @@
                 <h3>CONTROLE DE FLUXO</h3>
             </div>
             <div class="cabecalho-fluxo-acoes">
+                <button id="btnPauseSimulacao" class="btn-pause-fluxo" title="Pausar Simulação">
+                    <svg id="iconePauseSimulacao" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="5" y="4" width="4" height="16" rx="1"></rect>
+                        <rect x="15" y="4" width="4" height="16" rx="1"></rect>
+                    </svg>
+                </button>
                 <button id="btnAdicionarFluxo" class="btn-adicionar-fluxo" title="Adicionar nova esteira de tráfego">+ FLUXO</button>
                 <button id="btnFecharFluxo" class="btn-fechar-fluxo" title="Fechar painel [Esc]">✕</button>
             </div>
@@ -60,8 +66,13 @@
     <button id="btnToggleVento" class="btn-topo-vento" title="Configurar Vento Global e de Cabeceiras">☁ VENTO ATC</button>
     <div id="painelVento" class="painel-vento-flutuante" style="display: none;"></div>
 
+    <!-- BOTÃO E PAINEL DE ANOTAÇÕES DO INSTRUTOR [P] -->
+    <button id="btnToggleAnotacao" class="btn-topo-anotacao" title="Painel de Anotações do Instrutor [P]">✏ ANOTAÇÃO</button>
+    <div id="painelAnotacoes" class="painel-anotacao-flutuante" style="display: none;"></div>
+
     <input type="text" id="inputTextoLivre" autocomplete="off" spellcheck="false" style="position: absolute; display: none; background-color: #ffffff; color: #000000; border: none; font-family: monospace; font-size: 12px; outline: none; padding: 0; z-index: 101; width: 80px; text-transform: uppercase;">
     <canvas id="telaRadar"></canvas>
+    <canvas id="canvasAnotacoes"></canvas>
 
     <script type="module" src="src/core/main.js?v=2.1"></script>
 </body>

@@ -44,6 +44,7 @@ export const state = {
     // --- CONFIGURAÇÕES DE VISUALIZAÇÃO ATC E TEMPO ---
     minutosPaliteiro: 1,       // Tempo em minutos do vetor de predição de rota (Speed Vector). Modificável pelas teclas 0-9.
     fatorVelocidade: 1.0,      // Multiplicador de aceleração do tempo da simulação (1x a 5x)
+    pausado: false,            // Flag indicando se a simulação física/radar está congelada (Play/Pause)
 
     // --- CONTROLE DE FLUXO E ESTEIRA (ESTADO PURO DATA-DRIVEN) ---
     configFluxo: {

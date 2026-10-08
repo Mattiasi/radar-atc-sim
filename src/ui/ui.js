@@ -25,6 +25,7 @@ export class PainelFluxoController {
     constructor() {
         this.containerEsteiras = null;
         this.btnAdicionarFluxo = null;
+        this.btnPauseSimulacao = null;
         this.sliderVelocidade = null;
         this.labelVelocidade = null;
         this.btnToggle = null;
@@ -36,6 +37,7 @@ export class PainelFluxoController {
     inicializar() {
         this.containerEsteiras = document.getElementById('containerEsteiras');
         this.btnAdicionarFluxo = document.getElementById('btnAdicionarFluxo');
+        this.btnPauseSimulacao = document.getElementById('btnPauseSimulacao');
         this.sliderVelocidade = document.getElementById('sliderVelocidade');
         this.labelVelocidade = document.getElementById('labelVelocidade');
         this.btnToggle = document.getElementById('btnToggleFluxo');
@@ -43,6 +45,16 @@ export class PainelFluxoController {
         this.btnFechar = document.getElementById('btnFecharFluxo');
 
         if (!this.containerEsteiras || !this.painel) return;
+
+        // Botão de Play / Pause da Simulação
+        if (this.btnPauseSimulacao) {
+            this.btnPauseSimulacao.addEventListener('mousedown', (e) => e.stopPropagation());
+            this.btnPauseSimulacao.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.togglePause();
+            });
+            this.atualizarBotaoPause();
+        }
 
         // Controle de abertura e fechamento retrátil (igual ao controle de vento)
         if (this.btnToggle) {
@@ -126,6 +138,33 @@ export class PainelFluxoController {
 
     estaAberto() {
         return this.aberto;
+    }
+
+    togglePause() {
+        state.pausado = !state.pausado;
+        this.atualizarBotaoPause();
+    }
+
+    atualizarBotaoPause() {
+        if (!this.btnPauseSimulacao) return;
+        if (state.pausado) {
+            this.btnPauseSimulacao.classList.add('pausado');
+            this.btnPauseSimulacao.title = "Retomar Simulação (Play)";
+            this.btnPauseSimulacao.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6,4 20,12 6,20"></polygon>
+                </svg>
+            `;
+        } else {
+            this.btnPauseSimulacao.classList.remove('pausado');
+            this.btnPauseSimulacao.title = "Pausar Simulação (Pause)";
+            this.btnPauseSimulacao.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="5" y="4" width="4" height="16" rx="1"></rect>
+                    <rect x="15" y="4" width="4" height="16" rx="1"></rect>
+                </svg>
+            `;
+        }
     }
 
     renderizarEsteiras() {

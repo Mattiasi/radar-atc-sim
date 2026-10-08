@@ -244,6 +244,53 @@ canvas {
     color: #ff5555;
 }
 
+.btn-pause-fluxo {
+    background-color: #003333;
+    color: #00ffff;
+    border: 1px solid #00ffff;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    line-height: 1;
+}
+
+.btn-pause-fluxo:hover {
+    background-color: #006666;
+    color: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
+}
+
+.btn-pause-fluxo.pausado {
+    background-color: #4a2800;
+    border-color: #ff9900;
+    color: #ffaa00;
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.5);
+    animation: pulsarPausa 1.2s infinite alternate ease-in-out;
+}
+
+.btn-pause-fluxo.pausado:hover {
+    background-color: #6b3a00;
+    color: #ffffff;
+}
+
+@keyframes pulsarPausa {
+    0% {
+        box-shadow: 0 0 4px rgba(255, 170, 0, 0.4);
+        border-color: #ff9900;
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(255, 170, 0, 0.9);
+        border-color: #ffcc00;
+    }
+}
+
 .btn-adicionar-fluxo {
     background-color: #003333;
     color: #00ffff;
@@ -1448,4 +1495,397 @@ body.modo-coordenadas-ativo canvas {
     text-align: center;
     font-weight: bold;
     padding: 4px 0;
+}
+
+/* =========================================================
+   CAMADA DE ANOTAÇÃO / CANETA DO INSTRUTOR ATC (TECLA P)
+   ========================================================= */
+
+#canvasAnotacoes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 50;
+    pointer-events: none;
+    user-select: none;
+}
+
+.btn-topo-anotacao {
+    position: absolute;
+    top: 15px;
+    right: 160px;
+    background-color: rgba(43, 43, 43, 0.9);
+    border: 1px solid #ff9500;
+    color: #ff9500;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 15;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.btn-topo-anotacao:hover {
+    background-color: #ff9500;
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 149, 0, 0.8);
+}
+
+.btn-topo-anotacao.ativo {
+    background-color: #ff9500;
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 12px rgba(255, 149, 0, 0.9);
+}
+
+.painel-anotacao-flutuante {
+    position: fixed;
+    top: 60px;
+    right: 15px;
+    width: 255px;
+    background-color: rgba(24, 24, 28, 0.96);
+    border: 1px solid #ff9500;
+    border-radius: 6px;
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 1100;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
+    user-select: none;
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+}
+
+.anotacao-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, #32251a 0%, #1e1814 100%);
+    border-bottom: 1px solid rgba(255, 149, 0, 0.4);
+    cursor: move;
+}
+
+.anotacao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: bold;
+    font-size: 12px;
+    color: #ff9500;
+    letter-spacing: 0.5px;
+}
+
+.anotacao-icone-titulo {
+    font-size: 14px;
+}
+
+.anotacao-controles-janela {
+    display: flex;
+    gap: 4px;
+}
+
+.anotacao-btn-janela {
+    background: #2a201a;
+    border: 1px solid #554030;
+    color: #ffcc80;
+    font-family: monospace;
+    font-size: 11px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.anotacao-btn-janela:hover {
+    background: #ff9500;
+    color: #000;
+    border-color: #ff9500;
+}
+
+.anotacao-btn-janela.btn-fechar-janela:hover {
+    background: #ff3b30;
+    color: #fff;
+    border-color: #ff3b30;
+}
+
+.anotacao-corpo {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.anotacao-secao {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.anotacao-subtitulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: bold;
+    color: #a0a0a8;
+    letter-spacing: 0.5px;
+}
+
+/* Ferramentas principais (Caneta, Marcador, Borracha, Radar) */
+.anotacao-barra-ferramentas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.btn-tool-atc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    background-color: #1f1f24;
+    border: 1px solid #3a3a42;
+    border-radius: 4px;
+    color: #d0d0d8;
+    cursor: pointer;
+    font-family: monospace;
+    transition: all 0.15s ease;
+}
+
+.btn-tool-atc .tool-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.btn-tool-atc .tool-label {
+    font-size: 9px;
+    letter-spacing: 0.3px;
+}
+
+.btn-tool-atc:hover {
+    background-color: #2e2e38;
+    border-color: #ff9500;
+    color: #ffffff;
+}
+
+.btn-tool-atc.ativo {
+    background-color: #ff9500;
+    border-color: #ff9500;
+    color: #000000;
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(255, 149, 0, 0.6);
+}
+
+/* Ações de histórico (Desfazer / Refazer / Limpar) */
+.anotacao-acoes-historico {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+}
+
+.btn-acao-atc {
+    background-color: #1f1f24;
+    border: 1px solid #3a3a42;
+    color: #c0c0cb;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 5px 2px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+}
+
+.btn-acao-atc:hover:not(.desabilitado) {
+    background-color: #353542;
+    color: #ffffff;
+    border-color: #888899;
+}
+
+.btn-acao-atc.desabilitado {
+    opacity: 0.4;
+    cursor: default;
+    border-color: #292930;
+}
+
+.btn-acao-atc.btn-limpar-atc:hover:not(.desabilitado) {
+    background-color: #8b1111;
+    border-color: #ff3b30;
+    color: #ffffff;
+}
+
+/* Confirmação de Limpar */
+.anotacao-confirmacao-limpar {
+    background-color: #3b1111;
+    border: 1px solid #ff3b30;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    font-size: 11px;
+    color: #ffdddd;
+}
+
+.confirmacao-limpar-botoes {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-confirma-sim {
+    flex: 1;
+    background-color: #ff3b30;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 0;
+    font-family: monospace;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-confirma-nao {
+    flex: 1;
+    background-color: #2a2a30;
+    color: #cccccc;
+    border: 1px solid #444450;
+    border-radius: 3px;
+    padding: 5px 0;
+    font-family: monospace;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+/* Paleta de Cores */
+.preview-cor-badge {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    display: inline-block;
+}
+
+.anotacao-paleta-cores {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-cor-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+}
+
+.btn-cor-swatch:hover {
+    transform: scale(1.15);
+}
+
+.btn-cor-swatch.selecionada {
+    border-color: #ffffff;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
+}
+
+.btn-color-picker-label {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1f1f24;
+    border: 1px solid #3a3a42;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.btn-color-picker-label:hover {
+    border-color: #ff9500;
+    background-color: #2a2a33;
+}
+
+.input-color-escondido {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    left: 0;
+    top: 0;
+}
+
+/* Espessura */
+.anotacao-valor-espessura {
+    color: #ff9500;
+}
+
+.anotacao-presets-espessura {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.btn-preset-espessura {
+    background-color: #1f1f24;
+    border: 1px solid #3a3a42;
+    color: #c0c0cb;
+    font-family: monospace;
+    font-size: 9px;
+    padding: 4px 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+}
+
+.btn-preset-espessura:hover {
+    border-color: #ff9500;
+    color: #ffffff;
+}
+
+.btn-preset-espessura.ativo {
+    background-color: #3b2a1a;
+    border-color: #ff9500;
+    color: #ff9500;
+    font-weight: bold;
+}
+
+.anotacao-slider-container {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.slider-espessura-atc {
+    width: 100%;
+    accent-color: #ff9500;
+    cursor: pointer;
 }

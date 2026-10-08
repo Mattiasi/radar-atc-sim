@@ -4,6 +4,7 @@ import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, 
 import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI, painelFluxoUI } from './ui.js';
 import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
 import { coordinateToolController, CURSOR_CROSSHAIR_PRETO } from './CoordinateToolController.js';
+import { annotationController } from './AnnotationController.js';
 
 /**
  * ============================================================================
@@ -482,6 +483,25 @@ export function configurarEventosUsuario() {
             }
         }
         
+        // ATALHO 'P': Alterna Camada de Anotação e Caneta do Instrutor
+        if (tecla === 'P' && !e.ctrlKey && !e.altKey) {
+            annotationController.toggle();
+            return;
+        }
+
+        // ATALHOS DE DESFAZER / REFAZER ANOTAÇÕES (CTRL+Z e CTRL+Y / CTRL+SHIFT+Z)
+        if (e.ctrlKey && tecla === 'Z' && !e.shiftKey) {
+            e.preventDefault();
+            annotationController.desfazer();
+            return;
+        }
+
+        if ((e.ctrlKey && tecla === 'Y') || (e.ctrlKey && e.shiftKey && tecla === 'Z')) {
+            e.preventDefault();
+            annotationController.refazer();
+            return;
+        }
+
         // TECLA 'V': Alterna sequencialmente a seleção entre os vetores de medição existentes
         if (tecla === 'V' && state.vetoresFixos.length > 0) { 
             state.vetorSelecionadoIndex = (state.vetorSelecionadoIndex + 1) % state.vetoresFixos.length; 
@@ -490,7 +510,7 @@ export function configurarEventosUsuario() {
         
         // TECLA 'Z': Apaga o vetor selecionado (ou o último vetor se nenhum estiver selecionado)
         // Regra operacional: Ao apagar, não seleciona automaticamente o próximo (reseta para -1)
-        if (tecla === 'Z' && state.vetoresFixos.length > 0) {
+        if (!e.ctrlKey && tecla === 'Z' && state.vetoresFixos.length > 0) {
             if (state.vetorSelecionadoIndex >= 0 && state.vetorSelecionadoIndex < state.vetoresFixos.length) {
                 state.vetoresFixos.splice(state.vetorSelecionadoIndex, 1); 
             } else {
@@ -500,8 +520,12 @@ export function configurarEventosUsuario() {
             desenharRadar();
         }
         
-        // TECLA ESCAPE: Cancela modo de coordenadas, painel de fluxo aberto ou vetor ativo em criação
+        // TECLA ESCAPE: Cancela modo de coordenadas, painel de anotação, painel de fluxo aberto ou vetor ativo em criação
         if (e.key === 'Escape') {
+            if (annotationController.estaAberto()) {
+                annotationController.fechar();
+                return;
+            }
             if (state.modoCoordenadas) {
                 coordinateToolController.desativar();
                 desenharRadar();

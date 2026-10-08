@@ -3,6 +3,7 @@ import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego
 import { configurarEventosUsuario, aplicarLimites } from '../ui/events.js';
 import { inicializarUI, painelVentoUI } from '../ui/ui.js';
 import { inicializarVideoMapDrawer } from '../ui/VideoMapDrawerController.js';
+import { annotationController } from '../ui/AnnotationController.js';
 import { desenharRadar } from '../ui/render.js';
 import { windManager } from '../physics/windManager.js';
 
@@ -122,7 +123,7 @@ function loopPrincipal(tempoAtual) {
     const dtReal = Math.min(Math.max(0, (tempoAtual - ultimoTempoFrame) / 1000), 0.1);
     ultimoTempoFrame = tempoAtual;
 
-    if (dtReal > 0) {
+    if (dtReal > 0 && !state.pausado) {
         const dtSimulado = dtReal * fator;
 
         // Atualização contínua do vento em tempo real
@@ -166,6 +167,7 @@ function loopPrincipal(tempoAtual) {
 inicializarEspacoAereo();       // Carrega a geometria das rotas e TMA
 inicializarUI();                // Inicializa e encapsula os elementos HTML/DOM (Painel, Scratchpad e Menus)
 inicializarVideoMapDrawer();     // Inicializa o Painel Retrátil de Vídeo-Mapa e Brilho
+annotationController.inicializar(); // Inicializa a Camada de Anotação e Caneta do Instrutor
 carregarTrafegoTeste();         // Faz spawn dos 2 aviões iniciais de demonstração
 configurarEventosUsuario();     // Liga os "ouvintes" (Listeners) de rato e teclado
 aplicarLimites(false);          // Garante que o zoom e o enquadramento inicial estão corretos

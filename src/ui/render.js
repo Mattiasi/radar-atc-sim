@@ -1009,6 +1009,11 @@ export function desenharRadar() {
 
     // 6. HUD de Telemetria de Energia e Aproximação (Seção 24 - Tecla E)
     desenharHUDEnergiaEAproximacao();
+
+    // 7. Sincroniza Camada de Anotação Fixa no Mapa Geográfico
+    if (state.annotationController) {
+        state.annotationController.redesenhar();
+    }
     } catch (e) {
         console.error("Crash during render:", e);
         state.ctx.fillStyle = '#000000';
