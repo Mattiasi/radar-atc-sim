@@ -2,7 +2,7 @@ import { state } from '../core/state.js';
 import { correcaoLon } from '../utils/utils.js';
 import { deltaParaTela, telaParaDelta, pegarAeronaveProxima, pegarVetorProximo, desenharRadar } from './render.js';
 import { scratchpadUI, menuNivelUI, menuProaUI, menuVelocidadeUI, painelFluxoUI } from './ui.js';
-import { menuRazaoController, estaLinhasExtrasVisiveis } from './RadarTagController.js';
+import { menuRazaoController, estaLinhasExtrasVisiveis, obterEstadoProaVelATC } from './RadarTagController.js';
 import { coordinateToolController, CURSOR_CROSSHAIR_PRETO } from './CoordinateToolController.js';
 import { annotationController } from './AnnotationController.js';
 
@@ -127,18 +127,27 @@ export function configurarEventosUsuario() {
                 if (e.clientX >= minX && e.clientX <= maxX && e.clientY >= ly - 27 && e.clientY <= maxEtiquetaY) {
                     clicouEtiqueta = true;
                     
-                    if (linhasExtras && e.clientY >= ly + 38 && e.clientY <= ly + 58) {
+                    const { temProa, temVel } = obterEstadoProaVelATC(aero);
+                    const linha5Visivel = aero.expandida || temProa || temVel;
+                    const temModVertical = Boolean(
+                        aero.temModificacaoVertical ||
+                        (aero.posicaoRadar && (aero.posicaoRadar.verticalMode === 'ATC-R' || aero.posicaoRadar.verticalMode === 'EXPD' || aero.posicaoRadar.clampedAtStructural)) ||
+                        aero.clampedAtStructural
+                    );
+                    const linha6Visivel = aero.expandida || temModVertical;
+
+                    if (linha6Visivel && e.clientY >= ly + 38 && e.clientY <= ly + 58) {
                         // Linha 6 da etiqueta: Razão Vertical e Modo (AUTO, ATC-R, EXPD)
                         scratchpadUI.cancelar();
                         menuRazaoController.abrir(aero, e.clientX, e.clientY);
                         return;
-                    } else if (linhasExtras && e.clientY >= ly + 26 && e.clientY < ly + 38) {
+                    } else if (linha5Visivel && e.clientY >= ly + 26 && e.clientY < ly + 38) {
                         // Linha 5 da etiqueta: Proa Real, Proa Autorizada e Velocidade Autorizada
                         let clicouNaProa = false;
                         let clicouNaVel = false;
 
-                        if (e.clientX >= textX + 26 && e.clientX <= textX + 57) clicouNaProa = true;
-                        else if (e.clientX >= textX + 58 && e.clientX <= textX + 98) clicouNaVel = true;
+                        if (e.clientX >= textX + 26 && e.clientX <= textX + 57 && (aero.expandida || temProa)) clicouNaProa = true;
+                        else if (e.clientX >= textX + 58 && e.clientX <= textX + 98 && (aero.expandida || temVel)) clicouNaVel = true;
 
                         if (clicouNaProa) {
                             scratchpadUI.cancelar();

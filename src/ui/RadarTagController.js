@@ -68,9 +68,57 @@ export function formatarLinhaRazaoModo(aero) {
 }
 
 /**
+ * Verifica se a aeronave possui proa ou velocidade autorizada pelo ATC (diferente do padrão de rota/AUTO).
+ * @param {Object} aero - Instância da aeronave
+ * @returns {{ temProa: boolean, temVel: boolean, proaAutStr: string, velAutStr: string }}
+ */
+export function obterEstadoProaVelATC(aero) {
+    if (!aero) return { temProa: false, temVel: false, proaAutStr: 'hdg', velAutStr: 'vel' };
+
+    let proaAutStr = 'hdg';
+    let temProa = false;
+    if (aero.modoHolding && aero.modoHolding.ativo) {
+        proaAutStr = (aero.modoHolding.lado === 'E') ? 'HLD<' : 'HLD>';
+        temProa = true;
+    } else if (aero.comandosAtivos && aero.comandosAtivos.heading && aero.comandosAtivos.heading.proa !== undefined && aero.comandosAtivos.heading.proa !== null) {
+        let pd = aero.comandosAtivos.heading.proa;
+        if (pd <= 0) pd = 360;
+        while (pd > 360) pd -= 360;
+        proaAutStr = String(pd).padStart(3, '0');
+        temProa = true;
+    } else if (!aero.modoLNAV && aero.proaDestino !== null && aero.proaDestino !== undefined) {
+        let pd = Math.round(aero.proaDestino);
+        if (pd <= 0) pd = 360;
+        while (pd > 360) pd -= 360;
+        proaAutStr = String(pd).padStart(3, '0');
+        temProa = true;
+    }
+
+    let velAutStr = 'vel';
+    let temVel = false;
+    if (aero.comandosAtivos && aero.comandosAtivos.speed) {
+        if (aero.comandosAtivos.speed.type === 'MIN') {
+            velAutStr = 'MIN';
+            temVel = true;
+        } else if (aero.comandosAtivos.speed.type === 'NUM' && aero.comandosAtivos.speed.value) {
+            velAutStr = String(aero.comandosAtivos.speed.value);
+            temVel = true;
+        }
+    } else if (aero.velocidadeMinima) {
+        velAutStr = 'MIN';
+        temVel = true;
+    } else if (aero.velManual && aero.velComando) {
+        velAutStr = String(Math.round(aero.velComando));
+        temVel = true;
+    }
+
+    return { temProa, temVel, proaAutStr, velAutStr };
+}
+
+/**
  * Determina se as linhas 5 e 6 da etiqueta devem estar visíveis.
  * Regra: Ficam visíveis se a etiqueta estiver expandida pelo controlador (clique no callsign)
- * OU se houver modificação ativa do controlador (razão vertical customizada / EXPEDITE / clamp).
+ * OU se houver modificação ativa do controlador (proa/vel autorizada, razão vertical customizada / EXPEDITE / clamp).
  * A autorização de aproximação (APP) NÃO torna as linhas visíveis.
  * @param {Object} aero - Instância da aeronave
  * @returns {boolean}
@@ -78,6 +126,10 @@ export function formatarLinhaRazaoModo(aero) {
 export function estaLinhasExtrasVisiveis(aero) {
     if (!aero) return false;
     if (aero.expandida) return true;
+
+    // Se houver proa ou velocidade autorizada escolhida pelo ATC
+    const { temProa, temVel } = obterEstadoProaVelATC(aero);
+    if (temProa || temVel) return true;
 
     const vMode = aero.verticalMode
         || (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
@@ -110,8 +162,13 @@ export function estaLinhasExtrasVisiveis(aero) {
  * Renderiza a 5ª linha da etiqueta radar no Canvas.
  * Formato com 3 espaços horizontais:
  * - 1º espaço: Proa Real mantida pela aeronave (ex: 120, 090)
- * - 2º espaço: Proa Autorizada pelo ATC (ex: 180, ou --- em LNAV) com highlight ao abrir seletor
- * - 3º espaço: Velocidade Autorizada pelo ATC (ex: 210, MIN, ou --- em AUTO) com highlight ao abrir seletor
+ * - 2º espaço: Proa Autorizada pelo ATC (ex: 180, ou hdg quando expandida)
+ * - 3º espaço: Velocidade Autorizada pelo ATC (ex: 210, MIN, ou vel quando expandida)
+ * 
+ * Regra:
+ * - Se expandida: mostra Proa Real, Proa Aut (ou 'hdg') e Vel Aut (ou 'vel').
+ * - Se reduzida: mostra apenas o que foi escolhido no painel (proa e/ou vel); caso contrário fica invisível.
+ * 
  * @param {CanvasRenderingContext2D} ctx - Contexto 2D do Canvas
  * @param {Object} aero - Instância da aeronave
  * @param {number} textX - Posição X âncora do texto
@@ -123,6 +180,11 @@ export function estaLinhasExtrasVisiveis(aero) {
 export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaProa = false, estaSelecionadaVel = false) {
     if (!estaLinhasExtrasVisiveis(aero)) return;
 
+    const { temProa, temVel, proaAutStr, velAutStr } = obterEstadoProaVelATC(aero);
+
+    // Se reduzida e não houver proa nem velocidade escolhida no painel, a linha 5 fica invisível
+    if (!aero.expandida && !temProa && !temVel) return;
+
     // 1º Espaço: Proa Real (3 dígitos) atualizada a cada 4 segundos pela varredura do radar
     const radarSnap = aero.posicaoRadar || aero;
     let proaRef = (radarSnap.proa !== undefined && radarSnap.proa !== null) ? radarSnap.proa : aero.proa;
@@ -130,36 +192,6 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
     if (proaRealNum <= 0) proaRealNum = 360;
     while (proaRealNum > 360) proaRealNum -= 360;
     const proaRealStr = String(proaRealNum).padStart(3, '0');
-
-    // 2º Espaço: Proa Autorizada (se houver comando ativo ou fora de LNAV ou Órbita HLD, senão 'hdg')
-    let proaAutStr = 'hdg';
-    if (aero.modoHolding && aero.modoHolding.ativo) {
-        proaAutStr = (aero.modoHolding.lado === 'E') ? 'HLD<' : 'HLD>';
-    } else if (aero.comandosAtivos && aero.comandosAtivos.heading && aero.comandosAtivos.heading.proa !== undefined && aero.comandosAtivos.heading.proa !== null) {
-        let pd = aero.comandosAtivos.heading.proa;
-        if (pd <= 0) pd = 360;
-        while (pd > 360) pd -= 360;
-        proaAutStr = String(pd).padStart(3, '0');
-    } else if (!aero.modoLNAV && aero.proaDestino !== null && aero.proaDestino !== undefined) {
-        let pd = Math.round(aero.proaDestino);
-        if (pd <= 0) pd = 360;
-        while (pd > 360) pd -= 360;
-        proaAutStr = String(pd).padStart(3, '0');
-    }
-
-    // 3º Espaço: Velocidade Autorizada (MIN, manual ou 'vel')
-    let velAutStr = 'vel';
-    if (aero.comandosAtivos && aero.comandosAtivos.speed) {
-        if (aero.comandosAtivos.speed.type === 'MIN') {
-            velAutStr = 'MIN';
-        } else if (aero.comandosAtivos.speed.type === 'NUM' && aero.comandosAtivos.speed.value) {
-            velAutStr = String(aero.comandosAtivos.speed.value);
-        }
-    } else if (aero.velocidadeMinima) {
-        velAutStr = 'MIN';
-    } else if (aero.velManual && aero.velComando) {
-        velAutStr = String(Math.round(aero.velComando));
-    }
 
     const posY = ly + 37;
 
@@ -170,32 +202,42 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
 
     const corPadrao = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
 
-    // Coluna 1: Proa Real (sempre à esquerda)
+    // Coluna 1: Proa Real (sempre à esquerda - visível apenas quando expandida)
     const col1X = textX;
-    ctx.fillStyle = corPadrao;
-    ctx.fillText(proaRealStr, col1X, posY);
+    if (aero.expandida) {
+        ctx.fillStyle = corPadrao;
+        ctx.fillText(proaRealStr, col1X, posY);
+    }
 
     // Coluna 2: Proa Autorizada / HLD (centro)
+    // Se expandida: mostra 'hdg' ou a proa escolhida
+    // Se reduzida: mostra apenas se houver proa escolhida no painel (caso contrário fica invisível)
     const col2X = textX + 30;
-    if (estaSelecionadaProa) {
-        ctx.fillStyle = '#004488';
-        ctx.fillRect(col2X - 2, posY - 13, 28, 14);
-        ctx.fillStyle = '#00ffff';
-    } else {
-        ctx.fillStyle = corPadrao;
+    if (aero.expandida || temProa) {
+        if (estaSelecionadaProa) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col2X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(proaAutStr, col2X, posY);
     }
-    ctx.fillText(proaAutStr, col2X, posY);
 
     // Coluna 3: Velocidade Autorizada (direita)
+    // Se expandida: mostra 'vel' ou a velocidade escolhida
+    // Se reduzida: mostra apenas se houver vel escolhida no painel (caso contrário fica invisível)
     const col3X = textX + 60;
-    if (estaSelecionadaVel) {
-        ctx.fillStyle = '#004488';
-        ctx.fillRect(col3X - 2, posY - 13, 28, 14);
-        ctx.fillStyle = '#00ffff';
-    } else {
-        ctx.fillStyle = corPadrao;
+    if (aero.expandida || temVel) {
+        if (estaSelecionadaVel) {
+            ctx.fillStyle = '#004488';
+            ctx.fillRect(col3X - 2, posY - 13, 28, 14);
+            ctx.fillStyle = '#00ffff';
+        } else {
+            ctx.fillStyle = corPadrao;
+        }
+        ctx.fillText(velAutStr, col3X, posY);
     }
-    ctx.fillText(velAutStr, col3X, posY);
 
     ctx.restore();
 }
@@ -214,17 +256,24 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
 export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada = false) {
     if (!estaLinhasExtrasVisiveis(aero)) return;
 
-    // Se a aeronave estiver com aproximação autorizada / modo APP, não renderiza razão e modo APP
     const vMode = (aero.posicaoRadar && aero.posicaoRadar.verticalMode)
         ? aero.posicaoRadar.verticalMode
         : (aero.verticalMode || VERTICAL_MODES.AUTO);
+
+    const temModManualVertical = Boolean(
+        aero.temModificacaoVertical ||
+        vMode === VERTICAL_MODES.ATC_RATE ||
+        vMode === VERTICAL_MODES.EXPEDITE ||
+        aero.clampedAtStructural ||
+        (aero.posicaoRadar && aero.posicaoRadar.clampedAtStructural)
+    );
+
+    // Linha 6 só renderiza se estiver expandida OU se houver modificação vertical manual ativa
+    if (!aero.expandida && !temModManualVertical) return;
+
+    // Se a aeronave estiver com aproximação autorizada / modo APP, não renderiza razão e modo APP
     if (aero.cleared_approach || aero.autorizadoProcedimento || vMode === 'APP' || vMode === 'G/S') {
-        const temModManual = Boolean(
-            aero.temModificacaoVertical ||
-            vMode === VERTICAL_MODES.ATC_RATE ||
-            vMode === VERTICAL_MODES.EXPEDITE
-        );
-        if (!temModManual) {
+        if (!temModManualVertical) {
             return;
         }
     }

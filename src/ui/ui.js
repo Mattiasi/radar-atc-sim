@@ -593,27 +593,10 @@ export class MenuProaController {
 
                     if (hdg === 'HLD') {
                         const lado = this.ladoCurva || 'D';
-                        const token = (lado === 'E') ? 'HLD<' : 'HLD>';
-
-                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'HEADING', token);
-                        if (state.aeroEditandoTexto === aero) {
-                            const el = document.getElementById('inputTextoLivre');
-                            if (el) el.value = aero.textoLivre;
-                        }
-
                         flightCommandService.setHolding(aero, lado);
                     } else {
                         const proaNum = parseInt(hdg, 10);
                         const lado = this.ladoCurva; // 'E', 'D' ou null
-                        let token = `H${hdg}`;
-                        if (lado) token += lado;
-
-                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'HEADING', token);
-                        if (state.aeroEditandoTexto === aero) {
-                            const el = document.getElementById('inputTextoLivre');
-                            if (el) el.value = aero.textoLivre;
-                        }
-
                         flightCommandService.setHeading(aero, proaNum, lado || false);
 
                         if (aero.comandosAtivos) {
@@ -772,21 +755,12 @@ export class MenuVelocidadeController {
                     const aero = state.aeroEditandoVelocidade;
 
                     if (spd === 'AUTO') {
-                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', null);
                         flightCommandService.setSpeed(aero, 'AUTO');
                     } else if (spd === 'MIN') {
-                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', 'MIN');
                         flightCommandService.setSpeed(aero, 'MIN');
                     } else {
                         const numSpd = parseInt(spd, 10);
-                        const token = `${numSpd}K`;
-                        aero.textoLivre = atualizarTokenScratchpad(aero.textoLivre, 'SPEED', token);
                         flightCommandService.setSpeed(aero, numSpd);
-                    }
-
-                    if (state.aeroEditandoTexto === aero) {
-                        const el = document.getElementById('inputTextoLivre');
-                        if (el) el.value = aero.textoLivre;
                     }
                 }
 
