@@ -174,13 +174,19 @@ export function pegarVetorProximo(telaX, telaY) {
 }
 
 /**
- * Desenha as linhas tracejadas que representam as bordas da TMA (Área de Controle Terminal).
+ * Desenha as linhas tracejadas que representam os limites da ATCSMAC.
+ * Padrão: Traços de 1 NM, espaçados em 1 NM, com um ponto (".") intercalado a 0.5 NM.
  */
 export function desenharLinhaATCSMAC(caminhoArray) {
     if (caminhoArray.length < 2) return;
+    const umNM = state.escala / 60;
+    const dashPx = 1.0 * umNM;
+    const dotPx = 2.0;
+    const gapPx = Math.max(1, 0.5 * umNM - dotPx / 2);
+
     state.ctx.strokeStyle = '#000000'; 
     state.ctx.lineWidth = 1.5; 
-    state.ctx.setLineDash([30, 30]); // Padrão tracejado largo
+    state.ctx.setLineDash([dashPx, gapPx, dotPx, gapPx]);
     
     state.ctx.beginPath(); 
     state.ctx.moveTo(pegarCoordenadaTela(caminhoArray[0]).x, pegarCoordenadaTela(caminhoArray[0]).y);
