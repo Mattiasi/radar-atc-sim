@@ -13,6 +13,15 @@ import { updateVNAV } from '../controllers/VNAVController.js';
 import { update_ils_tracking, getRunwayILS, calculateILSGeometry, ILS_LATERAL_MODES, ILS_VERTICAL_MODES } from '../controllers/ILSController.js';
 import { verificarTouchdown, processarRolloutESumico } from '../controllers/LandingRolloutManager.js';
 import { commandParser } from '../agents/CommandParser.js';
+import {
+    calcularVelocidadeAlvoEnergia,
+    calcularDistanciaDesaceleracao,
+    FLIGHT_ENERGY_STATES,
+    ENERGY_LEVELS,
+    findFAF,
+    calcularAlongTrackDistanceToFAF,
+    executarMissedApproach
+} from '../controllers/ApproachEnergyManager.js';
 
 /**
  * Classe principal que modela o comportamento físico, cinemático e lógico de cada aeronave.
@@ -34,15 +43,21 @@ import { commandParser } from '../agents/CommandParser.js';
 export function calcularTaxaDesacel(ac) {
     const perf = ac.perf || getAircraftPerformance(ac.tipo);
     const baseDesacel = (ac.taxaDesacel !== undefined) ? ac.taxaDesacel : (perf.taxaDesacel || perf.decelerationRate || 1.2);
-    const estaDescendo = ac.verticalSpeed && ac.verticalSpeed < -200; // ft/min
+    const vs = (ac.verticalSpeed !== undefined) ? ac.verticalSpeed : (ac.currentVS || 0);
 
-    if (estaDescendo) {
-        // Descendo: gravidade empurra a aeronave para frente, dificultando a desaceleração
-        return baseDesacel * (ac.speedbrakes ? 1.5 : 0.6);
-    } else {
-        // Nivelado em IDLE: taxa nominal da aeronave em PerformanceDB.js
-        return baseDesacel * (ac.speedbrakes ? 2.0 : 1.0);
+    // Dilema Descer vs. Desacelerar (Seção 9):
+    // Gravidade penaliza a desaceleração proporcionalmente à razão de descida
+    let penalidadeVS = 0;
+    if (vs < -200) {
+        penalidadeVS = Math.min(0.95, (-vs / 1000) * 0.42);
     }
+
+    let taxa = Math.max(0.15, baseDesacel - penalidadeVS);
+    if (ac.speedbrakes) taxa += 0.85;
+    if (ac.flaps) taxa += 0.40;
+    if (ac.gearDown || ac.tremDePouso) taxa += 0.55;
+
+    return taxa;
 }
 
 export function calcularTaxaAcel(ac) {
@@ -385,6 +400,15 @@ export class Aeronave {
         this._flight_phase = "IN_FLIGHT";
         this.just_touched_down = false;
 
+        // --- 11. SISTEMA DE ENERGIA E APROXIMAÇÃO BASEADO NO FAF ---
+        this.flightEnergyState = FLIGHT_ENERGY_STATES.CRUISE;
+        this.energyLevel = ENERGY_LEVELS.NORMAL;
+        this.alongTrackDistanceToFAF = null;
+        this.energyDebug = null;
+        this.missed_approach = false;
+        this.gearDown = false;
+        this.flaps = false;
+
         // Se nasceu autorizada VIA e o waypoint atual já pertence à IAC, engaja aproximação
         if (this.nivAutorizado === "VIA" || this.cleared_level === "VIA") {
             const activeWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
@@ -435,7 +459,7 @@ export class Aeronave {
 
     /**
      * Determina se a aeronave está próxima ou engajada no procedimento de aproximação (AIC / IAC).
-     * Retorna true se estiver voando para um fixo de IAC ou com DTG <= 14 NM.
+     * Requer associação lógica e geométrica com o procedimento (não confunde proximidade com aproximação).
      * @returns {boolean}
      */
     estaProximaDoAIC() {
@@ -445,12 +469,17 @@ export class Aeronave {
         if (wpAtual && isFixoIAC(wpAtual, this)) return true;
         if (this.wpOffRoute && isFixoIAC(this.wpOffRoute, this)) return true;
         if (this.wpPendente && typeof this.wpPendente === 'string' && isFixoIAC(this.wpPendente, this)) return true;
-        if (this.dtg !== undefined && this.dtg <= 14.0) return true;
+        if (this.cleared_approach || this.autorizadoProcedimento || this.ils_authorized) {
+            if (this.alongTrackDistanceToFAF && this.alongTrackDistanceToFAF.alongTrackNM !== null && this.alongTrackDistanceToFAF.alongTrackNM <= 14.0) {
+                return true;
+            }
+        }
         return false;
     }
 
     /**
-     * Getters e setters para compatibilidade com o padrão cinemático operacional (ac.speed / ac.targetSpeed)
+     * Getters e setters para compatibilidade cinemática (ac.speed / ac.actualSpeed / ac.targetSpeed)
+     * Atende à Seção 13: Diferenciar velocidade-alvo e velocidade real.
      */
     get speed() {
         return this.vel;
@@ -459,8 +488,15 @@ export class Aeronave {
         this.vel = val;
     }
 
+    get actualSpeed() {
+        return this.vel;
+    }
+    set actualSpeed(val) {
+        this.vel = val;
+    }
+
     get targetSpeed() {
-        return this.velDestino;
+        return (this.velDestino !== undefined) ? this.velDestino : this.velComando;
     }
     set targetSpeed(val) {
         this.velComando = val;
@@ -580,162 +616,27 @@ export class Aeronave {
     }
 
     /**
-     * Calcula dinamicamente a velocidade-alvo da aeronave considerando:
-     * - Distance-To-Go / DME calculado em tempo real
-     * - Performance individual da aeronave (AIRCRAFT_PERFORMANCE)
-     * - Desaceleração gradual e antecipação cinemática (Lookahead)
-     * - Tráfego precedente e taxa de fechamento sobre o solo (Ground Speed)
-     * - Prioridade de instruções ATC manuais e retomada automática
-     * - Acionamento automático de Spoilers/Speedbrakes sob descida e frenagem
+     * Calcula dinamicamente a velocidade-alvo e gerencia a energia da aeronave.
      * 
-     * Atende às Seções 1 a 23 da Especificação ATC.
+     * Prioridade estrita de execução (Seção 27):
+     * TRAJETÓRIA → FAF → DISTÂNCIA DISPONÍVEL → ENERGIA / V/S → PERFORMANCE → VELOCIDADE-ALVO → ACELERAÇÃO FÍSICA → VELOCIDADE REAL.
+     * 
+     * Substitui o modelo legado de raio euclidiano da pista por Along-Track Distance to FAF.
+     * Atende às Seções 1 a 27 da Especificação ATC.
+     * 
+     * @param {number} [dtSec=1.0] - Delta time em segundos
      * @returns {number} Velocidade-alvo em nós (KIAS).
      */
-    calcularVelocidadeAlvoDinamica() {
+    calcularVelocidadeAlvoDinamica(dtSec = 1.0) {
         if (this.on_ground || this.pousou || this.flight_phase === "LANDED") {
             return 0;
         }
 
-        const perf = this.perf || AIRCRAFT_PERFORMANCE[this.tipo] || AIRCRAFT_PERFORMANCE["DEFAULT"];
-        const dtg = this.calcularDistanceToGo();
-        this.dtg = dtg;
+        // Atualiza DTG referencial para telemetria
+        this.dtg = this.calcularDistanceToGo();
 
-        const maxSpd = perf.maxSpeedTMA || 260;
-        const minSpd = perf.minApproachSpeed || 125;
-        const vApp = perf.approachSpeed || 135;
-
-        // ---------------------------------------------------------------------
-        // 1. PRIORIDADE MÁXIMA: VELOCIDADE MÍNIMA ("MIN") OU INSTRUÇÃO ATC EXPLÍCITA
-        // ---------------------------------------------------------------------
-        if (this.velocidadeMinima) {
-            const vCleanMin = (perf.speeds && perf.speeds.vCleanMin) || 210;
-            const vAppMin = (perf.speeds && perf.speeds.vAppMin) || perf.minApproachSpeed || 135;
-
-            if (!this.estaProximaDoAIC()) {
-                // Distante do AIC/IAC (STAR / em rota): velocidade mínima limpa
-                this.sugestaoVel = vCleanMin;
-                return vCleanMin;
-            } else {
-                // Próxima do AIC / no procedimento: velocidade mínima de aproximação
-                if (dtg >= 4.0) {
-                    this.sugestaoVel = vAppMin;
-                    return vAppMin;
-                } else {
-                    // Curta final (< 4 NM): transição suave para Vapp
-                    const fatorFinal = Math.max(0, Math.min(1, (dtg - 1.0) / 3.0));
-                    const velTrans = vApp + fatorFinal * (vAppMin - vApp);
-                    const velClamp = Math.round(velTrans);
-                    this.sugestaoVel = velClamp;
-                    return velClamp;
-                }
-            }
-        }
-
-        // Se o ATC fixou uma velocidade manual (ex: "21K"), ela tem prioridade total (Seção 13).
-        // Exceção de segurança operacional: ao entrar na curta final (< 4 NM), o piloto
-        // virtual deve configurar e reduzir suavemente para Vapp para pousar (Seções 14 e 19).
-        if (this.velManual) {
-            if (dtg >= 4.0) {
-                const velClamp = Math.max(minSpd, Math.min(maxSpd, this.velComando));
-                this.sugestaoVel = velClamp;
-                return velClamp;
-            } else {
-                // Curta final (< 4 NM): transição suave para Vapp mesmo com velocidade manual anterior
-                const fatorFinal = Math.max(0, Math.min(1, (dtg - 1.0) / 3.0));
-                const velTeto = Math.min(this.velComando, perf.finalAppSpeed || 170);
-                const velTrans = vApp + fatorFinal * (velTeto - vApp);
-                const velClamp = Math.max(minSpd, Math.min(maxSpd, Math.round(velTrans)));
-                this.sugestaoVel = velClamp;
-                return velClamp;
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 2. PERFIL DE VELOCIDADE AUTOMÁTICO BASEADO EM DISTANCE-TO-GO
-        // ---------------------------------------------------------------------
-        // Perfil contínuo interpolado proporcionalmente à performance da aeronave (Seções 3, 5 e 6).
-        // Evita degraus bruscos: desaceleração progressiva a cada milha percorrida.
-        let vBase = maxSpd;
-
-        const v25 = perf.initialAppSpeed || 250;
-        const v15 = perf.intermediateAppSpeed || 205;
-        const v10 = perf.finalAppSpeed || 165;
-        const v4 = Math.min(v10, Math.max(vApp + 25, 160));
-
-        if (dtg > 35.0) {
-            vBase = maxSpd;
-        } else if (dtg > 25.0) {
-            // Entre 35 NM e 25 NM: transição de maxSpeedTMA para initialAppSpeed
-            const t = (dtg - 25.0) / 10.0;
-            vBase = v25 + t * (maxSpd - v25);
-        } else if (dtg > 15.0) {
-            // Entre 25 NM e 15 NM: desaceleração de initialAppSpeed para intermediateAppSpeed (~210 kt)
-            const t = (dtg - 15.0) / 10.0;
-            vBase = v15 + t * (v25 - v15);
-        } else if (dtg > 10.0) {
-            // Entre 15 NM e 10 NM: desaceleração de ~210 kt para finalAppSpeed (~180-165 kt)
-            const t = (dtg - 10.0) / 5.0;
-            vBase = v10 + t * (v15 - v10);
-        } else if (dtg > 4.0) {
-            // Entre 10 NM e 4 NM: final approach de ~180-165 kt para ~160 kt
-            const t = (dtg - 4.0) / 6.0;
-            vBase = v4 + t * (v10 - v4);
-        } else if (dtg > 1.0) {
-            // Entre 4 NM e 1 NM: desaceleração final para Vapp
-            const t = (dtg - 1.0) / 3.0;
-            vBase = vApp + t * (v4 - vApp);
-        } else {
-            vBase = vApp;
-        }
-
-        // ---------------------------------------------------------------------
-        // 3. ANTECIPAÇÃO CINEMÁTICA DE DESACELERAÇÃO (LOOKAHEAD PREDITIVO)
-        // ---------------------------------------------------------------------
-        // Se a aeronave estiver mais rápida que o perfil à frente, calcula a distância
-        // de frenagem necessária (Seções 6 e 7) para antecipar a redução suavemente.
-        const taxaEstimada = calcularTaxaDesacel(this);
-        const brackets = [
-            { d: 25.0, v: v25 },
-            { d: 15.0, v: v15 },
-            { d: 10.0, v: v10 },
-            { d: 4.0,  v: v4 },
-            { d: 1.0,  v: vApp }
-        ];
-
-        for (const b of brackets) {
-            if (dtg > b.d && this.vel > b.v) {
-                const tempoFrenagem = (this.vel - b.v) / Math.max(0.5, taxaEstimada);
-                const velMedia = (this.vel + b.v) / 2;
-                const distFrenagem = (velMedia / 3600) * tempoFrenagem + 1.0; // +1 NM margem
-
-                if ((dtg - b.d) <= distFrenagem) {
-                    vBase = Math.min(vBase, b.v);
-                }
-            }
-        }
-
-        // ---------------------------------------------------------------------
-        // 4. VELOCIDADE-ALVO SEM MONITORAMENTO AUTOMÁTICO DE TRÁFEGO PRECEDENTE
-        // ---------------------------------------------------------------------
-        // A responsabilidade de espaçamento e separação entre tráfegos cabe exclusivamente ao controlador ATC.
-        let vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(vBase)));
-
-        // ---------------------------------------------------------------------
-        // 5. ATUAÇÃO AUTOMÁTICA DE SPOILERS / SPEEDBRAKES (SEÇÃO 18)
-        // ---------------------------------------------------------------------
-        // Se a aeronave estiver em descida pronunciada e precisar desacelerar > 20 kt,
-        // ou taxa exigida for alta, o piloto virtual abre spoilers automaticamente.
-        if (!this.speedbrakesComando) {
-            const estaDescendoForte = (this.verticalSpeed && this.verticalSpeed < -400);
-            const precisaFrearMuito = (this.vel - vAlvo > 20);
-
-            if (estaDescendoForte && precisaFrearMuito) {
-                this.speedbrakes = true;
-            } else if (this.vel - vAlvo <= 5) {
-                this.speedbrakes = false;
-            }
-        }
-
+        // GESTÃO DE VELOCIDADE E ENERGIA BASEADA NO FAF (ApproachEnergyManager)
+        const vAlvo = calcularVelocidadeAlvoEnergia(this, dtSec);
         this.sugestaoVel = vAlvo;
         return vAlvo;
     }
@@ -874,7 +775,7 @@ export class Aeronave {
             this.currentIAS = this.vel;
             this.velComando = 0;
         } else {
-            const velAlvoBase = this.calcularVelocidadeAlvoDinamica();
+            const velAlvoBase = this.calcularVelocidadeAlvoDinamica(dtSec);
             this.velComando = velAlvoBase;
 
             // SIMULAÇÃO DE VARIAÇÃO ATMOSFÉRICA REALISTA (DELTA-TIME PURO):
@@ -978,7 +879,7 @@ export class Aeronave {
              this.autopilot.vertical_mode === ILS_VERTICAL_MODES.FLARE || 
              this.autopilot.vertical_mode === ILS_VERTICAL_MODES.TOUCHDOWN) &&
             (this.cleared_level === "ILS" || this.nivAutorizado === "ILS" || this.autopilot.ils_authorized)
-        );
+        ) && !this.missed_approach;
 
         if (!emILS) {
             const rwy = getRunwayData(this);
@@ -1000,7 +901,7 @@ export class Aeronave {
             // Se a aeronave já tocou o solo, gerencia a desaceleração, rolagem e ciclo de vida
             if (this.on_ground) {
                 processarRolloutESumico(this, rwy, dtSec, alongTrack);
-            } else if (heightAgl <= 500) {
+            } else if (heightAgl <= 500 && !this.missed_approach) {
                 const curWp = (this.rota && this.wpIndex < this.rota.length) ? this.rota[this.wpIndex] : null;
                 const emAproximacaoFinal = (
                     this.descent_mode === DESCENT_MODES.GLIDEPATH ||

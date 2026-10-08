@@ -1026,6 +1026,9 @@ export function desenharRadar() {
 
     // 5. Renderiza a mira e rótulo de coordenadas (Tecla C)
     desenharMiraCoordenadas();
+
+    // 6. HUD de Telemetria de Energia e Aproximação (Seção 24 - Tecla E)
+    desenharHUDEnergiaEAproximacao();
     } catch (e) {
         console.error("Crash during render:", e);
         state.ctx.fillStyle = '#000000';
@@ -1117,6 +1120,118 @@ export function desenharMiraCoordenadas() {
     state.ctx.textBaseline = 'middle';
     state.ctx.fillText(txtLat, boxX + 8, boxY + 10);
     state.ctx.fillText(txtLon, boxX + 8, boxY + 24);
+
+    state.ctx.restore();
+}
+
+/**
+ * Renderiza o HUD de Telemetria de Energia e Aproximação (Seção 24).
+ * Ativado ao pressionar a tecla 'E' ou quando state.mostrarHUDEnergia === true.
+ */
+export function desenharHUDEnergiaEAproximacao() {
+    if (!state.mostrarHUDEnergia) return;
+    if (!state.aeronaves || state.aeronaves.length === 0) return;
+
+    // Prioriza aeronave selecionada ou primeira em aproximação
+    const aero = state.aeroSelecionada ||
+        state.aeronaves.find(a => a.cleared_approach || (a.flightEnergyState && (a.flightEnergyState === 'APPROACH' || a.flightEnergyState === 'FINAL' || a.flightEnergyState === 'VECTOR_TO_APPROACH'))) ||
+        state.aeronaves[0];
+
+    if (!aero || !aero.energyDebug) return;
+
+    const dbg = aero.energyDebug;
+    state.ctx.save();
+
+    const w = 290;
+    const h = 160;
+    const x = state.canvas.width - w - 20;
+    const y = state.canvas.height - h - 30;
+
+    // Fundo escuro translúcido com borda moderna
+    state.ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+    state.ctx.fillRect(x, y, w, h);
+    state.ctx.strokeStyle = '#38bdf8';
+    state.ctx.lineWidth = 1.5;
+    state.ctx.strokeRect(x, y, w, h);
+
+    // Título do HUD
+    state.ctx.fillStyle = '#38bdf8';
+    state.ctx.font = 'bold 11px monospace';
+    state.ctx.textAlign = 'left';
+    state.ctx.fillText(`APPROACH ENERGY HUD [${aero.callsign}]`, x + 10, y + 16);
+
+    // Linha divisória
+    state.ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+    state.ctx.beginPath();
+    state.ctx.moveTo(x + 10, y + 22);
+    state.ctx.lineTo(x + w - 10, y + 22);
+    state.ctx.stroke();
+
+    // Informações
+    state.ctx.font = '10px monospace';
+
+    const corEstado = (dbg.state === 'FINAL') ? '#4ade80' :
+                      (dbg.state === 'APPROACH') ? '#38bdf8' :
+                      (dbg.state === 'MISSED_APPROACH') ? '#ef4444' :
+                      (dbg.state === 'VECTOR_TO_APPROACH') ? '#fbbf24' : '#cbd5e1';
+
+    const corNivel = (dbg.energyState === 'CRITICAL_ENERGY') ? '#ef4444' :
+                     (dbg.energyState === 'HIGH_ENERGY') ? '#fbbf24' :
+                     (dbg.energyState === 'LOW_ENERGY') ? '#60a5fa' : '#4ade80';
+
+    let row = y + 36;
+    const lh = 15;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('STATE:', x + 10, row);
+    state.ctx.fillStyle = corEstado;
+    state.ctx.fillText(`${dbg.state}`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('FAF ID:', x + 10, row);
+    state.ctx.fillStyle = '#f8fafc';
+    state.ctx.fillText(`${dbg.fafId} (Dest: ${aero.dest || 'SBSP'})`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('DIST TO FAF:', x + 10, row);
+    state.ctx.fillStyle = '#f8fafc';
+    const alongTxt = (dbg.alongTrackDist !== null && dbg.alongTrackDist !== undefined) ? `${dbg.alongTrackDist.toFixed(1)} NM` : (dbg.isSuspended ? 'SUSP' : 'N/A');
+    const straightTxt = (dbg.straightDist !== null && dbg.straightDist !== undefined) ? `${dbg.straightDist.toFixed(1)} NM` : 'N/A';
+    state.ctx.fillText(`${alongTxt} (Straight: ${straightTxt})`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('SPEED (IAS):', x + 10, row);
+    state.ctx.fillStyle = '#f8fafc';
+    state.ctx.fillText(`ACT: ${Math.round(dbg.actualSpeed)}kt | TGT: ${Math.round(dbg.targetSpeed)}kt`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('ENERGY LEVEL:', x + 10, row);
+    state.ctx.fillStyle = corNivel;
+    state.ctx.fillText(`${dbg.energyState}`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('GS / WIND:', x + 10, row);
+    state.ctx.fillStyle = '#f8fafc';
+    state.ctx.fillText(`GS: ${dbg.gs}kt | WND: ${dbg.wind}`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#94a3b8';
+    state.ctx.fillText('V/S & DRAG:', x + 10, row);
+    state.ctx.fillStyle = '#f8fafc';
+    const sbTxt = dbg.speedbrakes ? 'SB:EXT' : 'SB:RET';
+    const flTxt = aero.flaps ? 'FLAPS' : 'CLEAN';
+    const grTxt = aero.gearDown ? 'GEAR:DN' : 'GEAR:UP';
+    state.ctx.fillText(`${dbg.vs} fpm | ${sbTxt} | ${flTxt} | ${grTxt}`, x + 95, row);
+    row += lh;
+
+    state.ctx.fillStyle = '#64748b';
+    state.ctx.font = '9px monospace';
+    state.ctx.fillText('Pressione [E] para alternar HUD de Energia', x + 10, y + h - 5);
 
     state.ctx.restore();
 }

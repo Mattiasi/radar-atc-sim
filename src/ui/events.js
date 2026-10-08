@@ -410,6 +410,13 @@ export function configurarEventosUsuario() {
             return;
         }
 
+        // TECLA 'E': Alterna HUD de Telemetria de Energia e Aproximação (Seção 24)
+        if (tecla === 'E') {
+            state.mostrarHUDEnergia = !state.mostrarHUDEnergia;
+            desenharRadar();
+            return;
+        }
+
         // TECLAS 0-9: Configura a extensão do vetor de velocidade / paliteiro em minutos
         if (tecla >= '0' && tecla <= '9') { 
             state.minutosPaliteiro = parseInt(tecla, 10); 

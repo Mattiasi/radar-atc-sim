@@ -341,7 +341,7 @@ function montarDadosILS(aerodromo, pista, cabeceira, runwayId) {
  * @param {Object|null} runway_ils_data - Dados da cabeceira ILS ativa
  */
 export function update_ils_tracking(aircraft, dt, runway_ils_data) {
-    if (!aircraft || dt <= 0) return;
+    if (!aircraft || dt <= 0 || aircraft.missed_approach) return;
 
     // Inicializa a estrutura de autopilot se ainda não existir
     if (!aircraft.autopilot) {
