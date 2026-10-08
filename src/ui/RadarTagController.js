@@ -131,8 +131,8 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
     while (proaRealNum > 360) proaRealNum -= 360;
     const proaRealStr = String(proaRealNum).padStart(3, '0');
 
-    // 2º Espaço: Proa Autorizada (se houver comando ativo ou fora de LNAV ou Órbita HLD)
-    let proaAutStr = '---';
+    // 2º Espaço: Proa Autorizada (se houver comando ativo ou fora de LNAV ou Órbita HLD, senão 'hdg')
+    let proaAutStr = 'hdg';
     if (aero.modoHolding && aero.modoHolding.ativo) {
         proaAutStr = (aero.modoHolding.lado === 'E') ? 'HLD<' : 'HLD>';
     } else if (aero.comandosAtivos && aero.comandosAtivos.heading && aero.comandosAtivos.heading.proa !== undefined && aero.comandosAtivos.heading.proa !== null) {
@@ -147,8 +147,8 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
         proaAutStr = String(pd).padStart(3, '0');
     }
 
-    // 3º Espaço: Velocidade Autorizada (MIN, manual ou ---)
-    let velAutStr = '---';
+    // 3º Espaço: Velocidade Autorizada (MIN, manual ou 'vel')
+    let velAutStr = 'vel';
     if (aero.comandosAtivos && aero.comandosAtivos.speed) {
         if (aero.comandosAtivos.speed.type === 'MIN') {
             velAutStr = 'MIN';
