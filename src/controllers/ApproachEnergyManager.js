@@ -115,15 +115,19 @@ export function findFAF(aircraft) {
         }
     }
 
-    // 4. Mapeamento nominal canônico para os principais procedimentos conhecidos
+    // 4. Mapeamento nominal canônico para os principais procedimentos conhecidos (SBGR, SBSP, SBKP)
     if (!fafNome) {
-        const rwy = (aircraft.assigned_runway || aircraft.pistaAtribuida || "").replace("/", "");
-        if (dest === "SBSP" && (rwy === "17R" || rwy === "17")) fafNome = "SP139";
-        else if (dest === "SBSP" && (rwy === "35L" || rwy === "35")) fafNome = "SURBU";
-        else if (dest === "SBGR" && (rwy === "10R" || rwy === "10L" || rwy === "10")) fafNome = "OPSER";
-        else if (dest === "SBGR" && (rwy === "28L" || rwy === "28R" || rwy === "28")) fafNome = "VUSNI";
-        else if (dest === "SBKP" && (rwy === "15")) fafNome = "SEBSU";
-        else if (dest === "SBKP" && (rwy === "33")) fafNome = "ARNIV";
+        const rwy = (aircraft.assigned_runway || aircraft.pistaAtribuida || (rwyData && rwyData.nome) || "").replace("/", "").toUpperCase();
+        if (dest === "SBSP") {
+            if (rwy.includes("35")) fafNome = "SURBU";
+            else fafNome = "SP139";
+        } else if (dest === "SBGR") {
+            if (rwy.includes("28")) fafNome = "VUSNI";
+            else fafNome = "OPSER";
+        } else if (dest === "SBKP") {
+            if (rwy.includes("33")) fafNome = "ARNIV";
+            else fafNome = "SEBSU";
+        }
     }
 
     if (!fafNome) return null;
@@ -675,41 +679,134 @@ export function calcularVelocidadeAlvoEnergia(aircraft, dtSec = 1.0) {
     }
 
     // -------------------------------------------------------------------------
-    // 3. COMANDO MANUAL DO ATCO ("21K" / "210 KT" / "MIN") - SEÇÃO 18
+    // 3. COMANDO MANUAL DO ATCO ("21K" / "210 KT" / "300 KT" / "MIN") - SEÇÃO 18
     // -------------------------------------------------------------------------
-    // Comandos manuais do controlador têm prioridade absoluta.
-    // Exceção estrita de segurança operacional: ao ingressar na curta final (< 4 NM da pista),
-    // o piloto virtual deve configurar aeronave e desacelerar gradualmente para VAPP para pousar.
+    // Comandos manuais do controlador têm prioridade de sequenciamento na TMA.
+    // Regra Operacional Realista para todos os aeródromos (SBGR, SBSP, SBKP):
+    // 1. Longe do FAF (distToFAF > distDecelFAF): mantém velocidade comandada pelo ATC (ex: 300 kt a 25 NM).
+    // 2. Antes do FAF (distToFAF <= distDecelFAF): inicia desaceleração antecipada (Top of Deceleration)
+    //    para cruzar o FAF perfeitamente estabilizado na velocidade de aproximação intermediária (160 kt).
+    // 3. Do FAF até 3.0 NM da pista: transição suave e gradual de 160 kt para Vapp.
+    // 4. A 3.0 NM ou menos (< 1000 ft AGL): estabilizado em Vapp até o pouso.
+    // 5. Ao atingir o FAF ou o segmento final, cancela velManual permitindo que a tripulação gerencie Vapp.
     const distToThreshold = alongTrackInfo.distanceToThresholdNM || alongTrackInfo.straightDistNM || 99;
+    const fafDistToThreshold = (fafData && fafData.distanceToThresholdNM) || 5.5;
+    const vAlvoFAF = (perf.speeds && perf.speeds.vFAF) || perf.finalAppSpeed || 160;
+
+    let distToFAF = 99;
+    if (alongTrackInfo.isPastFAF) {
+        distToFAF = 0;
+    } else if (typeof alongTrackInfo.alongTrackNM === 'number' && !alongTrackInfo.isSuspended) {
+        distToFAF = Math.max(0, alongTrackInfo.alongTrackNM);
+    } else if (distToThreshold !== 99) {
+        distToFAF = Math.max(0, distToThreshold - fafDistToThreshold);
+    } else if (typeof alongTrackInfo.straightDistToFAFNM === 'number') {
+        distToFAF = Math.max(0, alongTrackInfo.straightDistToFAFNM);
+    }
 
     if (aircraft.velocidadeMinima) {
         const vCleanMin = (perf.speeds && perf.speeds.vCleanMin) || 210;
         const vAppMin = (perf.speeds && perf.speeds.vAppMin) || vApp;
 
-        if (distToThreshold >= 4.0 && !alongTrackInfo.isPastFAF) {
+        if (alongTrackInfo.isPastFAF || distToThreshold <= (fafDistToThreshold + 0.2) || distToFAF <= 0.1) {
+            aircraft.velocidadeMinima = false;
+            if (aircraft.comandosAtivos) aircraft.comandosAtivos.speed = { type: 'AUTO' };
+
+            if (distToThreshold <= 3.0) {
+                aircraft.targetSpeed = vApp;
+                return vApp;
+            } else {
+                const rangeFinal = Math.max(1.0, fafDistToThreshold - 3.0);
+                const fatorFinal = Math.max(0, Math.min(1, (distToThreshold - 3.0) / rangeFinal));
+                const velTrans = vApp + fatorFinal * (vAppMin - vApp);
+                const vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(velTrans)));
+                aircraft.targetSpeed = vAlvo;
+                return vAlvo;
+            }
+        }
+
+        if (alongTrackInfo.isDiverging) {
+            aircraft.targetSpeed = vCleanMin;
+            return vCleanMin;
+        }
+
+        const speedToLose = Math.max(0, vCleanMin - vAlvoFAF);
+        const distDecelFAF = Math.max(5.0, (speedToLose / 10.0) + 2.5);
+
+        if (distToFAF > distDecelFAF) {
             aircraft.targetSpeed = vCleanMin;
             return vCleanMin;
         } else {
-            // Curta final: desaceleração suave para Vapp
-            const fatorFinal = Math.max(0, Math.min(1, (distToThreshold - 1.0) / 3.0));
-            const velTrans = vApp + fatorFinal * (vAppMin - vApp);
-            const vAlvo = Math.round(velTrans);
+            const progresso = Math.max(0, Math.min(1, distToFAF / distDecelFAF));
+            const vInterpolada = vAlvoFAF + progresso * (vCleanMin - vAlvoFAF);
+            const vAlvo = Math.max(vAlvoFAF, Math.min(maxSpd, Math.round(vInterpolada)));
             aircraft.targetSpeed = vAlvo;
             return vAlvo;
         }
     }
 
     if (aircraft.velManual) {
-        if (distToThreshold >= 4.0 && !alongTrackInfo.isPastFAF) {
-            const vComandoClamp = Math.max(minSpd, Math.min(maxSpd, aircraft.velComando));
+        const vComandoClamp = Math.max(minSpd, Math.min(maxSpd, aircraft.velComando));
+
+        // Ao cruzar ou atingir o FAF (ou estar no segmento final da pista):
+        // Cancela comando manual do ATC para estabilizar aproximação em Vapp.
+        if (alongTrackInfo.isPastFAF || distToThreshold <= (fafDistToThreshold + 0.2) || distToFAF <= 0.1) {
+            aircraft.velManual = false;
+            aircraft.velComando = null;
+            if (aircraft.comandosAtivos) aircraft.comandosAtivos.speed = { type: 'AUTO' };
+
+            if (distToThreshold <= 3.0) {
+                // Curta final (< 3 NM / 1000 ft AGL): estabilizado em Vapp até o pouso
+                aircraft.targetSpeed = vApp;
+                return vApp;
+            } else {
+                // Do FAF até 3.0 NM: desaceleração gradual e contínua de 160 kt para Vapp
+                const rangeFinal = Math.max(1.0, fafDistToThreshold - 3.0);
+                const fatorFinal = Math.max(0, Math.min(1, (distToThreshold - 3.0) / rangeFinal));
+                const velTrans = vApp + fatorFinal * (vAlvoFAF - vApp);
+                const vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(velTrans)));
+                aircraft.targetSpeed = vAlvo;
+                return vAlvo;
+            }
+        }
+
+        // Se vetor for divergente (ex: perna do vento), mantém velocidade comandada pelo ATC
+        if (alongTrackInfo.isDiverging) {
+            aircraft.targetSpeed = vComandoClamp;
+            return vComandoClamp;
+        }
+
+        // Aeronave convergindo ou em rota para o FAF:
+        const speedToLose = Math.max(0, Math.max(curSpeed, vComandoClamp) - vAlvoFAF);
+
+        if (speedToLose <= 0) {
+            // Velocidade já é menor ou igual à velocidade do FAF (160 kt)
+            aircraft.targetSpeed = vComandoClamp;
+            return vComandoClamp;
+        }
+
+        // Distância necessária para desacelerar com margem de segurança de 3.0 NM antes do FAF
+        const decelEst = calcularDistanciaDesaceleracao(
+            Math.max(curSpeed, vComandoClamp),
+            vAlvoFAF,
+            currentVS,
+            perf,
+            gs,
+            aircraft.speedbrakes,
+            aircraft.flaps
+        );
+        const distDecelFAF = Math.max(decelEst.distNM + 3.0, (speedToLose / 10.0) + 3.0);
+
+        if (distToFAF > distDecelFAF) {
+            // Longe do FAF (ex: 25 NM com 300 kt comandado): acelera/mantém velocidade do ATC
             aircraft.targetSpeed = vComandoClamp;
             return vComandoClamp;
         } else {
-            // Curta final (< 4 NM): transição suave para Vapp para garantir toque seguro
-            const fatorFinal = Math.max(0, Math.min(1, (distToThreshold - 1.0) / 3.0));
-            const velTeto = Math.min(aircraft.velComando, perf.finalAppSpeed || 170);
-            const velTrans = vApp + fatorFinal * (velTeto - vApp);
-            const vAlvo = Math.max(minSpd, Math.min(maxSpd, Math.round(velTrans)));
+            // Janela de desaceleração (Top of Deceleration) para o FAF:
+            // Interpolação suave e contínua em direção a 160 kt no FAF
+            const progresso = Math.max(0, Math.min(1, distToFAF / distDecelFAF));
+            const vInterpolada = vAlvoFAF + progresso * (vComandoClamp - vAlvoFAF);
+            const vAlvo = Math.max(vAlvoFAF, Math.min(maxSpd, Math.round(vInterpolada)));
             aircraft.targetSpeed = vAlvo;
             return vAlvo;
         }
@@ -825,16 +922,17 @@ export function calcularVelocidadeAlvoEnergia(aircraft, dtSec = 1.0) {
             // FASE FINAL APÓS O FAF (SEÇÃO 21)
             // -----------------------------------------------------------------
             // A velocidade transita de 160 kt suavemente até VAPP para o pouso.
+            // Estabilização completa em Vapp ocorre até 3.0 NM da pista (1000 ft AGL).
             const distFinal = alongTrackInfo.distanceToThresholdNM || distToThreshold;
-            if (distFinal > 4.0) {
-                vCalculada = perf.finalAppSpeed || 160;
-            } else if (distFinal > 1.0) {
-                // Entre 4 NM e 1 NM: transição gradual para Vapp
-                const t = (distFinal - 1.0) / 3.0;
-                vCalculada = vApp + t * ((perf.finalAppSpeed || 160) - vApp);
-            } else {
-                // Menos de 1 NM: estabilizado em Vapp
+            const fafDist = (fafData && fafData.distanceToThresholdNM) || 5.5;
+            if (distFinal <= 3.0) {
+                // Curta final (<= 3 NM / 1000 ft AGL): estabilizado em Vapp até o pouso
                 vCalculada = vApp;
+            } else {
+                // Entre o FAF e 3.0 NM: transição suave e gradual de 160 kt para Vapp
+                const rangeFinal = Math.max(1.0, fafDist - 3.0);
+                const t = Math.max(0, Math.min(1, (distFinal - 3.0) / rangeFinal));
+                vCalculada = vApp + t * ((perf.finalAppSpeed || 160) - vApp);
             }
             break;
         }

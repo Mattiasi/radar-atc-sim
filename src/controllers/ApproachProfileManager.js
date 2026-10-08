@@ -529,14 +529,13 @@ export function update_approach_vertical_profile(aircraft, dtSec, active_iac = n
         const vsCorr = Math.max(-500, Math.min(400, altErrorFt * 3.0));
         let vsGlidepath = vsNominal + vsCorr;
 
-        // Gestão de velocidade na aproximação final (desaceleração para Vapp)
-        if (alongTrackNM <= 6.0 && alongTrackNM > 3.0) {
-            aircraft.targetIAS = 160;
-        } else if (alongTrackNM <= 3.0) {
-            aircraft.targetIAS = aircraft.approachSpeed || 135;
-        }
+        // Gestão de velocidade na aproximação final (integrada com ApproachEnergyManager)
+        const vApp = aircraft.approachSpeed || 135;
+        const vTgtFinal = (aircraft.targetSpeed !== undefined) ? aircraft.targetSpeed : (alongTrackNM <= 3.0 ? vApp : 160);
+        aircraft.targetIAS = vTgtFinal;
         if (aircraft.targetIAS && aircraft.vel > aircraft.targetIAS) {
-            aircraft.vel = Math.max(aircraft.targetIAS, aircraft.vel - 3.0 * dtSec);
+            const decelStep = Math.min(2.0, (aircraft.vel - aircraft.targetIAS) * 0.35 + 0.8) * dtSec;
+            aircraft.vel = Math.max(aircraft.targetIAS, aircraft.vel - decelStep);
             aircraft.currentIAS = aircraft.vel;
         }
 

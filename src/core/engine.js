@@ -219,6 +219,7 @@ export function gerenciarEsteiraDeTrafego() {
         if (!isFixoDeCabeceiraAtiva(fixoAlvo, destino, cartaNome)) return;
 
         let vivosNestaEsteira = false;
+        let gerouSucessorNesteTick = false;
 
         // 1. Loop por todas as aeronaves para verificar gatilho de spawn
         state.aeronaves.forEach(aero => {
@@ -227,19 +228,40 @@ export function gerenciarEsteiraDeTrafego() {
             if (pertenceAEsteira && !aero.pousou) {
                 // Apenas aeronaves que AINDA NÃO cruzaram o fixo contam como vivas na fila de espera da esteira
                 if (!aero.gerouSucessor) {
-                    vivosNestaEsteira = true;
-
                     let distTrigger = calcularRumoDistancia(aero, state.fixos[fixoAlvo]).distanciaNM;
                     if (aero.distTriggerAnt === undefined) aero.distTriggerAnt = distTrigger;
 
+                    // Critérios robustos para detectar que a aeronave cruzou ou liberou o fixo de entrada:
+                    // 1. Passou a menos de 1.5 NM do fixo
+                    // 2. O índice de waypoint na rota já avançou além do fixo alvo (fly-by completado no LNAV)
+                    // 3. Afastando do fixo após ponto de aproximação mínima
+                    // 4. Foi vetorada fora da rota (não está mais em LNAV) ou instruída direto para outro fixo (wpOffRoute)
+                    // 5. Já está a mais que a separação configurada de distância e se afastando
+                    const idxFixoAlvo = (aero.rota && Array.isArray(aero.rota)) ? aero.rota.indexOf(fixoAlvo) : -1;
+                    const jaAvancouWp = (idxFixoAlvo !== -1 && aero.wpIndex > idxFixoAlvo);
+                    const foiVetorada = (!aero.modoLNAV || aero.wpOffRoute !== null);
+                    const afastandoAposPassagem = (distTrigger > aero.distTriggerAnt && aero.distTriggerAnt < (esteira.separacao || 15));
+                    const foraDaEsteira = (distTrigger > (esteira.separacao || 15) + 3.0 && distTrigger > aero.distTriggerAnt);
+
                     let passou = false;
-                    if (distTrigger <= 1.0) passou = true;
-                    else if (distTrigger > aero.distTriggerAnt && aero.distTriggerAnt < 10) passou = true;
+                    if (distTrigger <= 1.5) {
+                        passou = true;
+                    } else if (jaAvancouWp) {
+                        passou = true;
+                    } else if (afastandoAposPassagem) {
+                        passou = true;
+                    } else if (foiVetorada) {
+                        passou = true;
+                    } else if (foraDaEsteira) {
+                        passou = true;
+                    }
 
                     aero.distTriggerAnt = distTrigger;
 
                     if (passou) {
                         aero.gerouSucessor = true;
+                        gerouSucessorNesteTick = true;
+                        vivosNestaEsteira = true;
 
                         // Se a esteira estiver ativa, gera o sucessor respeitando a separação
                         if (esteira.ativo) {
@@ -247,7 +269,7 @@ export function gerenciarEsteiraDeTrafego() {
                             const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, destFinal, cartaNome);
                             if (rotaCompleta && rotaCompleta.length > 0) {
                                 let margem = Math.random() * 2.0;
-                                let separacaoReal = esteira.separacao + margem;
+                                let separacaoReal = (esteira.separacao || 15) + margem;
                                 let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, separacaoReal);
 
                                 if (spawnPt) {
@@ -269,13 +291,25 @@ export function gerenciarEsteiraDeTrafego() {
                                 }
                             }
                         }
+                    } else {
+                        // Aeronave ainda a caminho do fixo
+                        vivosNestaEsteira = true;
                     }
                 }
             }
         });
 
-        // 2. Injeção de Aeronave: se a esteira está ligada e não há ninguém aguardando cruzar o fixo (vivosNestaEsteira = false)
-        if (esteira.ativo && !vivosNestaEsteira) {
+        // 2. Injeção de Aeronave Inicial:
+        // APENAS se a esteira está ligada, não há sucessor gerado neste tick, não há ninguém aguardando cruzar o fixo,
+        // E NÃO EXISTE NENHUMA AERONAVE PRÓXIMA DO MARCO ZERO (< 6 NM).
+        const temAeroNoMarcoZero = state.aeronaves.some(a => {
+            if (a.pousou) return false;
+            if (!state.fixos[fixoAlvo]) return false;
+            const d = calcularRumoDistancia(a, state.fixos[fixoAlvo]).distanciaNM;
+            return d < 6.0;
+        });
+
+        if (esteira.ativo && !vivosNestaEsteira && !gerouSucessorNesteTick && !temAeroNoMarcoZero) {
             const { rotaCompleta } = obterTrajetoriaCompletaAteFixo(fixoAlvo, destino, cartaNome);
             if (rotaCompleta && rotaCompleta.length > 0) {
                 let spawnPt = calcularPontoNaMilhagem(rotaCompleta, fixoAlvo, 0); // Spawna no marco zero
