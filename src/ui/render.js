@@ -73,9 +73,12 @@ export function pegarAeronaveProxima(telaX, telaY) {
         let lx = pt.x + Math.cos(aero.labelAngle) * aero.labelDist; // Ponto âncora X da etiqueta
         let ly = pt.y - Math.sin(aero.labelAngle) * aero.labelDist; // Ponto âncora Y da etiqueta
         
+        const TAG_WIDTH = 95;
+        let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
+        
         // Define os limites da caixa invisível ao redor do texto
-        let minX = isRight ? lx + 5 : lx - 135;
-        let maxX = isRight ? lx + 135 : lx - 5;
+        let minX = textX - 4;
+        let maxX = textX + TAG_WIDTH + 8;
         
         // Se o clique caiu dentro do retângulo da etiqueta (engloba até a linha 4 quando recolhida, ou linha 6 quando expandida/modificada)
         const linhasExtras = estaLinhasExtrasVisiveis(aero);
@@ -923,12 +926,13 @@ export function desenharRadar() {
         state.ctx.lineTo(lx + 10 * dir, ly); 
         state.ctx.stroke();
 
-        // Configura tipografia do bloco de dados
+        // Configura tipografia do bloco de dados (sempre alinhada à esquerda)
         state.ctx.font = '12px monospace';
-        state.ctx.textAlign = isRight ? 'left' : 'right'; 
+        state.ctx.textAlign = 'left'; 
         state.ctx.textBaseline = 'bottom';
         
-        let textX = lx + 12 * dir;
+        const TAG_WIDTH = 95;
+        let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
         const radarSnap = aero.posicaoRadar || aero;
         const gsDisplay = Math.round(radarSnap.groundSpeed !== undefined ? radarSnap.groundSpeed : (aero.groundSpeed !== undefined ? aero.groundSpeed : aero.vel));
         const nivDisplay = ((radarSnap.nivAtual !== undefined && radarSnap.nivAtual !== null) ? radarSnap.nivAtual : (aero.nivAtual || "")).toString();
@@ -939,74 +943,50 @@ export function desenharRadar() {
             state.ctx.fillStyle = corSquawk; 
             state.ctx.fillText("2000", textX, ly - 15);
             state.ctx.fillStyle = 'hsl(0, 3%, 78%)'; 
-            if (isRight) state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
-            else state.ctx.fillText(nivDisplay, textX - 35, ly - 2); 
-            
+            state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
             state.ctx.fillText(`${gsDisplay.toString().padEnd(5, ' ')}`, textX, ly + 11);
         } else {
             // Renderização padrão em rota
             
-            // LINHA 1: Callsign e Tipo de Aeronave
-            // O callsign fica verde (#00e676) se a etiqueta estiver expandida; caso contrário, fica preto (#000000).
+            // LINHA 1: Callsign e Tipo de Aeronave (sempre Callsign à esquerda, Tipo à direita)
             const corCallsign = aero.expandida ? '#00e676' : '#000000';
             const callsignTexto = (aero.callsign || "").padEnd(8, ' ');
 
-            if (isRight) {
-                state.ctx.fillStyle = corCallsign;
-                state.ctx.fillText(callsignTexto, textX, ly - 15);
-                state.ctx.fillStyle = '#000000';
-                const offsetTipo = state.ctx.measureText(callsignTexto + ' ').width;
-                state.ctx.fillText(aero.tipo, textX + offsetTipo, ly - 15);
-            } else {
-                state.ctx.fillStyle = '#000000';
-                state.ctx.fillText(aero.tipo, textX, ly - 15);
-                const offsetTipo = state.ctx.measureText(' ' + aero.tipo).width;
-                state.ctx.fillStyle = corCallsign;
-                state.ctx.fillText(callsignTexto, textX - offsetTipo, ly - 15);
-            }
-            
-            // LINHA 2: Altitude Atual e Altitude Autorizada
-            let offsetNivAut;
+            state.ctx.fillStyle = corCallsign;
+            state.ctx.fillText(callsignTexto, textX, ly - 15);
             state.ctx.fillStyle = '#000000';
-            if (isRight) {
-                state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
-                offsetNivAut = textX + 45; // Distanciamento horizontal
-                
-                // Desenha fundo de highlight se o menu dropdown deste avião estiver aberto
-                if (aero === state.aeroEditandoNivel) { 
-                    state.ctx.fillStyle = '#004488'; 
-                    state.ctx.fillRect(offsetNivAut - 2, ly - 14, 28, 14); 
-                }
-                state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : '#000000'; 
-                state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
-            } else {
-                state.ctx.fillText(nivDisplay, textX - 35, ly - 2); 
-                offsetNivAut = textX;
-                
-                if (aero === state.aeroEditandoNivel) { 
-                    state.ctx.fillStyle = '#004488'; 
-                    state.ctx.fillRect(offsetNivAut - 25, ly - 14, 28, 14); 
-                }
-                state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : '#000000'; 
-                state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
+            const offsetTipo = state.ctx.measureText(callsignTexto + ' ').width;
+            state.ctx.fillText(aero.tipo || "", textX + offsetTipo, ly - 15);
+            
+            // LINHA 2: Altitude Atual e Altitude Autorizada (sempre Nível Atual à esquerda, Nível Autorizado à direita)
+            let offsetNivAut = textX + 45; // Distanciamento horizontal padrão
+            state.ctx.fillStyle = '#000000';
+            state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
+            
+            // Desenha fundo de highlight se o menu dropdown deste avião estiver aberto
+            if (aero === state.aeroEditandoNivel) { 
+                state.ctx.fillStyle = '#004488'; 
+                state.ctx.fillRect(offsetNivAut - 2, ly - 14, 28, 14); 
             }
+            state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : '#000000'; 
+            state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
             
             // LINHA 3: Velocidade Computada (Ground Speed) e Destino
             state.ctx.fillStyle = '#000000'; 
-            state.ctx.fillText(`${gsDisplay.toString().padEnd(5, ' ')} ${aero.dest}`, textX, ly + 11);
+            state.ctx.fillText(`${gsDisplay.toString().padEnd(5, ' ')} ${aero.dest || ""}`, textX, ly + 11);
         }
         
         // LINHA 4: Scratchpad (Bloco de anotações do controlador e de envio de comandos ao avião)
         state.ctx.fillStyle = '#000000';
         if (aero === state.aeroEditandoTexto) {
             // Atualiza a posição do input HTML encapsulado sobre a etiqueta
-            scratchpadUI.posicionar(isRight ? textX : (textX - 80), ly + 13, isRight ? 'left' : 'right');
+            scratchpadUI.posicionar(textX, ly + 13, 'left');
             
             // Desenha um sublinhado azul ciano piscante no canvas para destacar qual avião está ativo
             state.ctx.strokeStyle = '#00ffff'; 
             state.ctx.beginPath(); 
             state.ctx.moveTo(textX, ly + 26); 
-            state.ctx.lineTo(isRight ? textX + 80 : textX - 80, ly + 26); 
+            state.ctx.lineTo(textX + 80, ly + 26); 
             state.ctx.stroke();
         } else {
             // A quarta linha exibe textoLivre (apagada fisicamente quando APP ou ILS é selecionado)

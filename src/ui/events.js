@@ -48,7 +48,7 @@ export function mostrarInputTexto(aero) {
 }
 
 export function ocultarInputTexto() {
-    scratchpadUI.confirmar();
+    scratchpadUI.cancelar();
 }
 
 /**
@@ -113,9 +113,11 @@ export function configurarEventosUsuario() {
                 
                 let lx = pt.x + Math.cos(aero.labelAngle) * aero.labelDist; 
                 let ly = pt.y - Math.sin(aero.labelAngle) * aero.labelDist;
+                const TAG_WIDTH = 95;
+                let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
                 
-                let minX = isRight ? lx + 5 : lx - 135; 
-                let maxX = isRight ? lx + 135 : lx - 5;
+                let minX = textX - 4; 
+                let maxX = textX + TAG_WIDTH + 8;
                 
                 const linhasExtras = estaLinhasExtrasVisiveis(aero);
                 const maxEtiquetaY = linhasExtras ? (ly + 58) : (ly + 28);
@@ -126,7 +128,7 @@ export function configurarEventosUsuario() {
                     
                     if (linhasExtras && e.clientY >= ly + 38 && e.clientY <= ly + 58) {
                         // Linha 6 da etiqueta: Razão Vertical e Modo (AUTO, ATC-R, EXPD)
-                        scratchpadUI.confirmar();
+                        scratchpadUI.cancelar();
                         menuRazaoController.abrir(aero, e.clientX, e.clientY);
                         return;
                     } else if (linhasExtras && e.clientY >= ly + 26 && e.clientY < ly + 38) {
@@ -134,20 +136,15 @@ export function configurarEventosUsuario() {
                         let clicouNaProa = false;
                         let clicouNaVel = false;
 
-                        if (isRight) {
-                            if (e.clientX >= lx + 36 && e.clientX <= lx + 66) clicouNaProa = true;
-                            else if (e.clientX >= lx + 67 && e.clientX <= lx + 105) clicouNaVel = true;
-                        } else {
-                            if (e.clientX >= lx - 70 && e.clientX <= lx - 40) clicouNaProa = true;
-                            else if (e.clientX >= lx - 39 && e.clientX <= lx - 5) clicouNaVel = true;
-                        }
+                        if (e.clientX >= textX + 26 && e.clientX <= textX + 57) clicouNaProa = true;
+                        else if (e.clientX >= textX + 58 && e.clientX <= textX + 98) clicouNaVel = true;
 
                         if (clicouNaProa) {
-                            scratchpadUI.confirmar();
+                            scratchpadUI.cancelar();
                             menuProaUI.abrir(aero, e.clientX, e.clientY);
                             return;
                         } else if (clicouNaVel) {
-                            scratchpadUI.confirmar();
+                            scratchpadUI.cancelar();
                             menuVelocidadeUI.abrir(aero, e.clientX, e.clientY);
                             return;
                         } else {
@@ -155,30 +152,43 @@ export function configurarEventosUsuario() {
                             state.aeroArrastandoLabel = aero;
                         }
                     } else if (e.clientY >= ly + 12 && e.clientY <= ly + 26) { 
-                        // Linha 4 da etiqueta: Scratchpad / Texto Livre (só abre se clicar especificamente nesta linha)
-                        clicouEmTextoAtivo = true;
-                        if (state.aeroEditandoTexto !== aero) {
-                            state.aeroArrastandoLabel = null;
-                            scratchpadUI.abrir(aero);
+                        // Linha 4 da etiqueta: Scratchpad / Texto Livre
+                        // Hitbox precisa diretamente sobre a área de texto (textX até textX + 80)
+                        let clicouNoTexto = (e.clientX >= textX && e.clientX <= textX + 80 && e.clientY >= ly + 12 && e.clientY <= ly + 26);
+                        if (clicouNoTexto) {
+                            clicouEmTextoAtivo = true;
+                            if (state.aeroEditandoTexto !== aero) {
+                                state.aeroArrastandoLabel = null;
+                                scratchpadUI.abrir(aero);
+                            }
+                        } else {
+                            // Clicou fora do texto da Linha 4: inicia reposicionamento da etiqueta
+                            state.aeroArrastandoLabel = aero;
+                            state.aeroClicadoCallsign = null;
                         }
                     } else if (e.clientY >= ly - 14 && e.clientY <= ly + 1) {
                         // Linha 2 da etiqueta: Altitude Atual e Nível Autorizado (CFL)
-                        let clicouNoNivel = false;
-                        if (isRight && e.clientX >= lx + 50 && e.clientX <= lx + 90) clicouNoNivel = true;
-                        if (!isRight && e.clientX >= lx - 45 && e.clientX <= lx - 5) clicouNoNivel = true;
+                        // Hitbox precisa e ajustada diretamente sobre o número do Nível Autorizado (textX + 43 até textX + 71)
+                        let clicouNoNivel = (e.clientX >= textX + 43 && e.clientX <= textX + 71 && e.clientY >= ly - 14 && e.clientY <= ly);
                         
                         if (clicouNoNivel) { 
-                            scratchpadUI.confirmar();
+                            scratchpadUI.cancelar();
                             menuNivelUI.abrir(aero, e.clientX, e.clientY);
                             return; 
                         } else { 
-                            // Clicou fora do campo CFL: inicia reposicionamento da etiqueta
+                            // Clicou fora do campo CFL (ex: na altitude atual ou espaço livre): inicia reposicionamento da etiqueta
                             state.aeroArrastandoLabel = aero; 
                             state.aeroClicadoCallsign = null;
                         }
                     } else if (e.clientY >= ly - 27 && e.clientY <= ly - 12) {
                         // Linha 1 da etiqueta: Callsign e Tipo de Aeronave
-                        state.aeroClicadoCallsign = aero;
+                        // Hitbox precisa diretamente sobre o texto do Callsign (textX até textX + 58 e ly - 26 até ly - 13)
+                        let clicouNoCallsign = (e.clientX >= textX && e.clientX <= textX + 58 && e.clientY >= ly - 26 && e.clientY <= ly - 13);
+                        if (clicouNoCallsign) {
+                            state.aeroClicadoCallsign = aero;
+                        } else {
+                            state.aeroClicadoCallsign = null;
+                        }
                         state.aeroArrastandoLabel = aero;
                     } else { 
                         // Linha 3 (Velocidade) ou área livre: inicia reposicionamento da etiqueta
@@ -209,9 +219,9 @@ export function configurarEventosUsuario() {
             }
 
             if (clicouEtiqueta) {
-                // Se clicou na etiqueta mas não no scratchpad, confirma edição anterior
+                // Se clicou na etiqueta mas não no scratchpad, cancela edição anterior não validada por Enter
                 if (!clicouEmTextoAtivo && scratchpadUI.estaAtivo()) {
-                    scratchpadUI.confirmar();
+                    scratchpadUI.cancelar();
                 }
                 // Desmarca vetor selecionado ao clicar fora dele
                 if (state.vetorSelecionadoIndex !== -1) {
@@ -226,7 +236,7 @@ export function configurarEventosUsuario() {
             let vetorClicado = pegarVetorProximo(e.clientX, e.clientY);
             if (vetorClicado !== -1) {
                 if (scratchpadUI.estaAtivo()) {
-                    scratchpadUI.confirmar();
+                    scratchpadUI.cancelar();
                 }
                 state.vetorSelecionadoIndex = vetorClicado;
                 desenharRadar();
@@ -237,9 +247,9 @@ export function configurarEventosUsuario() {
                 desenharRadar();
             }
 
-            // 1.4. ARRASTE DO FUNDO DO RADAR (PANNING DA CÂMARA)
+            // 1.4. ARRASTE DO FUNDO DO RADAR (PANNING DA CÂMARA) OU CLIQUE NO RADAR
             if (scratchpadUI.estaAtivo()) {
-                scratchpadUI.confirmar();
+                scratchpadUI.cancelar();
             }
             state.arrastando = true; 
             state.cliqueInicialX = e.clientX - state.offsetX; 
@@ -341,19 +351,11 @@ export function configurarEventosUsuario() {
             if (state.aeroArrastandoLabel && !state.arrastouLabel) {
                 const aero = state.aeroArrastandoLabel;
                 if (state.aeroClicadoCallsign === aero) {
-                    // Clique no Callsign (Linha 1):
-                    // Se não estava expandida: expande (expandida = true) e callsign fica verde.
-                    // Se já estava expandida: recolhe (expandida = false).
-                    // Se não houver alteração do controlador, o callsign fica preto e as linhas 5 e 6 somem.
-                    // Se houver alteração do controlador, as linhas 5 e 6 permanecem visíveis.
+                    // Clique no Callsign (Linha 1): alterna expansão da etiqueta
                     aero.expandida = !aero.expandida;
                     desenharRadar();
-                } else if (aero.labelDist > 40) {
-                    // Se a etiqueta foi afastada (labelDist > 40), ao clicar fora do callsign gruda no plot!
-                    aero.labelDist = 40;
-                    aero.labelAngle = Math.PI / 4;
-                    desenharRadar();
                 }
+                // Se clicou em qualquer outra parte da etiqueta sem arrastar: não faz nada, preserva a posição atual
             }
             state.aeroClicadoCallsign = null;
             state.arrastando = false; 

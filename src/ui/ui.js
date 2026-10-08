@@ -269,6 +269,7 @@ export class ScratchpadController {
     constructor() {
         this.el = null;
         this.aeroAtiva = null;
+        this.textoOriginal = '';
     }
 
     inicializar() {
@@ -278,19 +279,23 @@ export class ScratchpadController {
         // Impede que o clique no input se propague para o canvas subjacente
         this.el.addEventListener('mousedown', (e) => e.stopPropagation());
 
-        // Atualiza a etiqueta da aeronave em tempo real enquanto o usuário digita
+        // Atualiza a etiqueta da aeronave visualmente em tempo real enquanto o usuário digita
         this.el.addEventListener('input', () => {
             if (this.aeroAtiva) {
                 this.aeroAtiva.textoLivre = this.el.value.toUpperCase();
             }
         });
 
-        // Controle de atalhos dentro do input
+        // Controle de teclas dentro do input: Enter para validar/confirmar, Escape para cancelar
         this.el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 this.confirmar();
+                desenharRadar();
             } else if (e.key === 'Escape') {
+                e.preventDefault();
                 this.cancelar();
+                desenharRadar();
             }
         });
     }
@@ -302,15 +307,16 @@ export class ScratchpadController {
     abrir(aero) {
         if (!this.el) return;
 
-        // Se havia outra aeronave sendo editada, confirma e processa os comandos dela antes de trocar
+        // Se havia outra aeronave sendo editada sem confirmação por Enter, cancela e reverte
         if (this.aeroAtiva && this.aeroAtiva !== aero) {
-            this.confirmar();
+            this.cancelar();
         }
 
         this.aeroAtiva = aero;
+        this.textoOriginal = aero.textoLivre || '';
         state.aeroEditandoTexto = aero;
 
-        this.el.value = aero.textoLivre || '';
+        this.el.value = this.textoOriginal;
         this.el.style.display = 'block';
         this.el.focus();
 
@@ -333,7 +339,7 @@ export class ScratchpadController {
     }
 
     /**
-     * Confirma o texto digitado, dispara o parser de comandos de voo da aeronave e fecha o input.
+     * Confirma o texto digitado (Enter), valida e processa os comandos de voo da aeronave.
      */
     confirmar() {
         if (!this.el) return;
@@ -347,9 +353,15 @@ export class ScratchpadController {
     }
 
     /**
-     * Cancela a edição fechando o input sem aplicar novas alterações.
+     * Cancela a edição fechando o input e restaurando o texto anterior caso não tenha pressionado Enter.
      */
     cancelar() {
+        if (!this.el) return;
+
+        if (this.aeroAtiva) {
+            this.aeroAtiva.textoLivre = this.textoOriginal;
+        }
+
         this.fechar();
     }
 
@@ -360,6 +372,7 @@ export class ScratchpadController {
         if (!this.el) return;
         this.el.style.display = 'none';
         this.aeroAtiva = null;
+        this.textoOriginal = '';
         state.aeroEditandoTexto = null;
     }
 

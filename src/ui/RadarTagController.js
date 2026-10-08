@@ -170,63 +170,32 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
 
     const corPadrao = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
 
-    if (isRight) {
-        // Coluna 1: Proa Real
-        const col1X = textX;
-        ctx.fillStyle = corPadrao;
-        ctx.fillText(proaRealStr, col1X, posY);
+    // Coluna 1: Proa Real (sempre à esquerda)
+    const col1X = textX;
+    ctx.fillStyle = corPadrao;
+    ctx.fillText(proaRealStr, col1X, posY);
 
-        // Coluna 2: Proa Autorizada / HLD
-        const col2X = textX + 30;
-        if (estaSelecionadaProa) {
-            ctx.fillStyle = '#004488';
-            ctx.fillRect(col2X - 2, posY - 13, 28, 14);
-            ctx.fillStyle = '#00ffff';
-        } else {
-            ctx.fillStyle = corPadrao;
-        }
-        ctx.fillText(proaAutStr, col2X, posY);
-
-        // Coluna 3: Velocidade Autorizada
-        const col3X = textX + 60;
-        if (estaSelecionadaVel) {
-            ctx.fillStyle = '#004488';
-            ctx.fillRect(col3X - 2, posY - 13, 28, 14);
-            ctx.fillStyle = '#00ffff';
-        } else {
-            ctx.fillStyle = corPadrao;
-        }
-        ctx.fillText(velAutStr, col3X, posY);
+    // Coluna 2: Proa Autorizada / HLD (centro)
+    const col2X = textX + 30;
+    if (estaSelecionadaProa) {
+        ctx.fillStyle = '#004488';
+        ctx.fillRect(col2X - 2, posY - 13, 28, 14);
+        ctx.fillStyle = '#00ffff';
     } else {
-        const startX = textX - 86;
-
-        // Coluna 1: Proa Real
-        const col1X = startX;
         ctx.fillStyle = corPadrao;
-        ctx.fillText(proaRealStr, col1X, posY);
-
-        // Coluna 2: Proa Autorizada / HLD
-        const col2X = startX + 30;
-        if (estaSelecionadaProa) {
-            ctx.fillStyle = '#004488';
-            ctx.fillRect(col2X - 2, posY - 13, 28, 14);
-            ctx.fillStyle = '#00ffff';
-        } else {
-            ctx.fillStyle = corPadrao;
-        }
-        ctx.fillText(proaAutStr, col2X, posY);
-
-        // Coluna 3: Velocidade Autorizada
-        const col3X = startX + 60;
-        if (estaSelecionadaVel) {
-            ctx.fillStyle = '#004488';
-            ctx.fillRect(col3X - 2, posY - 13, 28, 14);
-            ctx.fillStyle = '#00ffff';
-        } else {
-            ctx.fillStyle = corPadrao;
-        }
-        ctx.fillText(velAutStr, col3X, posY);
     }
+    ctx.fillText(proaAutStr, col2X, posY);
+
+    // Coluna 3: Velocidade Autorizada (direita)
+    const col3X = textX + 60;
+    if (estaSelecionadaVel) {
+        ctx.fillStyle = '#004488';
+        ctx.fillRect(col3X - 2, posY - 13, 28, 14);
+        ctx.fillStyle = '#00ffff';
+    } else {
+        ctx.fillStyle = corPadrao;
+    }
+    ctx.fillText(velAutStr, col3X, posY);
 
     ctx.restore();
 }
@@ -274,14 +243,13 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
 
     ctx.save();
     ctx.font = '11px monospace';
-    ctx.textAlign = isRight ? 'left' : 'right';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
 
     // Se o menu de razão estiver aberto para este avião, desenha caixa de highlight ciano
     if (estaSelecionada) {
         ctx.fillStyle = '#004488';
-        const boxX = isRight ? (posX - 2) : (posX - 74);
-        ctx.fillRect(boxX, posY - 13, 76, 15);
+        ctx.fillRect(posX - 2, posY - 13, 76, 15);
         ctx.fillStyle = '#00ffff';
     } else {
         // O texto permanece preto (#000000) em todos os modos (AUTO, ATC-R, EXPD)
