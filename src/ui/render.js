@@ -857,10 +857,13 @@ export function desenharVetores() {
         state.ctx.fillText(info.rumo.toString(), textX, dTela.y - 10);
         state.ctx.fillText(info.distancia.toString(), textX, dTela.y + 6);
         
-        // Se a origem for um avião em movimento, calcula o ETA baseado na Ground Speed do radar (4s)
-        if (vetorObj.aeroOrigem) {
-            const snapOrig = vetorObj.aeroOrigem.posicaoRadar || vetorObj.aeroOrigem;
-            const gsRadar = (snapOrig.groundSpeed !== undefined) ? snapOrig.groundSpeed : (vetorObj.aeroOrigem.groundSpeed || vetorObj.aeroOrigem.vel);
+        // Se a origem ou o destino for um avião em movimento (fixado via clique/F no alvo ou etiqueta), calcula o tempo em minutos baseado na Ground Speed do radar (4s)
+        const aeroRef = vetorObj.aeroOrigem || vetorObj.aeroDestino;
+        if (aeroRef) {
+            const snap = aeroRef.posicaoRadar || aeroRef;
+            const gsRadar = (snap.groundSpeed !== undefined && snap.groundSpeed > 0)
+                ? snap.groundSpeed
+                : (aeroRef.groundSpeed || aeroRef.vel || 0);
             if (gsRadar > 0) {
                 let tempoMin = (info.distanciaNM / gsRadar) * 60;
                 state.ctx.fillText(tempoMin.toFixed(1), textX, dTela.y + 22);
