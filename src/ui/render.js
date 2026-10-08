@@ -808,7 +808,7 @@ export function desenharSimboloPista(cx, cy, aeroOuNome, rumoPistaFallback = 120
 
     // 3. Nome do aeródromo
     state.ctx.fillStyle = '#000000'; 
-    state.ctx.font = 'bold 12px Arial'; 
+    state.ctx.font = 'bold 10px monospace'; 
     state.ctx.fillText(nome, cx + 14, cy - 8);
 }
 

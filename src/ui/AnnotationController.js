@@ -546,7 +546,7 @@ export class AnnotationController {
     /**
      * Aplica o cursor visual solicitado:
      * - Caneta e Marcador: Cursor de lápis afiado.
-     * - Borracha: Círculo indicando o raio de apagamento.
+     * - Borracha: Círculo nítido com borda preta indicando o raio de apagamento.
      * - Radar: Cursor padrão.
      */
     atualizarCursorFeedback() {
@@ -556,12 +556,20 @@ export class AnnotationController {
 
         if (ferramenta === 'eraser') {
             const r = Math.max(6, Math.min(24, Math.round(espessura * 1.5)));
-            const diam = r * 2 + 4;
-            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${diam}' height='${diam}'><circle cx='${diam/2}' cy='${diam/2}' r='${r}' fill='rgba(255,255,255,0.25)' stroke='%23ffffff' stroke-width='1.5'/><circle cx='${diam/2}' cy='${diam/2}' r='${r}' fill='none' stroke='%23000000' stroke-width='0.8'/></svg>`;
-            this.canvas.style.cursor = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") ${diam/2} ${diam/2}, crosshair`;
+            const diam = r * 2 + 6;
+            const center = diam / 2;
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${diam}' height='${diam}' viewBox='0 0 ${diam} ${diam}' fill='none'>` +
+                        `<circle cx='${center}' cy='${center}' r='${r}' stroke='%23ffffff' stroke-width='3' stroke-opacity='0.6'/>` +
+                        `<circle cx='${center}' cy='${center}' r='${r}' stroke='%23000000' stroke-width='1.5' fill='rgba(0, 0, 0, 0.32)'/>` +
+                        `<circle cx='${center}' cy='${center}' r='1.2' fill='%23000000'/>` +
+                        `</svg>`;
+            const cursorUrl = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") ${center} ${center}, crosshair`;
+            this.canvas.style.cursor = cursorUrl;
+            if (state.canvas) state.canvas.style.cursor = cursorUrl;
         } else if (ferramenta === 'highlighter' || ferramenta === 'pen') {
             // Cursor de lápis
             this.canvas.style.cursor = CURSOR_LAPIS;
+            if (state.canvas) state.canvas.style.cursor = CURSOR_LAPIS;
         } else {
             // Modo Radar: cursor normal
             this.canvas.style.cursor = 'default';

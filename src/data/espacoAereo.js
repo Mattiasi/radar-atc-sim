@@ -397,7 +397,7 @@ export const estruturaEspacoAereo = {
 
      // FAVA 28
     { vertices: [
-        "PT_92", "PT_95","PT_98","PT_97"
+        "PT_92", "PT_95","PT_25","PT_24"
     ], altitude: "4100'" },
 
      // FAVA 15
