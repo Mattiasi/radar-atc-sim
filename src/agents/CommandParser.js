@@ -47,11 +47,6 @@ export class CommandParser {
                 }
                 aero.comandosAtivos.ils = { runway: rwyPista };
             }
-            if (aero.textoLivre) {
-                aero.textoLivre = aero.textoLivre.replace(/\bILS(?:\s+\d{1,2}[RCL]?)?\b/gi, '').trim();
-                aero.ultimoComandoTexto = aero.textoLivre;
-                texto = aero.textoLivre.toUpperCase().trim();
-            }
         }
 
         const matchRwy = texto.match(/\b(?:RWY|RW)\s*(\d{1,2}[RCL]?)\b/);
@@ -61,11 +56,6 @@ export class CommandParser {
                 aero.assigned_runway = rwyVal;
                 aero.pistaAtribuida = rwyVal;
                 aero.comandosAtivos.runway = rwyVal;
-            }
-            if (aero.textoLivre) {
-                aero.textoLivre = aero.textoLivre.replace(/\b(?:RWY|RW)\s*\d{1,2}[RCL]?\b/gi, '').trim();
-                aero.ultimoComandoTexto = aero.textoLivre;
-                texto = aero.textoLivre.toUpperCase().trim();
             }
         }
 

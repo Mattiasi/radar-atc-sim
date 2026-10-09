@@ -1,5 +1,5 @@
-import { state } from './state.js';
-import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego } from './engine.js';
+﻿import { state } from './state.js';
+import { inicializarEspacoAereo, carregarTrafegoTeste, gerenciarEsteiraDeTrafego, gerenciarDecolagensAutomaticas } from './engine.js';
 import { configurarEventosUsuario, aplicarLimites } from '../ui/events.js';
 import { inicializarUI, painelVentoUI } from '../ui/ui.js';
 import { inicializarVideoMapDrawer } from '../ui/VideoMapDrawerController.js';
@@ -106,7 +106,8 @@ function executarPassoRadar() {
     }
     
     // Injeta novos aviões nas rotas caso a esteira de separação permita
-    gerenciarEsteiraDeTrafego(); 
+    gerenciarEsteiraDeTrafego();
+     
 }
 
 /**
@@ -125,6 +126,7 @@ function loopPrincipal(tempoAtual) {
 
     if (dtReal > 0 && !state.pausado) {
         const dtSimulado = dtReal * fator;
+        state.tempoSimulado = (state.tempoSimulado || 0) + dtSimulado;
 
         // Atualização contínua do vento em tempo real
         windManager.update(dtSimulado);
@@ -152,6 +154,8 @@ function loopPrincipal(tempoAtual) {
             executarPassoRadar();
             acumuladorRadarSegundos -= INTERVALO_VARREDURA_RADAR;
         }
+
+        gerenciarDecolagensAutomaticas();
     }
     
     // --- LÓGICA DE RENDERIZAÇÃO VISUAL (Executada a ~60 Frames Por Segundo) ---
@@ -174,3 +178,4 @@ aplicarLimites(false);          // Garante que o zoom e o enquadramento inicial 
 
 // Dispara o motor pela primeira vez
 requestAnimationFrame(loopPrincipal);
+

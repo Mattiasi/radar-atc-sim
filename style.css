@@ -2,20 +2,20 @@
    ESTILOS GERAIS DA TELA
    ========================================================= */
 body {
-    background-color: #808080; /* Cor de fundo cinza padrão de telas de radar ATC (Sagitario/X-Muda) */
-    margin: 0;                 /* Remove margens brancas padrão do navegador */
-    overflow: hidden;          /* Trava a tela e esconde as barras de rolagem nativas (crucial para o pan/zoom do canvas não bugar) */
+    background-color: #808080; /* Cor de fundo cinza padrÃ£o de telas de radar ATC (Sagitario/X-Muda) */
+    margin: 0;                 /* Remove margens brancas padrÃ£o do navegador */
+    overflow: hidden;          /* Trava a tela e esconde as barras de rolagem nativas (crucial para o pan/zoom do canvas nÃ£o bugar) */
     color: white;
-    font-family: monospace;    /* Fonte monoespaçada (tipo máquina de escrever) mantém os caracteres alinhados na etiqueta do avião */
-    cursor: default;           /* Força a seta padrão, evitando que o rato vire o cursor de texto (I-beam) ao passar por cima de textos invisíveis */
+    font-family: monospace;    /* Fonte monoespaÃ§ada (tipo mÃ¡quina de escrever) mantÃ©m os caracteres alinhados na etiqueta do aviÃ£o */
+    cursor: default;           /* ForÃ§a a seta padrÃ£o, evitando que o rato vire o cursor de texto (I-beam) ao passar por cima de textos invisÃ­veis */
 }
 
 canvas {
-    display: block;            /* Remove o pequeno espaçamento em branco que o canvas cria na parte inferior por padrão */
+    display: block;            /* Remove o pequeno espaÃ§amento em branco que o canvas cria na parte inferior por padrÃ£o */
 }
 
 /* =========================================================
-   MENUS DE CONTEXTO (DROPDOWNS: NÍVEIS DE VOO, PROA E VELOCIDADE)
+   MENUS DE CONTEXTO (DROPDOWNS: NÃVEIS DE VOO, PROA E VELOCIDADE)
    ========================================================= */
 #menuNivel, #menuVelocidade {
     position: absolute;        /* Permite que o JavaScript coloque o menu exatamente nas coordenadas do clique do rato (X, Y) */
@@ -25,10 +25,10 @@ canvas {
     font-family: monospace;
     font-size: 13px;
     max-height: 160px;         /* Limita a altura do menu. Se a lista passar disso, cria barra de rolagem */
-    overflow-y: auto;          /* Ativa a rolagem vertical automaticamente se necessário */
-    z-index: 100;              /* Força o menu a ficar por cima de TUDO no ecrã (canvas = 0, painel = 10) */
+    overflow-y: auto;          /* Ativa a rolagem vertical automaticamente se necessÃ¡rio */
+    z-index: 100;              /* ForÃ§a o menu a ficar por cima de TUDO no ecrÃ£ (canvas = 0, painel = 10) */
     box-shadow: 2px 2px 8px rgba(0,0,0,0.6); /* Cria uma leve sombra para dar efeito 3D flutuante */
-    display: none;             /* Começa escondido */
+    display: none;             /* ComeÃ§a escondido */
     border-radius: 4px;        /* Arredonda levemente os cantos */
     min-width: 55px;
 }
@@ -90,21 +90,21 @@ canvas {
     box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
 }
 
-/* Cada opção individual dentro dos menus */
+/* Cada opÃ§Ã£o individual dentro dos menus */
 .menu-item {
     padding: 6px 12px;
-    cursor: pointer;           /* Muda o rato para a "mãozinha" para indicar que é clicável */
+    cursor: pointer;           /* Muda o rato para a "mÃ£ozinha" para indicar que Ã© clicÃ¡vel */
     text-align: center;
 }
 
-/* Efeito visual quando o rato passa por cima de uma opção de nível */
+/* Efeito visual quando o rato passa por cima de uma opÃ§Ã£o de nÃ­vel */
 .menu-item:hover {
     background-color: #00ffff; /* Fica ciano */
     color: #000;               /* O texto fica preto para dar contraste com o ciano */
     font-weight: bold;
 }
 
-/* Estilização personalizada da barra de rolagem dos menus */
+/* EstilizaÃ§Ã£o personalizada da barra de rolagem dos menus */
 #menuNivel::-webkit-scrollbar,
 #menuVelocidade::-webkit-scrollbar,
 .menu-proa-lista::-webkit-scrollbar {
@@ -177,8 +177,8 @@ canvas {
 
 #painelFluxo {
     position: absolute;        /* Fica a flutuar por cima do canvas */
-    top: 52px;                 /* Posicionado logo abaixo do botão de fluxo */
-    left: 54px;                /* Alinhado com o botão de fluxo */
+    top: 52px;                 /* Posicionado logo abaixo do botÃ£o de fluxo */
+    left: 54px;                /* Alinhado com o botÃ£o de fluxo */
     background-color: rgba(28, 28, 28, 0.95); /* Fundo cinza escuro com 95% de opacidade como o vento */
     border: 1px solid #00ffff;
     padding: 12px 16px;
@@ -189,7 +189,7 @@ canvas {
     font-family: monospace;
     min-width: 320px;
     max-width: 480px;
-    max-height: calc(100vh - 75px);
+    max-height: 80vh; overflow-y: auto;
     overflow-y: auto;
 }
 
@@ -310,7 +310,7 @@ canvas {
     box-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
 }
 
-/* Estrutura de cada esteira dinâmica */
+/* Estrutura de cada esteira dinÃ¢mica */
 .linha-esteira {
     margin-bottom: 8px;
     font-size: 12px;
@@ -372,7 +372,7 @@ canvas {
     color: #fff;
 }
 
-/* Estrutura de cada linha genérica de opção dentro do painel */
+/* Estrutura de cada linha genÃ©rica de opÃ§Ã£o dentro do painel */
 .linha-fluxo {
     margin-bottom: 8px;
     font-size: 13px;
@@ -404,7 +404,7 @@ canvas {
 }
 
 /* =========================================================
-   CONTROLE DE VELOCIDADE DA SIMULAÇÃO (Slider)
+   CONTROLE DE VELOCIDADE DA SIMULAÃ‡ÃƒO (Slider)
    ========================================================= */
 .divisor-painel {
     height: 1px;
@@ -522,7 +522,7 @@ canvas {
     top: 52px;
     right: 15px;
     width: 460px;
-    max-height: calc(100vh - 75px);
+    max-height: 80vh; overflow-y: auto;
     overflow-y: auto;
     background-color: rgba(28, 28, 28, 0.95);
     border: 1px solid #00ffff;
@@ -718,7 +718,7 @@ canvas {
     color: #000;
 }
 
-/* --- SEÇÃO CABECEIRAS / AERÓDROMOS --- */
+/* --- SEÃ‡ÃƒO CABECEIRAS / AERÃ“DROMOS --- */
 .selecao-pills {
     display: flex;
     gap: 6px;
@@ -871,10 +871,10 @@ canvas {
 }
 
 /* =========================================================
-   PAINEL LATERAL RETRÁTIL: VÍDEO-MAPA E BRILHO (ATC CONSOLE)
+   PAINEL LATERAL RETRÃTIL: VÃDEO-MAPA E BRILHO (ATC CONSOLE)
    ========================================================= */
 
-/* 1. Botão Hambúrguer (Trigger) */
+/* 1. BotÃ£o HambÃºrguer (Trigger) */
 .btn-hamburger-atc {
     position: fixed;
     top: 12px;
@@ -916,7 +916,7 @@ canvas {
     top: 52px;
     left: 12px;
     width: 250px;
-    max-height: calc(100vh - 75px);
+    max-height: 80vh; overflow-y: auto;
     background-color: rgba(22, 26, 30, 0.96);
     border: 1px solid #00ffff;
     border-radius: 5px;
@@ -964,7 +964,7 @@ canvas {
     background: #00ffff;
 }
 
-/* 3. Seções do Acordeão */
+/* 3. SeÃ§Ãµes do AcordeÃ£o */
 .drawer-secao {
     display: flex;
     flex-direction: column;
@@ -979,7 +979,7 @@ canvas {
     margin-bottom: 0;
 }
 
-/* Cabeçalho da Seção (Vídeo mapa / Brilho) */
+/* CabeÃ§alho da SeÃ§Ã£o (VÃ­deo mapa / Brilho) */
 .drawer-secao-header {
     display: flex;
     justify-content: space-between;
@@ -1020,7 +1020,7 @@ canvas {
     display: none;
 }
 
-/* 4. Sub-acordeão dos Aeródromos */
+/* 4. Sub-acordeÃ£o dos AerÃ³dromos */
 .drawer-aero-bloco {
     display: flex;
     flex-direction: column;
@@ -1168,7 +1168,7 @@ canvas {
     text-overflow: ellipsis;
 }
 
-/* 5. Seção de Sliders de Brilho */
+/* 5. SeÃ§Ã£o de Sliders de Brilho */
 .drawer-slider-row {
     display: flex;
     flex-direction: column;
@@ -1240,7 +1240,7 @@ canvas {
 }
 
 /* ============================================================================
- * FERRAMENTA DE INSPEÇÃO DE COORDENADAS ATC (TECLA C)
+ * FERRAMENTA DE INSPEÃ‡ÃƒO DE COORDENADAS ATC (TECLA C)
  * ============================================================================ */
 
 /* Cursor crosshair 100% PRETO quando o modo de coordenadas estiver ativo */
@@ -1498,7 +1498,7 @@ body.modo-coordenadas-ativo canvas {
 }
 
 /* =========================================================
-   CAMADA DE ANOTAÇÃO / CANETA DO INSTRUTOR ATC (TECLA P)
+   CAMADA DE ANOTAÃ‡ÃƒO / CANETA DO INSTRUTOR ATC (TECLA P)
    ========================================================= */
 
 #canvasAnotacoes {
@@ -1693,7 +1693,7 @@ body.modo-coordenadas-ativo canvas {
     box-shadow: 0 0 8px rgba(255, 149, 0, 0.6);
 }
 
-/* Ações de histórico (Desfazer / Refazer / Limpar) */
+/* AÃ§Ãµes de histÃ³rico (Desfazer / Refazer / Limpar) */
 .anotacao-acoes-historico {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -1731,7 +1731,7 @@ body.modo-coordenadas-ativo canvas {
     color: #ffffff;
 }
 
-/* Confirmação de Limpar */
+/* ConfirmaÃ§Ã£o de Limpar */
 .anotacao-confirmacao-limpar {
     background-color: #3b1111;
     border: 1px solid #ff3b30;
@@ -1889,3 +1889,122 @@ body.modo-coordenadas-ativo canvas {
     accent-color: #ff9500;
     cursor: pointer;
 }
+
+/* =========================================================
+   ABAS DE FLUXO E DEP
+   ========================================================= */
+.abas-fluxo {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.aba-fluxo {
+    flex: 1;
+    background-color: #1e1e1e;
+    color: #888;
+    border: 1px solid #444;
+    padding: 6px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.aba-fluxo:hover {
+    color: #fff;
+    border-color: #666;
+}
+
+.aba-fluxo.ativa {
+    background-color: rgba(0, 255, 255, 0.15);
+    color: #00ffff;
+    border-color: #00ffff;
+}
+
+.dep-controles-superiores {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.dep-intervalo-secao {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+}
+
+.dep-intervalo-titulo {
+    font-size: 10px;
+    color: #00ffff;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.dep-intervalo-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.dep-intervalo-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 5px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dep-intervalo-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dep-intervalo-item.ativo {
+    border-color: rgba(0, 255, 255, 0.6);
+    background: rgba(0, 255, 255, 0.12);
+}
+
+.dep-intervalo-label {
+    font-size: 11px;
+    color: #ff9900;
+    font-weight: bold;
+    user-select: none;
+}
+
+.dep-sel-intervalo {
+    max-width: 68px;
+    font-size: 11px;
+    padding: 2px 3px;
+}
+
+.fila-dep {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.linha-dep {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 3px;
+    font-size: 11px;
+}
+

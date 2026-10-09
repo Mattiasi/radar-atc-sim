@@ -54,6 +54,28 @@ export const state = {
         ]
     },
 
+    // --- CONTROLE DE DEPARTURES (DEP) ---
+    configDep: {
+        aerodromoSelecionado: "SBGR",
+        decolagemAutomatica: false,
+        geracaoAutomatica: false,
+        fila: [], // { id, aero, status: "aguardando" | "autorizado" | "em_voo", sid, wpIndex, targetFL, restricoes: [] }
+        geracaoPausada: false,
+        ultimaDecolagemTick: 0,
+        ultimaDecolagemTempoSimulado: 0,
+        ultimaAeronaveDecolada: null,
+        rrsmSuspenso: false,
+        ultimasGeracoesTempoSimulado: {},
+        intervalosPorAerodromo: {
+            SBGR: 2,
+            SBKP: 2,
+            SBSP: 2
+        },
+        ultimaDecolagemTempoSimuladoPorAero: {},
+        ultimaDecolagemTempoSimuladoPorPista: {},
+        ultimaAeronaveDecoladaPorAero: {}
+    },
+
     // --- ENTIDADES DO SIMULADOR ---
     fixos: {},                 // Dicionário com os fixos/waypoints já convertidos em distâncias relativas ao centro
     aeronaves: [],             // Array com todas as instâncias ativas da classe Aeronave (tráfegos vivos na frequência)

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * GERENCIADOR DE VELOCIDADE, ENERGIA E APROXIMAÇÃO BASEADO EM FAF
  * (ApproachEnergyManager.js)
@@ -456,6 +456,9 @@ export function calcularDistanciaDesaceleracao(vCur, vTgt, vsFpm, perf, gs, spee
  * @returns {string} Estado lógico de FLIGHT_ENERGY_STATES
  */
 export function determinarEstadoVooEnergia(aircraft, alongTrackInfo) {
+    if (aircraft.isDep) {
+        return "CLIMB";
+    }
     if (aircraft.missed_approach) {
         return FLIGHT_ENERGY_STATES.MISSED_APPROACH;
     }
@@ -516,6 +519,9 @@ export function determinarEstadoVooEnergia(aircraft, alongTrackInfo) {
  * @returns {string} Nível de ENERGY_LEVELS
  */
 export function avaliarNivelEnergia(aircraft, targetSpeed, alongTrackInfo, vApp) {
+    if (aircraft.isDep) {
+        return ENERGY_LEVELS.NORMAL;
+    }
     const curSpeed = (aircraft.actualSpeed !== undefined) ? aircraft.actualSpeed : aircraft.vel;
     const distToThreshold = alongTrackInfo.distanceToThresholdNM || alongTrackInfo.straightDistNM || 10;
 
@@ -572,7 +578,7 @@ export function avaliarNivelEnergia(aircraft, targetSpeed, alongTrackInfo, vApp)
  * @param {Object} aircraft - Instância da aeronave
  */
 export function executarMissedApproach(aircraft) {
-    if (!aircraft || aircraft.missed_approach) return;
+    if (!aircraft || aircraft.isDep || aircraft.missed_approach) return;
 
     aircraft.missed_approach = true;
     aircraft.flightEnergyState = FLIGHT_ENERGY_STATES.MISSED_APPROACH;
@@ -641,6 +647,16 @@ export function executarMissedApproach(aircraft) {
  */
 export function calcularVelocidadeAlvoEnergia(aircraft, dtSec = 1.0) {
     if (!aircraft) return 250;
+
+    if (aircraft.isDep) {
+        aircraft.flightEnergyState = "CLIMB";
+        aircraft.energyLevel = ENERGY_LEVELS.NORMAL;
+        const perf = aircraft.perf || getAircraftPerformance(aircraft.tipo) || AIRCRAFT_PERFORMANCE["DEFAULT"];
+        const vClimb = (perf.speeds && perf.speeds.vClimb) || 250;
+        const target = (aircraft.velManual || aircraft.velComando) ? (aircraft.velComando || aircraft.vel) : (aircraft.vel || vClimb);
+        aircraft.targetSpeed = target;
+        return target;
+    }
 
     if (aircraft.on_ground || aircraft.pousou || aircraft.flight_phase === 'LANDED') {
         aircraft.flightEnergyState = 'LANDED';
@@ -989,3 +1005,4 @@ export function calcularVelocidadeAlvoEnergia(aircraft, dtSec = 1.0) {
 
     return vAlvoFinal;
 }
+

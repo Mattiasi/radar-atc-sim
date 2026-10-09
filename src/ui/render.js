@@ -1,4 +1,4 @@
-import { state } from '../core/state.js';
+﻿import { state } from '../core/state.js';
 import { correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from '../data/data.js';
 import { scratchpadUI } from './ui.js';
@@ -890,8 +890,10 @@ export function desenharVetores() {
         // para que a posição da linha, rumo, distância e ETA atualizem estritamente a cada 4 segundos
         let oDelta = vetorObj.aeroOrigem ? (vetorObj.aeroOrigem.posicaoRadar || vetorObj.aeroOrigem) : vetorObj.origem;
         let dDelta = vetorObj.aeroDestino ? (vetorObj.aeroDestino.posicaoRadar || vetorObj.aeroDestino) : vetorObj.destino;
+        let aeroHover = null;
         if (!dDelta) {
             dDelta = telaParaDelta(state.mouseTelaX, state.mouseTelaY);
+            aeroHover = pegarAeronaveProxima(state.mouseTelaX, state.mouseTelaY);
         }
         
         if (!oDelta || !dDelta) return;
@@ -927,7 +929,7 @@ export function desenharVetores() {
         state.ctx.fillText(info.distancia.toString(), textX, dTela.y + 6);
         
         // Se a origem ou o destino for um avião em movimento (fixado via clique/F no alvo ou etiqueta), calcula o tempo em minutos baseado na Ground Speed do radar (4s)
-        const aeroRef = vetorObj.aeroOrigem || vetorObj.aeroDestino;
+        const aeroRef = vetorObj.aeroOrigem || vetorObj.aeroDestino || aeroHover;
         if (aeroRef) {
             const snap = aeroRef.posicaoRadar || aeroRef;
             const gsRadar = (snap.groundSpeed !== undefined && snap.groundSpeed > 0)
@@ -967,7 +969,7 @@ export function desenharRadar() {
         let pt = deltaParaTela(aero);
         
         // Define a cor base de toda a simbologia do radar para esta aeronave
-        let corRadar = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
+        let corRadar = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : (aero.isDep ? 'hsl(0, 3%, 78%)' : '#000000');
 
         // 1. Desenha o rasto histórico (pontinhos)
         aero.historico.forEach(histPt => {
@@ -1041,18 +1043,18 @@ export function desenharRadar() {
             // Renderização padrão em rota
             
             // LINHA 1: Callsign e Tipo de Aeronave (sempre Callsign à esquerda, Tipo à direita)
-            const corCallsign = aero.expandida ? '#00e676' : '#000000';
+            const corCallsign = aero.expandida ? '#00e676' : corRadar;
             const callsignTexto = (aero.callsign || "").padEnd(8, ' ');
 
             state.ctx.fillStyle = corCallsign;
             state.ctx.fillText(callsignTexto, textX, ly - 15);
-            state.ctx.fillStyle = '#000000';
+            state.ctx.fillStyle = corRadar;
             const offsetTipo = state.ctx.measureText(callsignTexto + ' ').width;
             state.ctx.fillText(aero.tipo || "", textX + offsetTipo, ly - 15);
             
             // LINHA 2: Altitude Atual e Altitude Autorizada (sempre Nível Atual à esquerda, Nível Autorizado à direita)
             let offsetNivAut = textX + 45; // Distanciamento horizontal padrão
-            state.ctx.fillStyle = '#000000';
+            state.ctx.fillStyle = corRadar;
             state.ctx.fillText(nivDisplay.padEnd(5, ' '), textX, ly - 2); 
             
             // Desenha fundo de highlight se o menu dropdown deste avião estiver aberto
@@ -1060,16 +1062,16 @@ export function desenharRadar() {
                 state.ctx.fillStyle = '#004488'; 
                 state.ctx.fillRect(offsetNivAut - 2, ly - 14, 28, 14); 
             }
-            state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : '#000000'; 
+            state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : corRadar; 
             state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
             
             // LINHA 3: Velocidade Computada (Ground Speed) e Destino
-            state.ctx.fillStyle = '#000000'; 
+            state.ctx.fillStyle = corRadar; 
             state.ctx.fillText(`${gsDisplay.toString().padEnd(5, ' ')} ${aero.dest || ""}`, textX, ly + 11);
         }
         
         // LINHA 4: Scratchpad (Bloco de anotações do controlador e de envio de comandos ao avião)
-        state.ctx.fillStyle = '#000000';
+        state.ctx.fillStyle = corRadar;
         if (aero === state.aeroEditandoTexto) {
             // Atualiza a posição do input HTML encapsulado sobre a etiqueta
             scratchpadUI.posicionar(textX, ly + 13, 'left');
@@ -1312,3 +1314,8 @@ export function desenharHUDEnergiaEAproximacao() {
 
     state.ctx.restore();
 }
+
+
+
+
+

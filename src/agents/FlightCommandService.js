@@ -43,13 +43,6 @@ export class FlightCommandService {
                 aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "ILS" });
             }
 
-            if (fromUI) {
-                aero.textoLivre = "";
-                if (state.aeroEditandoTexto === aero) {
-                    const el = document.getElementById('inputTextoLivre');
-                    if (el) el.value = "";
-                }
-            }
         } else if (cmd === "VIA") {
             AircraftStateMutator.ativarAutorizacaoVIA(aero);
             if (aero.semRestricoes) {
@@ -70,14 +63,6 @@ export class FlightCommandService {
 
             if (aero.pilot) {
                 aero.pilot.dispatch('VERTICAL', 'ALTITUDE', { level: "VIA" });
-            }
-
-            if (fromUI) {
-                aero.textoLivre = "";
-                if (state.aeroEditandoTexto === aero) {
-                    const el = document.getElementById('inputTextoLivre');
-                    if (el) el.value = "";
-                }
             }
         } else if (cmd === "---") {
             AircraftStateMutator.definirNivelVoo(aero, "---");
@@ -180,6 +165,7 @@ export class FlightCommandService {
         aero.direcaoCurva = 0;
         aero.ladoCurvaComandada = null;
         aero.modoHolding = null;
+        aero.proaDestino = null;
         if (aero.comandosAtivos) {
             aero.comandosAtivos.heading = null;
             aero.comandosAtivos.holding = null;
@@ -202,7 +188,7 @@ export class FlightCommandService {
             if (modoStr === "MIN") {
                 aero.comandosAtivos.speed = { type: 'MIN' };
             } else if (["AUTO", "NORM", "FREE", "FREEV", "RSM", "RSV", "RESUME", "VFREE"].includes(modoStr)) {
-                aero.comandosAtivos.speed = { type: 'AUTO' };
+                aero.comandosAtivos.speed = null;
             } else {
                 const vNum = parseInt(speedOrMode, 10);
                 if (!isNaN(vNum)) {
@@ -215,6 +201,8 @@ export class FlightCommandService {
             AircraftStateMutator.definirModoVelocidade(aero, "MIN");
         } else if (["AUTO", "NORM", "FREE", "FREEV", "RSM", "RSV", "RESUME", "VFREE"].includes(modoStr)) {
             AircraftStateMutator.definirModoVelocidade(aero, "AUTO");
+            aero.velComando = null;
+            aero.velDestino = null;
             if (aero.pilot) {
                 aero.pilot.dispatch('LONGITUDINAL', 'RESUME_SPEED', {});
             }

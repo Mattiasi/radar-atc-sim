@@ -90,8 +90,7 @@ export const cartasNavegacao = {
             },
             SID: {
                 "BAIAN_3A": {
-                    nome: "BAIAN 3A",
-                    cor: '#ff9900',
+                    nome: "BAIAN 3A", setorSaida: "Leste", cor: '#ff9900',
                     fixos: [
                         { nome: "RW35L", lat: dmsParaDecimal(23, 37, 59.81, 'S'),lon: dmsParaDecimal(46, 39, 6.99, 'W')},
                         { nome: "SP102", lat: dmsParaDecimal(23, 43, 25, 'S'), lon: dmsParaDecimal(46, 29, 55, 'W') },
@@ -111,8 +110,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UGTIX_2A": {
-                    nome: "UGTIX 2A",
-                    cor: '#ff9900',
+                    nome: "UGTIX 2A", setorSaida: "Oeste", cor: '#ff9900',
                     fixos: [
                         { nome: "RW35L", lat: dmsParaDecimal(23, 37, 59.81, 'S'),lon: dmsParaDecimal(46, 39, 6.99, 'W')},
                         { nome: "SP104", lat: dmsParaDecimal(23, 44, 21.7, 'S'), lon: dmsParaDecimal(46, 38, 86.7, 'W') },
@@ -136,7 +134,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UBRAM_1A": {
-                    nome: "UBRAM 1A",
+                    nome: "UBRAM 1A", setorSaida: "Oeste",
                     cor: '#ff9900',
                     fixos: [
                          { nome: "RW35L", lat: dmsParaDecimal(23, 37, 59.81, 'S'),lon: dmsParaDecimal(46, 39, 6.99, 'W')},
@@ -156,7 +154,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UTKOM_1A": {
-                    nome: "UTKOM 1A",
+                    nome: "UTKOM 1A", setorSaida: "Sul",
                     cor: '#ff9900',
                     fixos: [
                          { nome: "RW35L", lat: dmsParaDecimal(23, 37, 59.81, 'S'),lon: dmsParaDecimal(46, 39, 6.99, 'W')},
@@ -245,8 +243,7 @@ export const cartasNavegacao = {
             },
             SID: {
                 "BAIAN_3B": {
-                    nome: "BAIAN 3B",
-                    cor: '#ff9900',
+                    nome: "BAIAN 3B", setorSaida: "Leste", cor: '#ff9900',
                     fixos: [
                         { nome: "RW17R", lat: dmsParaDecimal(23, 37, 6.61, 'S'),lon: dmsParaDecimal(46, 39, 43.83, 'W')},
                         { nome: "SP107", lat: dmsParaDecimal(23, 36, 0, 'S'), lon: dmsParaDecimal(46, 36, 60, 'W'), restricao: { fl: 35, tipo: "ABOVE" } },
@@ -268,8 +265,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UGTIX_1B": {
-                    nome: "UGTIX 1B",
-                    cor: '#ff9900',
+                    nome: "UGTIX 1B", setorSaida: "Oeste", cor: '#ff9900',
                     fixos: [
                         { nome: "RW17R", lat: dmsParaDecimal(23, 37, 6.61, 'S'),lon: dmsParaDecimal(46, 39, 43.83, 'W')},
                         { nome: "SP082", lat: dmsParaDecimal(23, 34, 50, 'S'), lon: dmsParaDecimal(46, 45, 43.3, 'W') },
@@ -293,7 +289,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "SEDLO_1A": {
-                    nome: "SEDLO 1A",
+                    nome: "SEDLO 1A", setorSaida: "Sul",
                     cor: '#ff9900',
                     fixos: [
                         { nome: "RW17R", lat: dmsParaDecimal(23, 37, 6.61, 'S'),lon: dmsParaDecimal(46, 39, 43.83, 'W')},
@@ -313,7 +309,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UBRAM_1B": {
-                    nome: "UBRAM 1B",
+                    nome: "UBRAM 1B", setorSaida: "Oeste",
                     cor: '#ff9900',
                     fixos: [
                         { nome: "RW17R", lat: dmsParaDecimal(23, 37, 6.61, 'S'),lon: dmsParaDecimal(46, 39, 43.83, 'W')},
@@ -562,8 +558,7 @@ export const cartasNavegacao = {
                             },
                             rumoInicial: 343,
                             aberturaGraus: 71,
-                            cor: '#ffff00',
-                            dashPattern: [2, 4]
+                            cor: 'rgba(255, 255, 0, 0.4)', dashPattern: [2, 4]
                         }
                     ]
                 }
@@ -593,7 +588,7 @@ export const cartasNavegacao = {
         "10L": {
             SID: {
                 "AMVUL_6A": {
-                    nome: "AMVUL 6A",
+                    nome: "AMVUL 6A", setorSaida: "Leste", altitudeRestricao: 6000,
                     cor: '#fbff00',
                     fixos: [
                         { nome: "RW28R",  lat: dmsParaDecimal(23, 25, 43.91, 'S'),lon: dmsParaDecimal(46, 27, 11.45, 'W')},
@@ -674,7 +669,7 @@ export const cartasNavegacao = {
                 },
               
                 "ZORZA_3A": {
-                    nome: "ZORZA 3A",
+                    nome: "ZORZA 3A", setorSaida: "Sul", altitudeRestricao: 7000,
                     cor: '#fbff00',
                     fixos: [
                         { nome: "RW28R",  lat: dmsParaDecimal(23, 25, 43.91, 'S'),lon: dmsParaDecimal(46, 27, 11.45, 'W')},
@@ -703,7 +698,7 @@ export const cartasNavegacao = {
                 },
                
                 "AMVUL_6A": {
-                    nome: "AMVUL 6A",
+                    nome: "AMVUL 6A", setorSaida: "Leste", altitudeRestricao: 6000,
                     cor: '#fbff00',
                     fixos: [
                         { nome: "RW28R",  lat: dmsParaDecimal(23, 25, 43.91, 'S'),lon: dmsParaDecimal(46, 27, 11.45, 'W')},
@@ -783,7 +778,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "ZORZA_3A": {
-                    nome: "ZORZA 3A",
+                    nome: "ZORZA 3A", setorSaida: "Sul", altitudeRestricao: 7000,
                     cor: '#fbff00',
                     fixos: [
                         { nome: "RW28R",  lat: dmsParaDecimal(23, 25, 43.91, 'S'),lon: dmsParaDecimal(46, 27, 11.45, 'W')},
@@ -904,8 +899,7 @@ export const cartasNavegacao = {
                             },
                             rumoInicial: 343,
                             aberturaGraus: 71,
-                            cor: '#ffff00',
-                            dashPattern: [2, 4]
+                            cor: 'rgba(255, 255, 0, 0.4)', dashPattern: [2, 4]
                         }
                     ]
                 }
@@ -951,7 +945,7 @@ export const cartasNavegacao = {
                 },
         
                 "XOLUS_1A": {
-                    nome: "XOLUS 1A",
+                    nome: "XOLUS 1A", setorSaida: "Norte", altitudeRestricao: null,
                     cor: '#fbff00',
                     fixos: [
                         {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
@@ -970,39 +964,13 @@ export const cartasNavegacao = {
                         ["XOLUS", "ISMOB"]
                     ]
                 },
-                "CGO_4B": {
-                    nome: "CGO 4B",
-                    cor: '#fbff00',
-                    fixos: [
-                        {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
-                        { nome: "EVNEB", lat: dmsParaDecimal(23, 27, 71.7, 'S'), lon: dmsParaDecimal(46, 34, 40, 'W') },
-                        { nome: "GR237", lat: dmsParaDecimal(23, 32, 13.3, 'S'), lon: dmsParaDecimal(46, 34, 5, 'W'), restricao: { fl: 65, tipo: "ABOVE" } },
-                        { nome: "VUNVU", lat: dmsParaDecimal(23, 36, 78.3, 'S'), lon: dmsParaDecimal(46, 33, 36.7, 'W') },
-                        { nome: "CGO", lat: dmsParaDecimal(23, 37, 63.3, 'S'), lon: dmsParaDecimal(46, 39, 26.7, 'W'), restricao: { fl: 100, tipo: "ABOVE" } },
-                        { nome: "ZORZA", lat: dmsParaDecimal(23, 42, 48.3, 'S'), lon: dmsParaDecimal(46, 47, 60, 'W') },
-                        { nome: "MADNI", lat: dmsParaDecimal(24, 36, 43.3, 'S'), lon: dmsParaDecimal(47, 0, 53.3, 'W') },
-                        { nome: "UBSOD", lat: dmsParaDecimal(24, 15, 70, 'S'), lon: dmsParaDecimal(47, 8, 65, 'W') },
-                        { nome: "SOVSI", lat: dmsParaDecimal(24, 6, 31.7, 'S'), lon: dmsParaDecimal(47, 28, 31.7, 'W') },
-                        { nome: "GR219", lat: dmsParaDecimal(23, 36, 46.7, 'S'), lon: dmsParaDecimal(47, 9, 43.3, 'W'), restricao: { fl: 190, tipo: "ABOVE" } },
-                        { nome: "UGTIX", lat: dmsParaDecimal(23, 16, 86.7, 'S'), lon: dmsParaDecimal(47, 13, 71.7, 'W'), restricao: { fl: 250, tipo: "ABOVE" } },
-                        { nome: "LESSA", lat: dmsParaDecimal(23, 10, 58.3, 'S'), lon: dmsParaDecimal(47, 37, 68.3, 'W') },
-                        { nome: "ASETA", lat: dmsParaDecimal(23, 17, 13.3, 'S'), lon: dmsParaDecimal(48, 5, 73.3, 'W') },
-                        { nome: "EGEVA", lat: dmsParaDecimal(23, 8, 38.3, 'S'), lon: dmsParaDecimal(48, 33, 68.3, 'W') }
-                    ],
-                    linhas: [
-                        ["RW10L", "EVNEB", "GR237", "VUNVU", "CGO", "ZORZA", "MADNI"],
-                        ["ZORZA", "UBSOD"],
-                        ["ZORZA", "SOVSI"],
-                        ["ZORZA", "GR219", "UGTIX", "LESSA", "ASETA"],
-                        ["LESSA", "EGEVA"]
-                    ]
-                }
+               
             }
         },
         "28R": {
             SID: {
                 "ISNAP_2A": {
-                    nome: "ISNAP 2A",
+                    nome: "ISNAP 2A", setorSaida: "Leste", altitudeRestricao: 6000,
                     cor: '#fbff00',
                     fixos: [
                         {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
@@ -1025,7 +993,7 @@ export const cartasNavegacao = {
                 },
               
                 "XOLUS_1A": {
-                    nome: "XOLUS 1A",
+                    nome: "XOLUS 1A", setorSaida: "Norte", altitudeRestricao: null,
                     cor: '#fbff00',
                     fixos: [
                         {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
@@ -1045,7 +1013,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "ZORZA_5B": {
-                    nome: "ZORZA 5B",
+                    nome: "ZORZA 5B", setorSaida: "Sul", altitudeRestricao: 7000,
                     cor: '#fbff00',
                     fixos: [
                         {nome: "RW10L", lat: dmsParaDecimal(23, 26, 17.76, 'S'),lon: dmsParaDecimal(46, 29, 16.96, 'W')},
@@ -1377,7 +1345,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "SOVSI_1A": {
-                    nome: "SOVSI 1A",
+                    nome: "SOVSI 1A", grupoDep: 1,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1392,7 +1360,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "KONVI_2D": {
-                    nome: "KONVI 2D",
+                    nome: "KONVI 2D", grupoDep: 3,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1410,7 +1378,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "KONVI_2B": {
-                    nome: "KONVI 2B",
+                    nome: "KONVI 2B", grupoDep: 3,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1429,7 +1397,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "OBLUG_2A": {
-                    nome: "OBLUG 2A",
+                    nome: "OBLUG 2A", grupoDep: 2,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1442,7 +1410,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "OPGUN_2A": {
-                    nome: "OPGUN 2A",
+                    nome: "OPGUN 2A", grupoDep: 2,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1462,7 +1430,7 @@ export const cartasNavegacao = {
                     ]
                 },
                 "UGIKI_1B": {
-                    nome: "UGIKI 1B",
+                    nome: "UGIKI 1B", grupoDep: 1,
                     cor: '#45df5e',
                     fixos: [
                         { nome: "RWY15", lat: dmsParaDecimal(23, 0, 16.60, 'S'),lon: dmsParaDecimal(47, 9, 10.00, 'W') },
@@ -1485,3 +1453,7 @@ export const cartasNavegacao = {
         }
     }
 };
+
+
+
+

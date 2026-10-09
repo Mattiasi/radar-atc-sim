@@ -32,6 +32,18 @@ export class PainelFluxoController {
         this.painel = null;
         this.btnFechar = null;
         this.aberto = false;
+
+        // DEP and tabs elements
+        this.btnAbaARR = null;
+        this.btnAbaDEP = null;
+        this.conteudoARR = null;
+        this.conteudoDEP = null;
+        
+        this.selAerodromoDep = null;
+        this.btnGerarDEP = null;
+        this.btnLimparFilaDEP = null;
+        this.containerFilaDEP = null;
+        this.chkAutoDEP = null;
     }
 
     inicializar() {
@@ -43,6 +55,25 @@ export class PainelFluxoController {
         this.btnToggle = document.getElementById('btnToggleFluxo');
         this.painel = document.getElementById('painelFluxo');
         this.btnFechar = document.getElementById('btnFecharFluxo');
+
+        // Tabs
+        this.btnAbaARR = document.getElementById('btnAbaARR');
+        this.btnAbaDEP = document.getElementById('btnAbaDEP');
+        this.conteudoARR = document.getElementById('conteudoARR');
+        this.conteudoDEP = document.getElementById('conteudoDEP');
+
+        // DEP Controls
+        this.selAerodromoDep = document.getElementById('selAerodromoDep');
+        this.selIntervaloDep = document.getElementById('selIntervaloDep');
+        this.btnGerarDEP = document.getElementById('btnGerarDEP');
+        this.btnLimparFilaDEP = document.getElementById('btnLimparFilaDEP');
+        this.containerFilaDEP = document.getElementById('containerFilaDEP');
+        this.chkAutoSpawnDEP = document.getElementById('chkAutoSpawnDEP');
+        this.chkAutoDEP = document.getElementById('chkAutoDEP');
+
+        this.configurarEventosTabs();
+        this.configurarEventosDEP();
+        this.atualizarIntervaloDEP();
 
         if (!this.containerEsteiras || !this.painel) return;
 
@@ -113,6 +144,198 @@ export class PainelFluxoController {
         });
 
         this.renderizarEsteiras();
+        window.painelFluxoUI = this;
+    }
+
+    configurarEventosTabs() {
+        if (!this.btnAbaARR || !this.btnAbaDEP) return;
+        
+        this.btnAbaARR.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.btnAbaARR.classList.add('ativa');
+            this.btnAbaDEP.classList.remove('ativa');
+            this.conteudoARR.style.display = 'block';
+            this.conteudoDEP.style.display = 'none';
+        });
+
+        this.btnAbaDEP.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.btnAbaDEP.classList.add('ativa');
+            this.btnAbaARR.classList.remove('ativa');
+            this.conteudoDEP.style.display = 'block';
+            this.conteudoARR.style.display = 'none';
+            this.renderizarFilaDEP();
+        });
+    }
+
+    configurarEventosDEP() {
+        if (this.selAerodromoDep) {
+            this.selAerodromoDep.addEventListener('change', (e) => {
+                state.configDep.aerodromoSelecionado = e.target.value;
+                this.atualizarIntervaloDEP();
+                this.renderizarFilaDEP();
+            });
+            this.selAerodromoDep.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.selIntervaloDep) {
+            this.selIntervaloDep.addEventListener('change', (e) => {
+                const aero = state.configDep.aerodromoSelecionado || 'SBGR';
+                if (!state.configDep.intervalosPorAerodromo) {
+                    state.configDep.intervalosPorAerodromo = { SBGR: 2, SBKP: 2, SBSP: 2 };
+                }
+                state.configDep.intervalosPorAerodromo[aero] = parseInt(e.target.value, 10);
+            });
+            this.selIntervaloDep.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.btnGerarDEP) {
+            this.btnGerarDEP.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof window.gerarNovaDEP === 'function') {
+                    window.gerarNovaDEP();
+                } else {
+                    console.warn("gerarNovaDEP não implementada no engine.js");
+                }
+                this.renderizarFilaDEP();
+            });
+            this.btnGerarDEP.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.btnLimparFilaDEP) {
+            this.btnLimparFilaDEP.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm("Deseja limpar as partidas? Isso removerá as aeronaves da fila e quaisquer partidas ativas no radar.")) {
+                    state.configDep.fila = [];
+                    state.configDep.ultimaAeronaveDecolada = null;
+                    state.configDep.ultimasGeracoesTempoSimulado = {};
+                    state.configDep.ultimaDecolagemTempoSimuladoPorPista = {};
+                    state.aeronaves = state.aeronaves.filter(a => !a.isDep);
+                    this.renderizarFilaDEP();
+                }
+            });
+            this.btnLimparFilaDEP.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.chkAutoSpawnDEP) {
+            this.chkAutoSpawnDEP.checked = Boolean(state.configDep.geracaoAutomatica);
+            this.chkAutoSpawnDEP.addEventListener('change', (e) => {
+                state.configDep.geracaoAutomatica = e.target.checked;
+            });
+            this.chkAutoSpawnDEP.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.chkAutoDEP) {
+            this.chkAutoDEP.checked = Boolean(state.configDep.decolagemAutomatica);
+            this.chkAutoDEP.addEventListener('change', (e) => {
+                state.configDep.decolagemAutomatica = e.target.checked;
+            });
+            this.chkAutoDEP.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+    }
+
+    atualizarIntervaloDEP() {
+        if (!this.selIntervaloDep) return;
+        const aero = state.configDep.aerodromoSelecionado || 'SBGR';
+        if (!state.configDep.intervalosPorAerodromo) {
+            state.configDep.intervalosPorAerodromo = { SBGR: 2, SBKP: 2, SBSP: 2 };
+        }
+        const val = state.configDep.intervalosPorAerodromo[aero] || 2;
+        this.selIntervaloDep.value = String(val);
+    }
+
+    renderizarFilaDEP() {
+        if (!this.containerFilaDEP) return;
+        this.atualizarIntervaloDEP();
+        if (this.chkAutoSpawnDEP) this.chkAutoSpawnDEP.checked = Boolean(state.configDep.geracaoAutomatica);
+        if (this.chkAutoDEP) this.chkAutoDEP.checked = Boolean(state.configDep.decolagemAutomatica);
+        this.containerFilaDEP.innerHTML = '';
+        
+        const aeroSelecionado = state.configDep.aerodromoSelecionado;
+        if (this.selAerodromoDep && this.selAerodromoDep.value !== aeroSelecionado) {
+            this.selAerodromoDep.value = aeroSelecionado;
+        }
+
+        const fila = state.configDep.fila.filter(a => a.aero === aeroSelecionado && a.status === 'aguardando');
+
+        if (fila.length === 0) {
+            this.containerFilaDEP.innerHTML = '<div style="color:#666; font-size:12px; padding:10px;">Nenhuma aeronave aguardando partida.</div>';
+            return;
+        }
+
+        fila.forEach(dep => {
+            const div = document.createElement('div');
+            div.className = 'linha-esteira';
+            div.style.justifyContent = 'space-between';
+            div.style.padding = '5px';
+            div.style.borderBottom = '1px solid #333';
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.style.display = 'flex';
+            infoDiv.style.flexDirection = 'column';
+            infoDiv.innerHTML = `
+                <span style="color:#aaa; font-weight:bold;">${dep.id} (${dep.category.toUpperCase()})</span>
+                <span style="color:#888; font-size:10px;">RWY ${dep.runway} - ${dep.sid} - FL${dep.requestedFL || ''}</span>
+            `;
+            
+            const actDiv = document.createElement('div');
+            actDiv.style.display = 'flex';
+            actDiv.style.gap = '4px';
+
+            if (dep.aero === 'SBGR' && dep.setorSaida === 'Norte' && !dep.coordenacaoFeita) {
+                const btnCoord = document.createElement('button');
+                btnCoord.textContent = 'COORD APP';
+                btnCoord.style.fontSize = '9px';
+                btnCoord.style.backgroundColor = '#444';
+                btnCoord.style.color = '#fff';
+                btnCoord.style.border = '1px solid #777';
+                btnCoord.style.cursor = 'pointer';
+                btnCoord.onclick = () => {
+                    dep.coordenacaoFeita = true;
+                    this.renderizarFilaDEP();
+                };
+                actDiv.appendChild(btnCoord);
+            } else if (dep.aero === 'SBKP') {
+                const ultima = state.configDep.ultimaAeronaveDecolada;
+                const mesmoGrupo = ultima && (ultima.grupoDep === dep.grupoDep);
+                if (ultima && mesmoGrupo && ultima.category === 'piston' && (dep.category === 'jet' || dep.category === 'turboprop') && !dep.coordenacaoFeita) {
+                    const btnCoord = document.createElement('button');
+                    btnCoord.textContent = 'COORD APP';
+                    btnCoord.style.fontSize = '9px';
+                    btnCoord.style.backgroundColor = '#444';
+                    btnCoord.style.color = '#fff';
+                    btnCoord.style.border = '1px solid #777';
+                    btnCoord.style.cursor = 'pointer';
+                    btnCoord.onclick = () => {
+                        dep.coordenacaoFeita = true;
+                        this.renderizarFilaDEP();
+                    };
+                    actDiv.appendChild(btnCoord);
+                }
+            }
+
+            const btnDecolar = document.createElement('button');
+            btnDecolar.textContent = 'AUTORIZAR';
+            btnDecolar.style.fontSize = '10px';
+            btnDecolar.style.backgroundColor = '#006600';
+            btnDecolar.style.color = '#fff';
+            btnDecolar.style.border = '1px solid #00ff00';
+            btnDecolar.style.cursor = 'pointer';
+            btnDecolar.onclick = () => {
+                if (typeof window.tentarDecolar === 'function') {
+                    window.tentarDecolar(dep);
+                } else {
+                    alert("Função tentarDecolar não implementada.");
+                }
+            };
+            
+            actDiv.appendChild(btnDecolar);
+            
+            div.appendChild(infoDiv);
+            div.appendChild(actDiv);
+            
+            this.containerFilaDEP.appendChild(div);
+        });
     }
 
     toggle() {
@@ -128,6 +351,7 @@ export class PainelFluxoController {
         if (this.painel) this.painel.style.display = 'block';
         if (this.btnToggle) this.btnToggle.classList.add('ativo');
         this.renderizarEsteiras();
+        window.painelFluxoUI = this;
     }
 
     fechar() {
@@ -292,11 +516,13 @@ export class PainelFluxoController {
         });
 
         this.renderizarEsteiras();
+        window.painelFluxoUI = this;
     }
 
     _removerEsteira(id) {
         state.configFluxo.esteiras = state.configFluxo.esteiras.filter(e => e.id !== id);
         this.renderizarEsteiras();
+        window.painelFluxoUI = this;
     }
 }
 
@@ -593,11 +819,26 @@ export class MenuProaController {
 
                     if (hdg === 'HLD') {
                         const lado = this.ladoCurva || 'D';
-                        flightCommandService.setHolding(aero, lado);
+                        if (aero.proaEscolhidaViaPainel === 'HLD') {
+                            flightCommandService.resumeRoute(aero);
+                            aero.proaEscolhidaViaPainel = null;
+                            aero.ladoCurvaViaPainel = null;
+                        } else {
+                            flightCommandService.setHolding(aero, lado);
+                            aero.proaEscolhidaViaPainel = 'HLD';
+                            aero.ladoCurvaViaPainel = lado;
+                        }
                     } else {
                         const proaNum = parseInt(hdg, 10);
                         const lado = this.ladoCurva; // 'E', 'D' ou null
-                        flightCommandService.setHeading(aero, proaNum, lado || false);
+                        if (aero.proaEscolhidaViaPainel === proaNum && (!lado || aero.ladoCurvaViaPainel === lado)) {
+                            flightCommandService.resumeRoute(aero);
+                            aero.proaEscolhidaViaPainel = null;
+                            aero.ladoCurvaViaPainel = null;
+                        } else {
+                            flightCommandService.setHeading(aero, proaNum, lado || false);
+                            aero.proaEscolhidaViaPainel = proaNum;
+                            aero.ladoCurvaViaPainel = lado || null;
 
                         if (aero.comandosAtivos) {
                             aero.comandosAtivos.heading = {
@@ -608,6 +849,7 @@ export class MenuProaController {
                             };
                             aero.comandosAtivos.holding = null;
                         }
+                    }
                     }
                 }
 
@@ -756,11 +998,24 @@ export class MenuVelocidadeController {
 
                     if (spd === 'AUTO') {
                         flightCommandService.setSpeed(aero, 'AUTO');
+                        aero.velEscolhidaViaPainel = null;
                     } else if (spd === 'MIN') {
-                        flightCommandService.setSpeed(aero, 'MIN');
+                        if (aero.velEscolhidaViaPainel === 'MIN') {
+                            flightCommandService.setSpeed(aero, 'AUTO');
+                            aero.velEscolhidaViaPainel = null;
+                        } else {
+                            flightCommandService.setSpeed(aero, 'MIN');
+                            aero.velEscolhidaViaPainel = 'MIN';
+                        }
                     } else {
                         const numSpd = parseInt(spd, 10);
-                        flightCommandService.setSpeed(aero, numSpd);
+                        if (aero.velEscolhidaViaPainel === numSpd) {
+                            flightCommandService.setSpeed(aero, 'AUTO');
+                            aero.velEscolhidaViaPainel = null;
+                        } else {
+                            flightCommandService.setSpeed(aero, numSpd);
+                            aero.velEscolhidaViaPainel = numSpd;
+                        }
                     }
                 }
 
@@ -836,4 +1091,8 @@ export function inicializarUI() {
     painelVentoUI.inicializar();
     coordinateToolController.inicializar();
 }
+
+
+
+
 

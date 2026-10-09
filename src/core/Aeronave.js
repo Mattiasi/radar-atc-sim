@@ -1,4 +1,4 @@
-import { state } from './state.js';
+﻿import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData, obterRestricaoFixoParaAeronave, cartasNavegacao } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
@@ -121,7 +121,8 @@ export class Aeronave {
      * @param {Array<string>} [rota=[]] - Lista sequencial de nomes de fixos da STAR (ex: ROTA_PRUMO ou ROTA_OGTAL).
      * @param {string} [cartaNome=null] - Nome opcional da carta/STAR de navegação ativa da aeronave.
      */
-    constructor(callsign, tipo, lat, lon, proa, vel, nivAtual, nivAutorizado, dest, textoLivre = "", rota = [], spawnWpIndex = 0, cartaNome = null) {
+    constructor(callsign, tipo, lat, lon, proa, vel, nivAtual, nivAutorizado, dest, textoLivre = "", rota = [], spawnWpIndex = 0, cartaNome = null, isDep = false) {
+        this.isDep = Boolean(isDep);
         // --- 1. IDENTIFICAÇÃO E POSIÇÃO CARTESIANA ---
         this.callsign = callsign; // Identificador ATC
         this.tipo = tipo;         // Modelo da aeronave para determinar coeficientes de desempenho
@@ -176,62 +177,58 @@ export class Aeronave {
         // para a próxima restrição de nível inferior da carta.
         // Exemplo: nasceu em OGTAL (restrição FL 120), nasce no FL 120 e já autorizada FL 090 (restrição de SP099).
         // ---------------------------------------------------------------------
-        let fixoSobAero = null;
-        let idxFixoSobAero = -1;
+        if (!this.isDep) {
+            let fixoSobAero = null;
+            let idxFixoSobAero = -1;
 
-        if (rota && rota.length > 0) {
-            // 1. Verifica geometricamente se a posição inicial está em cima (<= 2.0 NM) de algum fixo da rota
-            if (state.fixos && Object.keys(state.fixos).length > 0) {
-                for (let i = 0; i < rota.length; i++) {
-                    const nomeFixo = rota[i];
-                    const coords = state.fixos[nomeFixo];
-                    if (coords) {
-                        const dLat = (coords.deltaLat - this.deltaLat) * 60;
-                        const dLon = (coords.deltaLon - this.deltaLon) * correcaoLon * 60;
-                        const dist = Math.hypot(dLat, dLon);
-                        const restPropria = obterRestricaoFixoParaAeronave(nomeFixo, dest, this.cartaNome);
-                        if (dist <= 2.0 && restPropria && restPropria.fl !== undefined) {
-                            fixoSobAero = nomeFixo;
-                            idxFixoSobAero = i;
-                            break;
+            if (rota && rota.length > 0) {
+                if (state.fixos && Object.keys(state.fixos).length > 0) {
+                    for (let i = 0; i < rota.length; i++) {
+                        const nomeFixo = rota[i];
+                        const coords = state.fixos[nomeFixo];
+                        if (coords) {
+                            const dLat = (coords.deltaLat - this.deltaLat) * 60;
+                            const dLon = (coords.deltaLon - this.deltaLon) * correcaoLon * 60;
+                            const dist = Math.hypot(dLat, dLon);
+                            const restPropria = obterRestricaoFixoParaAeronave(nomeFixo, dest, this.cartaNome);
+                            if (dist <= 2.0 && restPropria && restPropria.fl !== undefined) {
+                                fixoSobAero = nomeFixo;
+                                idxFixoSobAero = i;
+                                break;
+                            }
                         }
+                    }
+                }
+
+                if (!fixoSobAero && spawnWpIndex === 0) {
+                    const restWp0 = obterRestricaoFixoParaAeronave(rota[0], dest, this.cartaNome);
+                    if (restWp0 && restWp0.fl !== undefined) {
                     }
                 }
             }
 
-            // 2. Fallback se estiver no waypoint 0 e possuir restrição
-            if (!fixoSobAero && spawnWpIndex === 0) {
-                const restWp0 = obterRestricaoFixoParaAeronave(rota[0], dest, this.cartaNome);
-                if (restWp0 && restWp0.fl !== undefined) {
-                    // NÃO definir fixoSobAero para evitar avanço prematuro do waypoint
+            if (fixoSobAero) {
+                const niveisFixo = obterNiveisSpawn(fixoSobAero, rota, dest, this.cartaNome);
+                nivAtual = niveisFixo.nivAtual;
+                nivAutorizado = niveisFixo.nivAutorizado;
+
+                if (spawnWpIndex <= idxFixoSobAero && idxFixoSobAero + 1 < rota.length) {
+                    spawnWpIndex = idxFixoSobAero + 1;
                 }
-            }
-        }
 
-        if (fixoSobAero) {
-            const niveisFixo = obterNiveisSpawn(fixoSobAero, rota, dest, this.cartaNome);
-            nivAtual = niveisFixo.nivAtual;
-            nivAutorizado = niveisFixo.nivAutorizado;
-
-            // Se nasceu em cima do fixo, já completou a passagem por ele;
-            // o próximo fixo alvo a perseguir no LNAV é o fixo subsequente na rota.
-            if (spawnWpIndex <= idxFixoSobAero && idxFixoSobAero + 1 < rota.length) {
-                spawnWpIndex = idxFixoSobAero + 1;
+                const proxNome = rota[spawnWpIndex];
+                if (proxNome && state.fixos && state.fixos[proxNome]) {
+                    const info = calcularRumoDistancia(this, state.fixos[proxNome]);
+                    this.proa = parseInt(info.rumo, 10);
+                    this.proaDestino = this.proa;
+                    this.track = this.proa;
+                }
+            } else if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
+                const refWp = rota[spawnWpIndex] || rota[0];
+                const niveisAuto = obterNiveisSpawn(refWp, rota, dest, this.cartaNome);
+                if (!nivAtual) nivAtual = niveisAuto.nivAtual;
+                if (!nivAutorizado) nivAutorizado = niveisAuto.nivAutorizado;
             }
-
-            // Alinha a proa em direção ao próximo fixo se houver coordenadas
-            const proxNome = rota[spawnWpIndex];
-            if (proxNome && state.fixos && state.fixos[proxNome]) {
-                const info = calcularRumoDistancia(this, state.fixos[proxNome]);
-                this.proa = parseInt(info.rumo, 10);
-                this.proaDestino = this.proa;
-                this.track = this.proa;
-            }
-        } else if ((!nivAtual || !nivAutorizado) && rota && rota.length > 0) {
-            const refWp = rota[spawnWpIndex] || rota[0];
-            const niveisAuto = obterNiveisSpawn(refWp, rota, dest, this.cartaNome);
-            if (!nivAtual) nivAtual = niveisAuto.nivAtual;
-            if (!nivAutorizado) nivAutorizado = niveisAuto.nivAutorizado;
         }
 
         // --- 5. NAVEGAÇÃO VERTICAL (FLIGHT LEVEL / VNAV) ---
@@ -632,6 +629,15 @@ export class Aeronave {
             return 0;
         }
 
+        if (this.isDep) {
+            const perf = this.perf || getAircraftPerformance(this.tipo);
+            const vClimb = (perf.speeds && perf.speeds.vClimb) || 250;
+            const target = (this.velManual || this.velComando) ? (this.velComando || this.vel) : (this.vel || vClimb);
+            this.targetSpeed = target;
+            this.sugestaoVel = target;
+            return target;
+        }
+
         // Atualiza DTG referencial para telemetria
         this.dtg = this.calcularDistanceToGo();
 
@@ -881,7 +887,7 @@ export class Aeronave {
             (this.cleared_level === "ILS" || this.nivAutorizado === "ILS" || this.autopilot.ils_authorized)
         ) && !this.missed_approach;
 
-        if (!emILS) {
+        if (!emILS && !this.isDep) {
             const rwy = getRunwayData(this);
             const rwyElevFt = rwy ? rwy.threshold.elevation_ft : 2631;
             const frontCourse = rwy ? (rwy.front_course_deg || 170) : 170;
@@ -945,6 +951,8 @@ export class Aeronave {
         commandParser.parseAndExecuteScratchpad(this, this.textoLivre);
     }
 }
+
+
 
 
 

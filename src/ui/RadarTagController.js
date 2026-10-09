@@ -77,39 +77,30 @@ export function obterEstadoProaVelATC(aero) {
 
     let proaAutStr = 'hdg';
     let temProa = false;
-    if (aero.modoHolding && aero.modoHolding.ativo) {
-        proaAutStr = (aero.modoHolding.lado === 'E') ? 'HLD<' : 'HLD>';
-        temProa = true;
-    } else if (aero.comandosAtivos && aero.comandosAtivos.heading && aero.comandosAtivos.heading.proa !== undefined && aero.comandosAtivos.heading.proa !== null) {
-        let pd = aero.comandosAtivos.heading.proa;
-        if (pd <= 0) pd = 360;
-        while (pd > 360) pd -= 360;
-        proaAutStr = String(pd).padStart(3, '0');
-        temProa = true;
-    } else if (!aero.modoLNAV && aero.proaDestino !== null && aero.proaDestino !== undefined) {
-        let pd = Math.round(aero.proaDestino);
-        if (pd <= 0) pd = 360;
-        while (pd > 360) pd -= 360;
-        proaAutStr = String(pd).padStart(3, '0');
-        temProa = true;
+    if (aero.proaEscolhidaViaPainel) {
+        if (aero.proaEscolhidaViaPainel === 'HLD') {
+            const lado = (aero.ladoCurvaViaPainel === 'E' || (aero.modoHolding && aero.modoHolding.lado === 'E')) ? 'HLD<' : 'HLD>';
+            proaAutStr = lado;
+            temProa = true;
+        } else {
+            let pd = parseInt(aero.proaEscolhidaViaPainel, 10);
+            if (pd <= 0) pd = 360;
+            while (pd > 360) pd -= 360;
+            proaAutStr = String(pd).padStart(3, '0');
+            temProa = true;
+        }
     }
 
     let velAutStr = 'vel';
     let temVel = false;
-    if (aero.comandosAtivos && aero.comandosAtivos.speed) {
-        if (aero.comandosAtivos.speed.type === 'MIN') {
+    if (aero.velEscolhidaViaPainel) {
+        if (aero.velEscolhidaViaPainel === 'MIN') {
             velAutStr = 'MIN';
             temVel = true;
-        } else if (aero.comandosAtivos.speed.type === 'NUM' && aero.comandosAtivos.speed.value) {
-            velAutStr = String(aero.comandosAtivos.speed.value);
+        } else {
+            velAutStr = String(Math.round(aero.velEscolhidaViaPainel));
             temVel = true;
         }
-    } else if (aero.velocidadeMinima) {
-        velAutStr = 'MIN';
-        temVel = true;
-    } else if (aero.velManual && aero.velComando) {
-        velAutStr = String(Math.round(aero.velComando));
-        temVel = true;
     }
 
     return { temProa, temVel, proaAutStr, velAutStr };
@@ -200,7 +191,7 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
     ctx.textBaseline = 'bottom';
     ctx.textAlign = 'left';
 
-    const corPadrao = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
+    const corPadrao = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : (aero.isDep ? "hsl(0, 3%, 78%)" : "#000000");
 
     // Coluna 1: Proa Real (sempre à esquerda - visível apenas quando expandida)
     const col1X = textX;
@@ -302,7 +293,7 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
         ctx.fillStyle = '#00ffff';
     } else {
         // O texto permanece preto (#000000) em todos os modos (AUTO, ATC-R, EXPD)
-        ctx.fillStyle = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
+        ctx.fillStyle = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : (aero.isDep ? "hsl(0, 3%, 78%)" : "#000000");
     }
 
     ctx.fillText(textoCompleto, posX, posY);
@@ -499,3 +490,5 @@ export class MenuRazaoController {
 }
 
 export const menuRazaoController = new MenuRazaoController();
+
+

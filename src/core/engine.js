@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state, radarLayerState } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta, deltaParaGeo } from '../utils/utils.js';
 import { fixosNavegacao, aerodromos, verticesSetor, ROTA_OGTAL, ROTA_PRUMO, obterTrajetoriaCompletaAteFixo, obterNiveisSpawn, isFixoDeCabeceiraAtiva, obterDestinoPorFixoECarta, cartasNavegacao } from '../data/data.js';
 import { Aeronave } from './Aeronave.js';
@@ -331,4 +331,391 @@ export function gerenciarEsteiraDeTrafego() {
             }
         }
     });
+}
+
+// --- DEPARTURES ENGINE ---
+export function obterAerodromosAtivosDEP() {
+    const todos = ['SBGR', 'SBKP', 'SBSP'];
+    const ativos = new Set();
+
+    if (radarLayerState && radarLayerState.activeRunways && radarLayerState.activeRunways.size > 0) {
+        for (const rwyKey of radarLayerState.activeRunways) {
+            for (const aero of todos) {
+                if (rwyKey.startsWith(aero)) {
+                    ativos.add(aero);
+                }
+            }
+        }
+    }
+
+    if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+        for (const aero of todos) {
+            const aerodromoCartas = cartasNavegacao[aero];
+            if (aerodromoCartas) {
+                for (const cabeceira of Object.values(aerodromoCartas)) {
+                    if (cabeceira.SID) {
+                        for (const [sKey, sObj] of Object.entries(cabeceira.SID)) {
+                            if (radarLayerState.activeCharts.has(sObj.nome) || radarLayerState.activeCharts.has(sKey)) {
+                                ativos.add(aero);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (ativos.size === 0) {
+        ativos.add(state.configDep.aerodromoSelecionado || 'SBGR');
+    }
+
+    return Array.from(ativos);
+}
+
+export function obterPistaAtivaParaDEP(aeroId) {
+    const aerodromoCartas = cartasNavegacao[aeroId] || {};
+    const todasPistasComSID = Object.keys(aerodromoCartas).filter(p => aerodromoCartas[p].SID && Object.keys(aerodromoCartas[p].SID).length > 0);
+    if (todasPistasComSID.length === 0) return null;
+
+    // 1. Prioriza cartas SID ativas no Vídeo Mapa
+    if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+        for (const pista of todasPistasComSID) {
+            const sids = aerodromoCartas[pista].SID || {};
+            for (const [sKey, sObj] of Object.entries(sids)) {
+                if (radarLayerState.activeCharts.has(sObj.nome) || radarLayerState.activeCharts.has(sKey)) {
+                    return pista;
+                }
+            }
+        }
+    }
+
+    // 2. Prioriza cabeceiras/pistas ativas no Vídeo Mapa
+    if (radarLayerState && radarLayerState.activeRunways && radarLayerState.activeRunways.size > 0) {
+        const pistasAtivas = todasPistasComSID.filter(rwyKey => {
+            const numPista = rwyKey.replace(/[^0-9]/g, '');
+            const groupKey = `${aeroId}-${numPista}`;
+            const runwayKey = `${aeroId}-${rwyKey}`;
+            return radarLayerState.activeRunways.has(groupKey) || radarLayerState.activeRunways.has(runwayKey);
+        });
+        if (pistasAtivas.length > 0) {
+            return pistasAtivas[Math.floor(Math.random() * pistasAtivas.length)];
+        }
+    }
+
+    return todasPistasComSID[Math.floor(Math.random() * todasPistasComSID.length)];
+}
+
+window.gerarNovaDEP = function(aerodromoAlvo = null) {
+    const aeroId = aerodromoAlvo || state.configDep.aerodromoSelecionado;
+    if (!aeroId) return null;
+
+    const pistaEscolhida = obterPistaAtivaParaDEP(aeroId);
+    if (!pistaEscolhida) {
+        console.warn(`Nenhuma pista com SID encontrada para ${aeroId}`);
+        return null;
+    }
+
+    const pistaSids = cartasNavegacao[aeroId][pistaEscolhida].SID;
+    if (!pistaSids) return null;
+
+    let sidKeys = Object.keys(pistaSids);
+    if (sidKeys.length === 0) return null;
+
+    if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+        const sidAtivas = sidKeys.filter(k => radarLayerState.activeCharts.has(pistaSids[k].nome) || radarLayerState.activeCharts.has(k));
+        if (sidAtivas.length > 0) {
+            sidKeys = sidAtivas;
+        }
+    }
+
+    const sidKey = sidKeys[Math.floor(Math.random() * sidKeys.length)];
+    const sidSelecionada = pistaSids[sidKey];
+
+    const category = ['jet', 'jet', 'jet', 'turboprop', 'piston'][Math.floor(Math.random() * 5)];
+    const prefixos = ['GLO', 'TAM', 'AZU', 'ONE', 'PT'];
+    const prefixo = (category === 'piston') ? 'PT' : (category === 'turboprop' ? 'AZU' : prefixos[Math.floor(Math.random() * 4)]);
+    const id = prefixo + Math.floor(Math.random() * 9000 + 1000);
+
+    let requestedFL = 260 + Math.floor(Math.random() * 14) * 10; // FL260 to FL400
+    if (category === 'piston') requestedFL = 100 + Math.floor(Math.random() * 5) * 10;
+    else if (category === 'turboprop') requestedFL = 180 + Math.floor(Math.random() * 9) * 10;
+
+    const novaDEP = {
+        id: id,
+        aero: aeroId,
+        runway: pistaEscolhida,
+        sid: sidSelecionada.nome,
+        sidKey: sidKey,
+        category: category,
+        status: 'aguardando', // 'aguardando', 'autorizado', 'em_voo'
+        requestedFL: requestedFL,
+        isDep: true,
+        grupoDep: sidSelecionada.grupoDep,
+        setorSaida: sidSelecionada.setorSaida,
+        altitudeRestricao: sidSelecionada.altitudeRestricao,
+        coordenacaoFeita: false
+    };
+
+    state.configDep.fila.push(novaDEP);
+    return novaDEP;
+};
+
+window.tentarDecolar = function(dep, silencioso = false) {
+    if (dep.status !== 'aguardando') return false;
+
+    const tempoSimuladoAtual = state.tempoSimulado || (performance.now() / 1000);
+    const chavePista = `${dep.aero}-${dep.runway}`;
+
+    if (!state.configDep.ultimaDecolagemTempoSimuladoPorPista) {
+        state.configDep.ultimaDecolagemTempoSimuladoPorPista = {};
+    }
+
+    let podeDecolar = true;
+    let motivoBloqueio = "";
+
+    // 1. REGRA FUNDAMENTAL: Separação mínima de pista (Runway Occupancy Separation)
+    // Respeita o intervalo configurado em minutos para cada aeródromo
+    const ultPistaTempo = state.configDep.ultimaDecolagemTempoSimuladoPorPista ? state.configDep.ultimaDecolagemTempoSimuladoPorPista[chavePista] : undefined;
+    const intervaloMinutos = (state.configDep.intervalosPorAerodromo && state.configDep.intervalosPorAerodromo[dep.aero]) ? state.configDep.intervalosPorAerodromo[dep.aero] : 2;
+    const tempoMinimoPista = intervaloMinutos * 60;
+    if (ultPistaTempo !== undefined) {
+        const tempoDesdeUltimaPista = tempoSimuladoAtual - ultPistaTempo;
+        if (tempoDesdeUltimaPista < tempoMinimoPista) {
+            podeDecolar = false;
+            motivoBloqueio = `Separação de pista (${intervaloMinutos} min) - Restam ${Math.ceil(tempoMinimoPista - tempoDesdeUltimaPista)}s simulados.`;
+        }
+    }
+
+    const ultima = state.configDep.ultimaAeronaveDecolada;
+
+    // 2. REGRAS ESPECÍFICAS DE SEPARAÇÃO POR AERÓDROMO E ESTEIRA
+    if (podeDecolar && ultima && ultima.aero === dep.aero) {
+        const tempoDesdeUltima = tempoSimuladoAtual - (state.configDep.ultimaDecolagemTempoSimulado || 0);
+        
+        if (dep.aero === "SBKP") {
+            const mesmoGrupo = (ultima.grupoDep === dep.grupoDep);
+            if (mesmoGrupo && ultima.category === "turboprop" && dep.category === "jet") {
+                if (tempoDesdeUltima < 4 * 60) {
+                    podeDecolar = false;
+                    motivoBloqueio = `Separação por esteira (Turbo/Jato, mesmo grupo) - Restam ${Math.ceil(4 * 60 - tempoDesdeUltima)}s simulados.`;
+                }
+            } else if (mesmoGrupo && ultima.category === "turboprop" && dep.category === "turboprop") {
+                if (tempoDesdeUltima < 2 * 60) {
+                    podeDecolar = false;
+                    motivoBloqueio = `Separação por esteira (Turbo/Turbo, mesmo grupo) - Restam ${Math.ceil(2 * 60 - tempoDesdeUltima)}s simulados.`;
+                }
+            } else if (!mesmoGrupo && ultima.category === "piston" && (dep.category === "jet" || dep.category === "turboprop")) {
+                if (tempoDesdeUltima < 3 * 60) {
+                    podeDecolar = false;
+                    motivoBloqueio = `Separação por esteira (Pistão -> Turbo/Jato, grupos diferentes) - Restam ${Math.ceil(3 * 60 - tempoDesdeUltima)}s simulados.`;
+                }
+            } else if (mesmoGrupo && ultima.category === "piston" && (dep.category === "jet" || dep.category === "turboprop")) {
+                if (!dep.coordenacaoFeita) {
+                    if (state.configDep.decolagemAutomatica) {
+                        if (!dep.coordTimer) dep.coordTimer = tempoSimuladoAtual;
+                        const elapsed = tempoSimuladoAtual - dep.coordTimer;
+                        if (elapsed >= 5) {
+                            dep.coordenacaoFeita = true;
+                        } else {
+                            podeDecolar = false;
+                            motivoBloqueio = "Coordenando com APP-SP para Jato/Turbo após Pistão...";
+                        }
+                    } else {
+                        podeDecolar = false;
+                        motivoBloqueio = "Requer coordenação com APP-SP para Jato/Turbo após Pistão no mesmo grupo.";
+                    }
+                }
+            }
+        }
+
+        if (dep.aero === "SBGR") {
+            const lastAeroObj = state.aeronaves.find(a => a.callsign === ultima.id);
+            if (lastAeroObj) {
+                if (ultima.setorSaida === "Leste") {
+                    if (lastAeroObj.flAtualNum < 60) {
+                        podeDecolar = false;
+                        motivoBloqueio = `Precedente setor Leste precisa cruzar 6000 ft em subida (atual: FL${Math.round(lastAeroObj.flAtualNum)}).`;
+                    }
+                } else if (ultima.setorSaida === "Sul") {
+                    if (lastAeroObj.flAtualNum < 70) {
+                        podeDecolar = false;
+                        motivoBloqueio = `Precedente setor Sul precisa cruzar 7000 ft em subida (atual: FL${Math.round(lastAeroObj.flAtualNum)}).`;
+                    }
+                }
+            }
+            if (dep.setorSaida === "Norte" && !dep.coordenacaoFeita) {
+                if (state.configDep.decolagemAutomatica) {
+                    if (!dep.coordTimer) dep.coordTimer = tempoSimuladoAtual;
+                    const elapsed = tempoSimuladoAtual - dep.coordTimer;
+                    if (elapsed >= 5) {
+                        dep.coordenacaoFeita = true;
+                    } else {
+                        podeDecolar = false;
+                        motivoBloqueio = "Coordenando com APP-SP para saída setor Norte...";
+                    }
+                } else {
+                    podeDecolar = false;
+                    motivoBloqueio = "Saída setor Norte exige coordenação com APP-SP.";
+                }
+            }
+        }
+
+        if (dep.aero === "SBSP") {
+            if (ultima.setorSaida && dep.setorSaida && ultima.setorSaida === dep.setorSaida) {
+                if (tempoDesdeUltima < 2 * 60) {
+                    podeDecolar = false;
+                    motivoBloqueio = `SBSP: 2 minutos de separação para o mesmo setor - Restam ${Math.ceil(2 * 60 - tempoDesdeUltima)}s simulados.`;
+                }
+            }
+        }
+    }
+
+    if (podeDecolar) {
+        dep.status = "autorizado";
+        spawnDEP(dep);
+        return true;
+    } else {
+        if (!silencioso) {
+            alert("Decolagem bloqueada: " + motivoBloqueio);
+        }
+        return false;
+    }
+};
+
+function spawnDEP(dep) {
+    const pistasObj = cartasNavegacao[dep.aero][dep.runway];
+    if (!pistasObj || !pistasObj.SID) return;
+    const sidInfo = pistasObj.SID[dep.sidKey];
+    if (!sidInfo || !sidInfo.fixos || sidInfo.fixos.length === 0) return;
+
+    const startFix = sidInfo.fixos[0];
+    const pAtual = state.fixos[startFix.nome] || geoParaDelta(startFix.lat, startFix.lon);
+    
+    let rumoInicial = 0;
+    if (sidInfo.fixos.length > 1) {
+        const pProx = state.fixos[sidInfo.fixos[1].nome] || geoParaDelta(sidInfo.fixos[1].lat, sidInfo.fixos[1].lon);
+        rumoInicial = parseInt(calcularRumoDistancia(pAtual, pProx).rumo, 10);
+    }
+
+    const startGeo = deltaParaGeo(pAtual.deltaLat, pAtual.deltaLon);
+
+    let baseVel = 140;
+    let tipoAero = "A320";
+    if (dep.category === 'jet') { baseVel = 210; tipoAero = "A320"; }
+    if (dep.category === 'turboprop') { baseVel = 160; tipoAero = "AT76"; }
+    if (dep.category === 'piston') { baseVel = 120; tipoAero = "C172"; }
+
+    let targetFL = dep.requestedFL;
+    let tempAlt = null;
+    if (dep.aero === 'SBGR') {
+        if (dep.setorSaida === 'Leste') tempAlt = 60;
+        if (dep.setorSaida === 'Sul') tempAlt = 70;
+    }
+
+    const sidPoints = sidInfo.fixos.map(f => f.nome);
+    const aeroData = aerodromos.find(a => a.nome === dep.aero);
+    const elevacaoFL = pistasObj.elevacao || (aeroData?.elevacaoFt ? Math.round(aeroData.elevacaoFt / 100) : 25);
+    const nivAtualStr = String(elevacaoFL).padStart(3, '0');
+    const nivAutStr = String(tempAlt ? tempAlt : targetFL).padStart(3, '0');
+
+    const novaAero = new Aeronave(
+        dep.id,
+        tipoAero,
+        startGeo.lat,
+        startGeo.lon,
+        rumoInicial,
+        baseVel,
+        nivAtualStr,
+        nivAutStr,
+        "",
+        "",
+        sidPoints,
+        1,
+        dep.sid,
+        true // isDep
+    );
+
+    novaAero.isDep = true;
+    novaAero.origemAero = dep.aero;
+    novaAero.aerodromo = dep.aero;
+    novaAero.assigned_runway = dep.runway;
+    novaAero.pistaAtribuida = dep.runway;
+    novaAero.sid = dep.sid;
+    novaAero.cartaNome = dep.sid;
+    novaAero.targetAltFinal = targetFL;
+    novaAero.requestedFL = targetFL;
+    novaAero.tempAltitudeRestriction = tempAlt ? tempAlt * 100 : null;
+    novaAero.vertical_floor_altitude = null;
+    novaAero.semRestricoes = false;
+
+    state.aeronaves.push(novaAero);
+    dep.status = 'em_voo';
+    state.configDep.ultimaAeronaveDecolada = dep;
+    state.configDep.ultimaDecolagemTick = performance.now();
+    const tempoSimAgora = state.tempoSimulado || (performance.now() / 1000);
+    state.configDep.ultimaDecolagemTempoSimulado = tempoSimAgora;
+    const chavePista = `${dep.aero}-${dep.runway}`;
+    if (!state.configDep.ultimaDecolagemTempoSimuladoPorPista) {
+        state.configDep.ultimaDecolagemTempoSimuladoPorPista = {};
+    }
+    state.configDep.ultimaDecolagemTempoSimuladoPorPista[chavePista] = tempoSimAgora;
+    
+    if (window.painelFluxoUI) {
+        window.painelFluxoUI.renderizarFilaDEP();
+    }
+}
+
+export function gerenciarDecolagensAutomaticas() {
+    if (state.pausado) return;
+
+    const tempoSim = state.tempoSimulado || (performance.now() / 1000);
+    if (!state.configDep.ultimasGeracoesTempoSimulado) {
+        state.configDep.ultimasGeracoesTempoSimulado = {};
+    }
+
+    // Trava de segurança: máximo de 12 aeronaves DEP simultâneas no radar
+    const totalDepVoando = state.aeronaves.filter(a => a.isDep).length;
+    if (totalDepVoando >= 12) {
+        return;
+    }
+
+    const aerodromosAtivos = obterAerodromosAtivosDEP();
+
+    // 1. GERAÇÃO AUTOMÁTICA
+    if (state.configDep.geracaoAutomatica && !state.configDep.geracaoPausada) {
+        for (const aeroId of aerodromosAtivos) {
+            const aguardando = state.configDep.fila.filter(a => a.aero === aeroId && a.status === 'aguardando');
+            const ultGeracao = state.configDep.ultimasGeracoesTempoSimulado[aeroId];
+            const intervaloMin = (state.configDep.intervalosPorAerodromo && state.configDep.intervalosPorAerodromo[aeroId]) ? state.configDep.intervalosPorAerodromo[aeroId] : 2;
+            const intervaloSegundos = Math.max(60, intervaloMin * 60);
+
+            // Intervalo simulado entre gerações consecutivas baseado na configuração do aeródromo
+            const podeGerarPeloTempo = (ultGeracao === undefined) || ((tempoSim - ultGeracao) >= intervaloSegundos);
+
+            // Mantém no máximo 2 aeronaves na fila aguardando por aeródromo
+            if (aguardando.length < 2 && podeGerarPeloTempo) {
+                window.gerarNovaDEP(aeroId);
+                state.configDep.ultimasGeracoesTempoSimulado[aeroId] = tempoSim;
+                if (window.painelFluxoUI) {
+                    window.painelFluxoUI.renderizarFilaDEP();
+                }
+            }
+        }
+    }
+
+    // 2. DECOLAGEM AUTOMÁTICA
+    if (state.configDep.decolagemAutomatica) {
+        for (const aeroId of aerodromosAtivos) {
+            const aguardando = state.configDep.fila.filter(a => a.aero === aeroId && a.status === 'aguardando');
+            if (aguardando.length > 0) {
+                const proxima = aguardando[0];
+                window.tentarDecolar(proxima, true);
+            }
+        }
+    }
+
+    // Limpeza periódica de histórico antigo de partidas
+    if (state.configDep.fila.length > 30) {
+        state.configDep.fila = state.configDep.fila.filter(a => a.status === 'aguardando' || a === state.configDep.ultimaAeronaveDecolada);
+    }
 }

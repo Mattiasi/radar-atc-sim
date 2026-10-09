@@ -140,7 +140,7 @@ export class FlightDynamicsEngine {
             }
         }
 
-        if (pisoAtivoFt !== null && ac.descent_mode !== 'OPEN_DESCENT' && ac.descent_mode !== 'GLIDEPATH' && ac.descent_mode !== 'FLARE' && !ac.on_ground) {
+        if (!ac.isDep && pisoAtivoFt !== null && ac.descent_mode !== 'OPEN_DESCENT' && ac.descent_mode !== 'GLIDEPATH' && ac.descent_mode !== 'FLARE' && !ac.on_ground) {
             // Se o aviǜo estǭ mais de 500pǸs abaixo do piso (ex: vetoraǜo baixa), N?O teleporte-o para cima.
             // S corrija pequenos overshoots fsicos.
             if (ac.alt < pisoAtivoFt && ac.alt >= pisoAtivoFt - 500) {

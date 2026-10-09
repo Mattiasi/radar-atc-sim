@@ -39,7 +39,54 @@
                 <button id="btnFecharFluxo" class="btn-fechar-fluxo" title="Fechar painel [Esc]">✕</button>
             </div>
         </div>
-        <div id="containerEsteiras"></div>
+        
+        <div class="abas-fluxo">
+            <button id="btnAbaARR" class="aba-fluxo ativa">ARR</button>
+            <button id="btnAbaDEP" class="aba-fluxo">DEP</button>
+        </div>
+
+        <div id="conteudoARR">
+            <div id="containerEsteiras"></div>
+        </div>
+
+        <div id="conteudoDEP" style="display: none;">
+            <div class="dep-controles-superiores">
+                <select id="selAerodromoDep" class="sel-fixo">
+                    <option value="SBGR">SBGR</option>
+                    <option value="SBKP">SBKP</option>
+                    <option value="SBSP">SBSP</option>
+                </select>
+                <button id="btnGerarDEP" class="btn-adicionar-fluxo" style="margin-left:5px;">+ GERAR</button>
+                <button id="btnLimparFilaDEP" class="btn-remover-esteira" title="Limpar aeronaves aguardando" style="margin-left:auto; font-size:12px; width:auto; padding:0 5px;">LIMPAR</button>
+            </div>
+            <div class="dep-linha-intervalo" style="display:flex; align-items:center; justify-content:space-between; margin: 4px 0; padding: 4px 6px; background: rgba(0,0,0,0.25); border-radius: 4px;">
+                <label for="selIntervaloDep" style="font-size: 11px; color: #aaa;">INTERVALO DEP:</label>
+                <select id="selIntervaloDep" class="sel-fixo" style="width: auto; padding: 1px 6px; font-size: 11px; color: #00ffff; background: #222; border: 1px solid #444;">
+                    <option value="1">1 min</option>
+                    <option value="2">2 min</option>
+                    <option value="3">3 min</option>
+                    <option value="4">4 min</option>
+                    <option value="5">5 min</option>
+                    <option value="6">6 min</option>
+                    <option value="7">7 min</option>
+                    <option value="8">8 min</option>
+                    <option value="9">9 min</option>
+                    <option value="10">10 min</option>
+                </select>
+            </div>
+            <div class="dep-auto-toggle" style="display:flex; flex-direction:column; gap:5px; margin: 6px 0 8px 0; padding: 6px 8px; background: rgba(0,0,0,0.35); border-radius: 4px; border: 1px solid rgba(0, 255, 255, 0.2);">
+                <label style="font-size: 11px; color: #00ffff; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="chkAutoSpawnDEP" style="cursor: pointer;">
+                    GERAÇÃO AUTOMÁTICA (DEP)
+                </label>
+                <label style="font-size: 11px; color: #00ffff; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="chkAutoDEP" style="cursor: pointer;">
+                    DECOLAGEM AUTOMÁTICA (DEP)
+                </label>
+            </div>
+            <div id="containerFilaDEP" class="fila-dep"></div>
+        </div>
+
         <div class="divisor-painel"></div>
         <div class="secao-velocidade">
             <div class="linha-fluxo">
@@ -77,3 +124,4 @@
     <script type="module" src="src/core/main.js?v=2.2"></script>
 </body>
 </html>
+

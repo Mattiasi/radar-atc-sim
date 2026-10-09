@@ -80,7 +80,7 @@ export class VirtualPilot {
             if (!isNaN(flNum)) targetAlt = flNum * 100;
         }
 
-        if (!isILSAuthorized && aero.vertical_floor_altitude !== null && aero.vertical_floor_altitude !== undefined) {
+        if (!aero.isDep && !isILSAuthorized && aero.vertical_floor_altitude !== null && aero.vertical_floor_altitude !== undefined) {
             targetAlt = Math.max(targetAlt, aero.vertical_floor_altitude);
         }
 

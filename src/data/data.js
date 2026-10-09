@@ -99,11 +99,31 @@ export function obterRestricaoFixoParaAeronave(fixoNome, destOuAero = null, cart
     let rwyAtribuida = null;
 
     if (destOuAero && typeof destOuAero === 'object') {
-        dest = destOuAero.dest || destOuAero.destino || null;
-        if (!carta) carta = destOuAero.cartaNome || null;
-        rwyAtribuida = destOuAero.assigned_runway || destOuAero.pistaAtribuida || null;
+        dest = destOuAero.dest || destOuAero.destino || destOuAero.origemAero || destOuAero.aerodromo || null;
+        if (!carta) carta = destOuAero.cartaNome || destOuAero.sid || null;
+        rwyAtribuida = destOuAero.assigned_runway || destOuAero.pistaAtribuida || destOuAero.runway || null;
     } else if (typeof destOuAero === 'string') {
         dest = destOuAero;
+    }
+
+    // Se dest não foi especificado ou não foi encontrado em cartasNavegacao, busca o aeródromo através do nome da carta
+    if ((!dest || !cartasNavegacao || !cartasNavegacao[dest]) && carta && cartasNavegacao) {
+        for (const [aeroKey, aeroObj] of Object.entries(cartasNavegacao)) {
+            for (const cabeceira of Object.values(aeroObj)) {
+                for (const categoria of Object.values(cabeceira)) {
+                    if (!categoria) continue;
+                    for (const c of Object.values(categoria)) {
+                        if (c.nome === carta || c.nome.replace(/\s+/g, '_') === carta.replace(/\s+/g, '_') || (carta && (c.nome.includes(carta) || carta.includes(c.nome)))) {
+                            dest = aeroKey;
+                            break;
+                        }
+                    }
+                    if (dest) break;
+                }
+                if (dest) break;
+            }
+            if (dest) break;
+        }
     }
 
     if (cartasNavegacao && dest && cartasNavegacao[dest]) {
@@ -131,7 +151,7 @@ export function obterRestricaoFixoParaAeronave(fixoNome, destOuAero = null, cart
                 for (const categoria of Object.values(cabeceira)) {
                     if (!categoria) continue;
                     for (const c of Object.values(categoria)) {
-                        if (c.nome === carta || c.nome.replace(/\s+/g, '_') === carta.replace(/\s+/g, '_')) {
+                        if (c.nome === carta || c.nome.replace(/\s+/g, '_') === carta.replace(/\s+/g, '_') || (carta && (c.nome.includes(carta) || carta.includes(c.nome)))) {
                             if (c.fixos && Array.isArray(c.fixos)) {
                                 const f = c.fixos.find(item => item.nome === fixoNome);
                                 if (f) {

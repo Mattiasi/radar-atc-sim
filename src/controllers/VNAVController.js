@@ -34,26 +34,88 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
     }
 
     let pertoPistaOuAero = false;
-    const rwy = getRunwayData(aero);
-    if (rwy) {
-        const geom = calculateILSGeometry(aero.deltaLat, aero.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
-        if (geom.along_track_nm <= 5.0 && geom.along_track_nm >= -(rwy.comp_nm + 1.0) && Math.abs(geom.cross_track_nm) <= 1.5) {
-            pertoPistaOuAero = true;
-        }
-    } else {
-        const destCoords = state.fixos ? (state.fixos[aero.dest] || state.fixos["SBSP"] || Object.values(state.fixos)[0]) : null;
-        if (destCoords) {
-            const navDest = calcularRumoDistancia(aero, destCoords);
-            if (navDest && navDest.distanciaNM <= 3.0) {
+    if (!aero.isDep) {
+        const rwy = getRunwayData(aero);
+        if (rwy) {
+            const geom = calculateILSGeometry(aero.deltaLat, aero.deltaLon, rwy.threshold.deltaLat, rwy.threshold.deltaLon, rwy.front_course_deg);
+            if (geom.along_track_nm <= 5.0 && geom.along_track_nm >= -(rwy.comp_nm + 1.0) && Math.abs(geom.cross_track_nm) <= 1.5) {
                 pertoPistaOuAero = true;
+            }
+        } else {
+            const destCoords = state.fixos ? (state.fixos[aero.dest] || state.fixos["SBSP"] || Object.values(state.fixos)[0]) : null;
+            if (destCoords) {
+                const navDest = calcularRumoDistancia(aero, destCoords);
+                if (navDest && navDest.distanciaNM <= 3.0) {
+                    pertoPistaOuAero = true;
+                }
             }
         }
     }
 
+    if (aero.isDep) {
+        let maxTargetFL = parseInt(aero.nivAutorizadoFisico || aero.nivAutorizado, 10);
+        if (isNaN(maxTargetFL) || maxTargetFL <= 0) maxTargetFL = aero.targetAltFinal || aero.requestedFL || 260;
+
+        // Se houver restrição temporária rígida (ex: 6000ft / 7000ft de SBGR)
+        if (aero.tempAltitudeRestriction) {
+            const tempFL = Math.round(aero.tempAltitudeRestriction / 100);
+            if (maxTargetFL <= tempFL) {
+                maxTargetFL = Math.min(maxTargetFL, tempFL);
+            } else {
+                // Se o controlador autorizou nível superior, libera restrição temporária
+                aero.tempAltitudeRestriction = null;
+            }
+        }
+
+        let targetFL = maxTargetFL;
+
+        // Cumprimento rigoroso das restrições de carta da SID (BELOW, AT, WINDOW)
+        if (aero.rota && Array.isArray(aero.rota) && !aero.semRestricoes) {
+            const startIdx = Math.max(0, aero.wpIndex || 0);
+            for (let i = startIdx; i < aero.rota.length; i++) {
+                const wpNome = aero.rota[i];
+                const rest = obterRestricaoFixoParaAeronave(wpNome, aero, aero.cartaNome || aero.sid);
+                if (rest && rest.fl !== undefined) {
+                    if (rest.tipo === "BELOW" || rest.tipo === "AT") {
+                        if (rest.fl < targetFL) {
+                            targetFL = rest.fl;
+                            break; // O primeiro fixo com teto menor limita este segmento até ser cruzado
+                        }
+                    } else if (rest.tipo === "WINDOW") {
+                        const teto = rest.flMax || rest.fl;
+                        if (teto < targetFL) {
+                            targetFL = teto;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        const perfRate = (aero.perf && aero.perf.rates && aero.perf.rates.climbNormal) 
+            ? aero.perf.rates.climbNormal 
+            : 2200;
+        aero.targetFL = targetFL;
+        aero.target_altitude = targetFL * 100;
+        
+        if (aero.flAtualNum < targetFL - 0.2) {
+            aero.razaoEfetiva = perfRate;
+            aero.descent_mode = "CLIMB";
+        } else {
+            aero.razaoEfetiva = 0;
+            aero.descent_mode = "CRUISE";
+        }
+        
+        if (aero.verticalMode !== "ATC-R" && aero.verticalMode !== "EXPD") {
+            aero.verticalMode = "AUTO";
+        }
+        return;
+    }
+
     // Se estiver no corredor final da pista e não estiver no solo, assegura captura do glidepath
-    if (pertoPistaOuAero && !aero.on_ground && aero.descent_mode !== DESCENT_MODES.GLIDEPATH && aero.descent_mode !== 'FLARE') {
+    if (pertoPistaOuAero && !aero.on_ground && aero.descent_mode !== DESCENT_MODES.GLIDEPATH && aero.descent_mode !== "FLARE") {
         aero.descent_mode = DESCENT_MODES.GLIDEPATH;
-        aero.verticalMode = 'G/S';
+        aero.verticalMode = "G/S";
         aero.cleared_approach = true;
     }
 
@@ -306,3 +368,4 @@ export function updateVNAV(aero, dtSec, state, restricoesFixos) {
     aero.target_altitude = targetFL * 100;
     aero.razaoEfetiva = razaoEfetiva;
 }
+
