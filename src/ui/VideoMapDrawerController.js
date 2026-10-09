@@ -1,4 +1,4 @@
-import { cartasNavegacao } from '../data/cartas.js?v=2';
+import { cartasNavegacao } from '../data/cartas.js?v=6';
 import { radarLayerState, state } from '../core/state.js';
 import { painelFluxoUI } from './ui.js';
 

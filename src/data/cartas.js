@@ -527,7 +527,9 @@ export const cartasNavegacao = {
                     linhas: [
                         ["BUXUK", "GR071", "GR072", "MOLLE"],
                         ["ZARES", "GR073", "GR327", "GR074", "MOLLE"],
-                        ["MOLLE", "GR249", "GR076", "GR077", "GR252", "GR272", "GR273", "GR274", "GR276", "GR277", "SANPA", "GR283", "LOMEN"]
+                        ["MOLLE", "GR249", "GR076", "GR077", "GR252"],
+                        { rota: ["GR252", "GR272", "GR273", "GR274", "GR276", "GR277"], cor: '#00ff7f' },
+                        ["GR277", "SANPA", "GR283", "LOMEN"]
                     ],
                     marcasMilhagem: [
                         {
@@ -546,6 +548,22 @@ export const cartasNavegacao = {
                             distancias: [10, 20, 30, 40, 50, 60, 70, 80],
                             textos: [50, 60, 70, 80, 90, 100, 110, 120],
                             rota: ["ZARES", "GR073", "GR327", "GR074","MOLLE", "GR249", "GR076", "GR077", "GR252"]
+                        }
+                    ],
+                    arcos: [
+                        {
+                            centro: "SANPA",
+                            raiosNM: [21, 17.5, 16, 12.5, 11, 7.5, 6, 2.5],
+                            coresPorRaio: {
+                                21: '#00ff7f',
+                                16: '#00ff7f',
+                                11: '#00ff7f',
+                                6: '#00ff7f'
+                            },
+                            rumoInicial: 343,
+                            aberturaGraus: 71,
+                            cor: '#ffff00',
+                            dashPattern: [2, 4]
                         }
                     ]
                 }
@@ -869,8 +887,26 @@ export const cartasNavegacao = {
                         { nome: "SANPA", lat: dmsParaDecimal(23, 12, 50, 'S'), lon: dmsParaDecimal(46, 32, 98.3, 'W'), restricao: { fl: 90, flMax: 100, tipo: "WINDOW"  } }
                     ],
                     linhas: [
-                        ["ZARES", "GR073", "GR327", "GR074", "MOLLE", "GR249", "GR076", "GR077", "GR252", "GR272", "GR273", "GR274", "GR276", "GR277", "SANPA"],
+                        ["ZARES", "GR073", "GR327", "GR074", "MOLLE", "GR249", "GR076", "GR077", "GR252"],
+                        { rota: ["GR252", "GR272", "GR273", "GR274", "GR276", "GR277"], cor: '#00ff7f' },
+                        ["GR277", "SANPA"],
                         ["BUXUK", "GR071", "GR072", "MOLLE"]
+                    ],
+                    arcos: [
+                        {
+                            centro: "SANPA",
+                            raiosNM: [21, 17.5, 16, 12.5, 11, 7.5, 6, 2.5],
+                            coresPorRaio: {
+                                21: '#00ff7f',
+                                16: '#00ff7f',
+                                11: '#00ff7f',
+                                6: '#00ff7f'
+                            },
+                            rumoInicial: 343,
+                            aberturaGraus: 71,
+                            cor: '#ffff00',
+                            dashPattern: [2, 4]
+                        }
                     ]
                 }
             },

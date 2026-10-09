@@ -363,6 +363,63 @@ export function desenharMarcasMilhagem(caminhoArray, fixoOrigem, alvosNM, cor, l
 }
 
 /**
+ * Desenha arcos de circunferência associados a um procedimento (ex: Point Merge System em STARs).
+ * @param {Array<Object>|Object} arcosConfig - Configuração dos arcos
+ * @param {string} corPadrao - Cor padrão herdada do procedimento
+ */
+export function desenharArcosCarta(arcosConfig, corPadrao = '#ffff00') {
+    if (!arcosConfig) return;
+    const arcosArray = Array.isArray(arcosConfig) ? arcosConfig : [arcosConfig];
+    const umNM = state.escala / 60;
+
+    arcosArray.forEach(cfg => {
+        let centroPt = null;
+        if (typeof cfg.centro === 'string') {
+            centroPt = pegarCoordenadaTela(cfg.centro);
+        } else if (cfg.centro && typeof cfg.centro === 'object') {
+            if (cfg.centro.lat !== undefined && cfg.centro.lon !== undefined) {
+                centroPt = deltaParaTela(geoParaDelta(cfg.centro.lat, cfg.centro.lon));
+            } else if (cfg.centro.x !== undefined && cfg.centro.y !== undefined) {
+                centroPt = cfg.centro;
+            }
+        }
+
+        if (!centroPt || (centroPt.x === 0 && centroPt.y === 0 && !state.fixos[cfg.centro])) return;
+
+        const raios = Array.isArray(cfg.raiosNM) ? cfg.raiosNM : (cfg.raioNM !== undefined ? [cfg.raioNM] : []);
+        const rumoIni = cfg.rumoInicial !== undefined ? cfg.rumoInicial : 0;
+        const abertura = cfg.aberturaGraus !== undefined ? cfg.aberturaGraus : 360;
+
+        // Conversão de rumo magnético para radianos de Canvas.
+        // Rumo 000° aponta para -Y (Norte no radar) -> ângulo Canvas: -90°
+        // Rumo 090° aponta para +X (Leste no radar) -> ângulo Canvas: 0°
+        const anguloInicialRad = (rumoIni - 90) * (Math.PI / 180);
+        const anguloFinalRad = (rumoIni + abertura - 90) * (Math.PI / 180);
+
+        const corPadraoArco = cfg.cor || corPadrao;
+        const dashPattern = cfg.dashPattern || [2, 4];
+        const coresPorRaio = cfg.coresPorRaio || {};
+
+        state.ctx.save();
+        state.ctx.lineWidth = cfg.lineWidth || 1.2;
+        state.ctx.setLineDash(dashPattern);
+
+        raios.forEach(rNM => {
+            const rPx = rNM * umNM;
+            if (rPx <= 0) return;
+            const corRaio = coresPorRaio[rNM] || corPadraoArco;
+            state.ctx.strokeStyle = corRaio;
+            state.ctx.beginPath();
+            state.ctx.arc(centroPt.x, centroPt.y, rPx, anguloInicialRad, anguloFinalRad, false);
+            state.ctx.stroke();
+        });
+
+        state.ctx.setLineDash([]);
+        state.ctx.restore();
+    });
+}
+
+/**
  * Função orquestradora para desenhar toda a base estática do ecrã do radar
  * (mapa, limites, rotas, fixos e respetivas restrições).
  */
@@ -416,8 +473,20 @@ export function desenharMapaBase() {
                                 const isTracejada = (catType === 'SID') || Boolean(carta.tracejada);
                                 const dashPattern = carta.dashPattern || (isTracejada ? [6, 6] : false);
                                 carta.linhas.forEach(linha => {
-                                    desenharCaminho(linha, carta.cor, dashPattern);
+                                    if (linha && typeof linha === 'object' && !Array.isArray(linha) && linha.rota) {
+                                        desenharCaminho(linha.rota, linha.cor || carta.cor, linha.dashPattern || dashPattern);
+                                    } else {
+                                        desenharCaminho(linha, carta.cor, dashPattern);
+                                    }
                                 });
+                                state.ctx.restore();
+                            }
+                            if (carta.arcos) {
+                                state.ctx.save();
+                                // Opacidade reduzida para os pontilhados dos arcos (ex: 60% do alpha da STAR)
+                                const alphaArcos = alpha * 0.6;
+                                state.ctx.globalAlpha = alphaArcos;
+                                desenharArcosCarta(carta.arcos, carta.cor || '#ffff00');
                                 state.ctx.restore();
                             }
                         });

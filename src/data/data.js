@@ -1,7 +1,7 @@
 import { dmsParaDecimal, latCentro, lonCentro, geoParaDelta } from '../utils/utils.js';
 
 // Imports from the newly separated data files
-import { cartasNavegacao } from './cartas.js?v=4';
+import { cartasNavegacao } from './cartas.js?v=6';
 import { aerodromos } from './aerodromos.js';
 import { verticesSetor, verticesTMA, estruturaEspacoAereo, pontosATCSMAC, conexoesATCSMAC, pontosArco109_60 } from './espacoAereo.js';
 import { radarLayerState } from '../core/state.js';
@@ -257,7 +257,7 @@ export function isFixoIAC(nomeFixo, destOuAero = null) {
                 if (grp) {
                     for (const carta of Object.values(grp)) {
                         if (carta.fixos && carta.fixos.some(f => f.nome === nomeFixo)) return true;
-                        if (carta.linhas && carta.linhas.some(l => l.includes(nomeFixo))) return true;
+                        if (carta.linhas && carta.linhas.some(l => (Array.isArray(l) ? l.includes(nomeFixo) : (l && l.rota && l.rota.includes(nomeFixo))))) return true;
                     }
                     return false;
                 }
@@ -306,7 +306,9 @@ export function montarRotaAPartirDeFixo(fixoOrigem, dest = "SBSP", cartaNome = n
                     Object.values(categoria).forEach(carta => {
                         if (carta.linhas) {
                             const isAtiva = (!radarLayerState || !radarLayerState.activeCharts || radarLayerState.activeCharts.size === 0 || radarLayerState.activeCharts.has(carta.nome));
-                            carta.linhas.forEach(linha => {
+                            carta.linhas.forEach(linhaItem => {
+                                const linha = (linhaItem && typeof linhaItem === 'object' && !Array.isArray(linhaItem) && linhaItem.rota) ? linhaItem.rota : linhaItem;
+                                if (!Array.isArray(linha)) return;
                                 for (let i = 0; i < linha.length - 1; i++) {
                                     if (cartaNome && carta.nome === cartaNome) {
                                         if (!conexoes[linha[i]]) conexoes[linha[i]] = linha[i + 1];
@@ -513,7 +515,9 @@ export function obterTrajetoriaCompletaAteFixo(fixoAlvo, dest = "SBSP", cartaNom
                 Object.values(cabeceira).forEach(categoria => {
                     Object.values(categoria).forEach(carta => {
                         if (carta.linhas) {
-                            carta.linhas.forEach(linha => {
+                            carta.linhas.forEach(linhaItem => {
+                                const linha = (linhaItem && typeof linhaItem === 'object' && !Array.isArray(linhaItem) && linhaItem.rota) ? linhaItem.rota : linhaItem;
+                                if (!Array.isArray(linha)) return;
                                 for (let i = 1; i < linha.length; i++) {
                                     if (cartaNome && carta.nome === cartaNome) {
                                         if (!conexoesInversas[linha[i]]) conexoesInversas[linha[i]] = linha[i - 1];
