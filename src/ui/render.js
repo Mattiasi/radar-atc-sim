@@ -92,7 +92,7 @@ export function pegarAeronaveProxima(telaX, telaY) {
         let lx = pt.x + Math.cos(aero.labelAngle) * aero.labelDist; // Ponto âncora X da etiqueta
         let ly = pt.y - Math.sin(aero.labelAngle) * aero.labelDist; // Ponto âncora Y da etiqueta
         
-        const TAG_WIDTH = 95;
+        const TAG_WIDTH = (aero.isDep && (aero.targetAltFinal || aero.requestedFL)) ? 105 : 95;
         let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
         
         // Define os limites da caixa invisível ao redor do texto
@@ -1025,7 +1025,7 @@ export function desenharRadar() {
         state.ctx.textAlign = 'left'; 
         state.ctx.textBaseline = 'bottom';
         
-        const TAG_WIDTH = 95;
+        const TAG_WIDTH = (aero.isDep && (aero.targetAltFinal || aero.requestedFL)) ? 105 : 95;
         let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
         const radarSnap = aero.posicaoRadar || aero;
         const gsDisplay = Math.round(radarSnap.groundSpeed !== undefined ? radarSnap.groundSpeed : (aero.groundSpeed !== undefined ? aero.groundSpeed : aero.vel));
@@ -1064,6 +1064,15 @@ export function desenharRadar() {
             }
             state.ctx.fillStyle = (aero === state.aeroEditandoNivel) ? '#00ffff' : corRadar; 
             state.ctx.fillText(aero.nivAutorizado, offsetNivAut, ly - 2);
+            
+            // Nível final para aeronaves decolando (DEP) ao lado do nível autorizado
+            if (aero.isDep && (aero.targetAltFinal || aero.requestedFL)) {
+                const finalFLNum = aero.targetAltFinal || aero.requestedFL;
+                const nivFinalStr = String(finalFLNum).replace(/[^0-9]/g, '').padStart(3, '0');
+                const offsetNivFinal = offsetNivAut + Math.max(28, state.ctx.measureText(aero.nivAutorizado).width + 6);
+                state.ctx.fillStyle = corRadar;
+                state.ctx.fillText(nivFinalStr, offsetNivFinal, ly - 2);
+            }
             
             // LINHA 3: Velocidade Computada (Ground Speed) e Destino
             state.ctx.fillStyle = corRadar; 

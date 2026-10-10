@@ -1,4 +1,4 @@
-﻿import { state } from './state.js';
+import { state } from './state.js';
 import { latCentro, lonCentro, correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, obterNiveisSpawn, isFixoIAC, getRunwayData, obterRestricaoFixoParaAeronave, cartasNavegacao } from '../data/data.js';
 import { getAircraftPerformance } from '../data/PerformanceDB.js';
@@ -237,6 +237,8 @@ export class Aeronave {
         this.nivAutorizadoFisico = nivAutorizado;// Alvo numérico de altitude para a física de descida
         this.flAtualNum = parseInt(nivAtual) || 0; // Valor numérico de altitude em Flight Level (ex: FL 55 = 5500 pés)
         this.verticalSpeed = 0;                  // Inicializa nivelado; VNAV modula dinamicamente a razão de descida a partir do TOD
+        this.targetAltFinal = null;              // Nível final de voo (FL) para aeronaves decolando
+        this.requestedFL = null;                 // Nível de cruzeiro solicitado no plano de voo
 
         // --- 6. GESTÃO DE ROTA AUTOMÁTICA (LNAV) E TRANSIÇÕES (FLY-BY) ---
         this.rota = rota;                        // Sequência ordenada de nomes de fixos da carta (STAR)

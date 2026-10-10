@@ -114,7 +114,7 @@ export function configurarEventosUsuario() {
                 
                 let lx = pt.x + Math.cos(aero.labelAngle) * aero.labelDist; 
                 let ly = pt.y - Math.sin(aero.labelAngle) * aero.labelDist;
-                const TAG_WIDTH = 95;
+                const TAG_WIDTH = (aero.isDep && (aero.targetAltFinal || aero.requestedFL)) ? 105 : 95;
                 let textX = isRight ? (lx + 12) : (lx - 10 - TAG_WIDTH);
                 
                 let minX = textX - 4; 
