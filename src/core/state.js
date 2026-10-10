@@ -71,6 +71,11 @@ export const state = {
             SBKP: 2,
             SBSP: 2
         },
+        sidSelecionadaPorAerodromo: {
+            SBGR: "AUTO",
+            SBKP: "AUTO",
+            SBSP: "AUTO"
+        },
         ultimaDecolagemTempoSimuladoPorAero: {},
         ultimaDecolagemTempoSimuladoPorPista: {},
         ultimaAeronaveDecoladaPorAero: {}

@@ -191,7 +191,7 @@ export function renderizarLinha5(ctx, aero, textX, ly, isRight, estaSelecionadaP
     ctx.textBaseline = 'bottom';
     ctx.textAlign = 'left';
 
-    const corPadrao = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : (aero.isDep ? "hsl(0, 3%, 78%)" : "#000000");
+    const corPadrao = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : "#000000";
 
     // Coluna 1: Proa Real (sempre à esquerda - visível apenas quando expandida)
     const col1X = textX;
@@ -293,7 +293,7 @@ export function renderizarLinha6(ctx, aero, textX, ly, isRight, estaSelecionada 
         ctx.fillStyle = '#00ffff';
     } else {
         // O texto permanece preto (#000000) em todos os modos (AUTO, ATC-R, EXPD)
-        ctx.fillStyle = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : (aero.isDep ? "hsl(0, 3%, 78%)" : "#000000");
+        ctx.fillStyle = (aero.squawk === "2000") ? "hsl(0, 3%, 78%)" : "#000000";
     }
 
     ctx.fillText(textoCompleto, posX, posY);

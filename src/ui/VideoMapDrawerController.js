@@ -302,8 +302,9 @@ export class VideoMapDrawerController {
                                 chavesAssociadas.forEach(k => radarLayerState.activeRunways.delete(`${icao}-${k}`));
                             }
 
-                            if (painelFluxoUI && typeof painelFluxoUI.renderizarEsteiras === 'function') {
-                                painelFluxoUI.renderizarEsteiras();
+                            if (painelFluxoUI) {
+                                if (typeof painelFluxoUI.renderizarEsteiras === 'function') painelFluxoUI.renderizarEsteiras();
+                                if (typeof painelFluxoUI.atualizarSidsDEP === 'function') painelFluxoUI.atualizarSidsDEP();
                             }
                         });
 
@@ -340,8 +341,9 @@ export class VideoMapDrawerController {
                             }
                         }
 
-                        if (painelFluxoUI && typeof painelFluxoUI.renderizarEsteiras === 'function') {
-                            painelFluxoUI.renderizarEsteiras();
+                        if (painelFluxoUI) {
+                            if (typeof painelFluxoUI.renderizarEsteiras === 'function') painelFluxoUI.renderizarEsteiras();
+                            if (typeof painelFluxoUI.atualizarSidsDEP === 'function') painelFluxoUI.atualizarSidsDEP();
                         }
                     });
 

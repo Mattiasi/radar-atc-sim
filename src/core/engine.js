@@ -405,31 +405,111 @@ export function obterPistaAtivaParaDEP(aeroId) {
     return todasPistasComSID[Math.floor(Math.random() * todasPistasComSID.length)];
 }
 
+export function obterSidsDisponiveisParaDEP(aeroId) {
+    if (!aeroId || !cartasNavegacao[aeroId]) return [];
+
+    const aerodromoCartas = cartasNavegacao[aeroId];
+    const todasPistasComSID = Object.keys(aerodromoCartas).filter(p => aerodromoCartas[p].SID && Object.keys(aerodromoCartas[p].SID).length > 0);
+    if (todasPistasComSID.length === 0) return [];
+
+    // Filtra pistas ativas no Vídeo Mapa para este aeródromo
+    let pistasCandidatas = [];
+    if (radarLayerState && radarLayerState.activeRunways && radarLayerState.activeRunways.size > 0) {
+        pistasCandidatas = todasPistasComSID.filter(rwyKey => {
+            const numPista = rwyKey.replace(/[^0-9]/g, '');
+            const groupKey = `${aeroId}-${numPista}`;
+            const runwayKey = `${aeroId}-${rwyKey}`;
+            return radarLayerState.activeRunways.has(groupKey) || radarLayerState.activeRunways.has(runwayKey);
+        });
+    }
+
+    // Se nenhuma pista específica do aeródromo estiver marcada no vídeo mapa,
+    // verifica se alguma carta SID específica está marcada no activeCharts
+    if (pistasCandidatas.length === 0 && radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+        pistasCandidatas = todasPistasComSID.filter(pista => {
+            const sids = aerodromoCartas[pista].SID || {};
+            return Object.entries(sids).some(([sKey, sObj]) => radarLayerState.activeCharts.has(sObj.nome) || radarLayerState.activeCharts.has(sKey));
+        });
+    }
+
+    // Fallback: se nenhuma cabeceira estiver ativa no vídeo mapa para este aeródromo,
+    // considera todas as pistas com SID deste aeródromo
+    if (pistasCandidatas.length === 0) {
+        pistasCandidatas = todasPistasComSID;
+    }
+
+    const sidsDisponiveis = [];
+    const chavesAdicionadas = new Set();
+
+    pistasCandidatas.forEach(rwyKey => {
+        const sidsObj = aerodromoCartas[rwyKey].SID || {};
+        Object.entries(sidsObj).forEach(([sidKey, sidData]) => {
+            if (!sidData || !sidData.nome) return;
+            const chaveUnica = `${sidKey}@${rwyKey}`;
+            if (!chavesAdicionadas.has(chaveUnica)) {
+                chavesAdicionadas.add(chaveUnica);
+                sidsDisponiveis.push({
+                    key: chaveUnica,
+                    sidKey: sidKey,
+                    runway: rwyKey,
+                    nome: sidData.nome,
+                    setorSaida: sidData.setorSaida || '',
+                    cor: sidData.cor || '#ff9900'
+                });
+            }
+        });
+    });
+
+    return sidsDisponiveis;
+}
+
+window.obterSidsDisponiveisParaDEP = obterSidsDisponiveisParaDEP;
+
 window.gerarNovaDEP = function(aerodromoAlvo = null) {
     const aeroId = aerodromoAlvo || state.configDep.aerodromoSelecionado;
     if (!aeroId) return null;
 
-    const pistaEscolhida = obterPistaAtivaParaDEP(aeroId);
-    if (!pistaEscolhida) {
-        console.warn(`Nenhuma pista com SID encontrada para ${aeroId}`);
+    const sidsDisponiveis = obterSidsDisponiveisParaDEP(aeroId);
+    if (!sidsDisponiveis || sidsDisponiveis.length === 0) {
+        console.warn(`Nenhuma SID encontrada para ${aeroId}`);
         return null;
     }
 
-    const pistaSids = cartasNavegacao[aeroId][pistaEscolhida].SID;
-    if (!pistaSids) return null;
+    let sidEscolhidaObj = null;
+    let pistaEscolhida = null;
+    let sidKeyEscolhida = null;
 
-    let sidKeys = Object.keys(pistaSids);
-    if (sidKeys.length === 0) return null;
+    const sidConfigurada = (state.configDep && state.configDep.sidSelecionadaPorAerodromo) 
+        ? state.configDep.sidSelecionadaPorAerodromo[aeroId] 
+        : 'AUTO';
 
-    if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
-        const sidAtivas = sidKeys.filter(k => radarLayerState.activeCharts.has(pistaSids[k].nome) || radarLayerState.activeCharts.has(k));
-        if (sidAtivas.length > 0) {
-            sidKeys = sidAtivas;
+    if (sidConfigurada && sidConfigurada !== 'AUTO') {
+        const encontrada = sidsDisponiveis.find(s => s.key === sidConfigurada || s.sidKey === sidConfigurada || s.nome === sidConfigurada);
+        if (encontrada) {
+            pistaEscolhida = encontrada.runway;
+            sidKeyEscolhida = encontrada.sidKey;
+            sidEscolhidaObj = cartasNavegacao[aeroId][pistaEscolhida].SID[sidKeyEscolhida];
         }
     }
 
-    const sidKey = sidKeys[Math.floor(Math.random() * sidKeys.length)];
-    const sidSelecionada = pistaSids[sidKey];
+    if (!sidEscolhidaObj) {
+        let candidatos = sidsDisponiveis;
+        if (radarLayerState && radarLayerState.activeCharts && radarLayerState.activeCharts.size > 0) {
+            const ativos = sidsDisponiveis.filter(s => radarLayerState.activeCharts.has(s.nome) || radarLayerState.activeCharts.has(s.sidKey));
+            if (ativos.length > 0) {
+                candidatos = ativos;
+            }
+        }
+        const escolhida = candidatos[Math.floor(Math.random() * candidatos.length)];
+        pistaEscolhida = escolhida.runway;
+        sidKeyEscolhida = escolhida.sidKey;
+        sidEscolhidaObj = cartasNavegacao[aeroId][pistaEscolhida].SID[sidKeyEscolhida];
+    }
+
+    if (!pistaEscolhida || !sidEscolhidaObj) {
+        console.warn(`Não foi possível selecionar uma SID válida para ${aeroId}`);
+        return null;
+    }
 
     const category = ['jet', 'jet', 'jet', 'turboprop', 'piston'][Math.floor(Math.random() * 5)];
     const prefixos = ['GLO', 'TAM', 'AZU', 'ONE', 'PT'];
@@ -444,15 +524,15 @@ window.gerarNovaDEP = function(aerodromoAlvo = null) {
         id: id,
         aero: aeroId,
         runway: pistaEscolhida,
-        sid: sidSelecionada.nome,
-        sidKey: sidKey,
+        sid: sidEscolhidaObj.nome,
+        sidKey: sidKeyEscolhida,
         category: category,
         status: 'aguardando', // 'aguardando', 'autorizado', 'em_voo'
         requestedFL: requestedFL,
         isDep: true,
-        grupoDep: sidSelecionada.grupoDep,
-        setorSaida: sidSelecionada.setorSaida,
-        altitudeRestricao: sidSelecionada.altitudeRestricao,
+        grupoDep: sidEscolhidaObj.grupoDep,
+        setorSaida: sidEscolhidaObj.setorSaida,
+        altitudeRestricao: sidEscolhidaObj.altitudeRestricao,
         coordenacaoFeita: false
     };
 

@@ -1,4 +1,4 @@
-﻿import { state } from '../core/state.js';
+import { state } from '../core/state.js';
 import { correcaoLon, calcularRumoDistancia, geoParaDelta } from '../utils/utils.js';
 import { restricoesFixos, fixosNavegacao, aerodromos, estruturaEspacoAereo, cartasNavegacao } from '../data/data.js';
 import { scratchpadUI } from './ui.js';
@@ -969,7 +969,7 @@ export function desenharRadar() {
         let pt = deltaParaTela(aero);
         
         // Define a cor base de toda a simbologia do radar para esta aeronave
-        let corRadar = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : (aero.isDep ? 'hsl(0, 3%, 78%)' : '#000000');
+        let corRadar = (aero.squawk === "2000") ? 'hsl(0, 3%, 78%)' : '#000000';
 
         // 1. Desenha o rasto histórico (pontinhos)
         aero.historico.forEach(histPt => {

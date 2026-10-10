@@ -65,6 +65,7 @@ export class PainelFluxoController {
         // DEP Controls
         this.selAerodromoDep = document.getElementById('selAerodromoDep');
         this.selIntervaloDep = document.getElementById('selIntervaloDep');
+        this.selSidDep = document.getElementById('selSidDep');
         this.btnGerarDEP = document.getElementById('btnGerarDEP');
         this.btnLimparFilaDEP = document.getElementById('btnLimparFilaDEP');
         this.containerFilaDEP = document.getElementById('containerFilaDEP');
@@ -74,6 +75,7 @@ export class PainelFluxoController {
         this.configurarEventosTabs();
         this.configurarEventosDEP();
         this.atualizarIntervaloDEP();
+        this.atualizarSidsDEP();
 
         if (!this.containerEsteiras || !this.painel) return;
 
@@ -173,9 +175,21 @@ export class PainelFluxoController {
             this.selAerodromoDep.addEventListener('change', (e) => {
                 state.configDep.aerodromoSelecionado = e.target.value;
                 this.atualizarIntervaloDEP();
+                this.atualizarSidsDEP();
                 this.renderizarFilaDEP();
             });
             this.selAerodromoDep.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+
+        if (this.selSidDep) {
+            this.selSidDep.addEventListener('change', (e) => {
+                const aero = state.configDep.aerodromoSelecionado || 'SBGR';
+                if (!state.configDep.sidSelecionadaPorAerodromo) {
+                    state.configDep.sidSelecionadaPorAerodromo = { SBGR: 'AUTO', SBKP: 'AUTO', SBSP: 'AUTO' };
+                }
+                state.configDep.sidSelecionadaPorAerodromo[aero] = e.target.value;
+            });
+            this.selSidDep.addEventListener('mousedown', (e) => e.stopPropagation());
         }
 
         if (this.selIntervaloDep) {
@@ -244,9 +258,51 @@ export class PainelFluxoController {
         this.selIntervaloDep.value = String(val);
     }
 
+    atualizarSidsDEP() {
+        if (!this.selSidDep) return;
+        const aero = state.configDep.aerodromoSelecionado || 'SBGR';
+        if (!state.configDep.sidSelecionadaPorAerodromo) {
+            state.configDep.sidSelecionadaPorAerodromo = { SBGR: 'AUTO', SBKP: 'AUTO', SBSP: 'AUTO' };
+        }
+
+        const sids = (typeof window.obterSidsDisponiveisParaDEP === 'function') 
+            ? window.obterSidsDisponiveisParaDEP(aero) 
+            : [];
+
+        const valorSalvo = state.configDep.sidSelecionadaPorAerodromo[aero] || 'AUTO';
+
+        this.selSidDep.innerHTML = '';
+
+        const optAuto = document.createElement('option');
+        optAuto.value = 'AUTO';
+        optAuto.textContent = 'ALEATÓRIA / PADRÃO';
+        this.selSidDep.appendChild(optAuto);
+
+        let encontrou = (valorSalvo === 'AUTO');
+
+        sids.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.key;
+            opt.textContent = `${s.nome} (RWY ${s.runway})`;
+            this.selSidDep.appendChild(opt);
+
+            if (s.key === valorSalvo || s.sidKey === valorSalvo || s.nome === valorSalvo) {
+                encontrou = true;
+            }
+        });
+
+        if (encontrou) {
+            this.selSidDep.value = valorSalvo;
+        } else {
+            this.selSidDep.value = 'AUTO';
+            state.configDep.sidSelecionadaPorAerodromo[aero] = 'AUTO';
+        }
+    }
+
     renderizarFilaDEP() {
         if (!this.containerFilaDEP) return;
         this.atualizarIntervaloDEP();
+        this.atualizarSidsDEP();
         if (this.chkAutoSpawnDEP) this.chkAutoSpawnDEP.checked = Boolean(state.configDep.geracaoAutomatica);
         if (this.chkAutoDEP) this.chkAutoDEP.checked = Boolean(state.configDep.decolagemAutomatica);
         this.containerFilaDEP.innerHTML = '';
