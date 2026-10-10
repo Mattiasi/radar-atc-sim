@@ -463,7 +463,134 @@ export function obterSidsDisponiveisParaDEP(aeroId) {
     return sidsDisponiveis;
 }
 
+export function obterTransicoesDaSID(sidObj) {
+    if (!sidObj) return [];
+
+    if (!sidObj.linhas || !Array.isArray(sidObj.linhas) || sidObj.linhas.length === 0) {
+        const rotaPadrao = (sidObj.fixos && Array.isArray(sidObj.fixos)) ? sidObj.fixos.map(f => f.nome) : [];
+        return [{
+            id: "PADRAO",
+            lastFix: rotaPadrao[rotaPadrao.length - 1] || "",
+            nome: "PADRÃO",
+            rota: rotaPadrao
+        }];
+    }
+
+    if (sidObj.linhas.length === 1) {
+        return [{
+            id: "PADRAO",
+            lastFix: sidObj.linhas[0][sidObj.linhas[0].length - 1] || "",
+            nome: "PADRÃO",
+            rota: sidObj.linhas[0]
+        }];
+    }
+
+    // Monta grafo direcionado
+    const adj = new Map();
+    const inDegree = new Map();
+    const allNodes = new Set();
+
+    sidObj.linhas.forEach(segment => {
+        if (!Array.isArray(segment)) return;
+        for (let i = 0; i < segment.length - 1; i++) {
+            const u = segment[i];
+            const v = segment[i + 1];
+            allNodes.add(u);
+            allNodes.add(v);
+
+            if (!adj.has(u)) adj.set(u, []);
+            if (!adj.get(u).includes(v)) adj.get(u).push(v);
+
+            if (!inDegree.has(v)) inDegree.set(v, 0);
+            inDegree.set(v, inDegree.get(v) + 1);
+
+            if (!inDegree.has(u)) inDegree.set(u, 0);
+        }
+    });
+
+    let roots = Array.from(allNodes).filter(node => (inDegree.get(node) || 0) === 0);
+    if (roots.length === 0 && sidObj.linhas[0] && sidObj.linhas[0].length > 0) {
+        roots = [sidObj.linhas[0][0]];
+    }
+
+    const paths = [];
+
+    function dfs(curr, pathSoFar) {
+        const nextNodes = adj.get(curr) || [];
+        if (nextNodes.length === 0) {
+            paths.push([...pathSoFar, curr]);
+            return;
+        }
+        for (const next of nextNodes) {
+            if (!pathSoFar.includes(next)) {
+                dfs(next, [...pathSoFar, curr]);
+            }
+        }
+    }
+
+    roots.forEach(root => dfs(root, []));
+
+    if (paths.length === 0) {
+        const rotaPadrao = (sidObj.fixos && Array.isArray(sidObj.fixos)) ? sidObj.fixos.map(f => f.nome) : [];
+        return [{
+            id: "PADRAO",
+            lastFix: rotaPadrao[rotaPadrao.length - 1] || "",
+            nome: "PADRÃO",
+            rota: rotaPadrao
+        }];
+    }
+
+    return paths.map(path => {
+        const lastFix = path[path.length - 1];
+        let id = lastFix;
+        let nome = lastFix;
+
+        if (lastFix === 'NUXEL' && path.includes('VUMEV')) {
+            id = 'VUMEV';
+            nome = 'VUMEV (NUXEL)';
+        } else if (lastFix === 'NUXEL' && path.includes('KONVI')) {
+            id = 'KONVI';
+            nome = 'KONVI (NUXEL)';
+        }
+
+        return {
+            id: id,
+            lastFix: lastFix,
+            nome: nome,
+            rota: path
+        };
+    });
+}
+
+export function obterTransicoesParaSIDAero(aeroId, sidVal) {
+    if (!aeroId || !sidVal || sidVal === 'AUTO' || !cartasNavegacao[aeroId]) return [];
+
+    let sidKey = sidVal;
+    let rwyKey = null;
+    if (sidVal.includes('@')) {
+        const parts = sidVal.split('@');
+        sidKey = parts[0];
+        rwyKey = parts[1];
+    }
+
+    let sidObj = null;
+    if (rwyKey && cartasNavegacao[aeroId]?.[rwyKey]?.SID?.[sidKey]) {
+        sidObj = cartasNavegacao[aeroId][rwyKey].SID[sidKey];
+    } else if (cartasNavegacao[aeroId]) {
+        for (const rwy of Object.keys(cartasNavegacao[aeroId])) {
+            if (cartasNavegacao[aeroId][rwy]?.SID?.[sidKey]) {
+                sidObj = cartasNavegacao[aeroId][rwy].SID[sidKey];
+                break;
+            }
+        }
+    }
+
+    return obterTransicoesDaSID(sidObj);
+}
+
 window.obterSidsDisponiveisParaDEP = obterSidsDisponiveisParaDEP;
+window.obterTransicoesDaSID = obterTransicoesDaSID;
+window.obterTransicoesParaSIDAero = obterTransicoesParaSIDAero;
 
 window.gerarNovaDEP = function(aerodromoAlvo = null) {
     const aeroId = aerodromoAlvo || state.configDep.aerodromoSelecionado;
@@ -511,6 +638,30 @@ window.gerarNovaDEP = function(aerodromoAlvo = null) {
         return null;
     }
 
+    // Resolve transição
+    const transicoes = obterTransicoesDaSID(sidEscolhidaObj);
+    let transicaoEscolhida = null;
+
+    const transConfigurada = (state.configDep && state.configDep.transicaoSelecionadaPorAerodromo)
+        ? state.configDep.transicaoSelecionadaPorAerodromo[aeroId]
+        : 'AUTO';
+
+    if (transConfigurada && transConfigurada !== 'AUTO' && transicoes.length > 0) {
+        transicaoEscolhida = transicoes.find(t => 
+            t.id.toUpperCase() === transConfigurada.toUpperCase() ||
+            t.lastFix.toUpperCase() === transConfigurada.toUpperCase() ||
+            t.nome.toUpperCase().includes(transConfigurada.toUpperCase())
+        );
+    }
+
+    if (!transicaoEscolhida && transicoes.length > 0) {
+        transicaoEscolhida = transicoes[Math.floor(Math.random() * transicoes.length)];
+    }
+
+    const rotaEscolhida = (transicaoEscolhida && transicaoEscolhida.rota && transicaoEscolhida.rota.length > 0)
+        ? transicaoEscolhida.rota
+        : sidEscolhidaObj.fixos.map(f => f.nome);
+
     const category = ['jet', 'jet', 'jet', 'turboprop', 'piston'][Math.floor(Math.random() * 5)];
     const prefixos = ['GLO', 'TAM', 'AZU', 'ONE', 'PT'];
     const prefixo = (category === 'piston') ? 'PT' : (category === 'turboprop' ? 'AZU' : prefixos[Math.floor(Math.random() * 4)]);
@@ -526,6 +677,9 @@ window.gerarNovaDEP = function(aerodromoAlvo = null) {
         runway: pistaEscolhida,
         sid: sidEscolhidaObj.nome,
         sidKey: sidKeyEscolhida,
+        transicao: transicaoEscolhida ? transicaoEscolhida.nome : 'PADRÃO',
+        transicaoId: transicaoEscolhida ? transicaoEscolhida.id : 'PADRAO',
+        rota: rotaEscolhida,
         category: category,
         status: 'aguardando', // 'aguardando', 'autorizado', 'em_voo'
         requestedFL: requestedFL,
@@ -692,7 +846,7 @@ function spawnDEP(dep) {
         if (dep.setorSaida === 'Sul') tempAlt = 70;
     }
 
-    const sidPoints = sidInfo.fixos.map(f => f.nome);
+    const sidPoints = (dep.rota && dep.rota.length > 0) ? dep.rota : sidInfo.fixos.map(f => f.nome);
     const aeroData = aerodromos.find(a => a.nome === dep.aero);
     const elevacaoFL = pistasObj.elevacao || (aeroData?.elevacaoFt ? Math.round(aeroData.elevacaoFt / 100) : 25);
     const nivAtualStr = String(elevacaoFL).padStart(3, '0');
@@ -722,6 +876,8 @@ function spawnDEP(dep) {
     novaAero.pistaAtribuida = dep.runway;
     novaAero.sid = dep.sid;
     novaAero.cartaNome = dep.sid;
+    novaAero.transicao = dep.transicao || null;
+    novaAero.transicaoId = dep.transicaoId || null;
     novaAero.targetAltFinal = targetFL;
     novaAero.requestedFL = targetFL;
     novaAero.tempAltitudeRestriction = tempAlt ? tempAlt * 100 : null;
